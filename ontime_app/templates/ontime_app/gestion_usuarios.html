@@ -1,0 +1,117 @@
+{% extends 'ontime_app/base.html' %}
+{% load static %}
+
+{% block title %}Gestión de Usuarios - OnTime{% endblock %}
+
+{% block content %}
+<div class="mt-6 text-center">
+    <a href="{% url 'inicio_admin' %}" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
+        <i class="fas fa-arrow-left mr-2"></i> Volver al Panel
+    </a>
+</div>
+
+<div class="container mx-auto px-4 lg:px-8 mt-8">
+    <div class="bg-gray-50 rounded-3xl shadow-lg p-6 md:p-10"> <!-- Cambio aquí -->
+        <h2 class="text-2xl font-bold text-gray-500 mb-6 text-center animate-pulse">👥 Gestión de Usuarios</h2>
+
+        <!-- Buscador y filtros -->
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+            <input id="buscador" type="text" placeholder="Buscar por nombre, correo o rol..." class="w-full md:w-1/2 px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+            
+            <select id="filtro-rol" class="w-full md:w-1/4 px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-400">
+                <option value="">Filtrar por Rol</option>
+                <option value="Aprendiz">Aprendiz</option>
+                <option value="Instructor">Instructor</option>
+                <option value="Administrador">Administrador</option>
+            </select>
+
+            <button class="bg-green-600 text-white px-6 py-2 rounded-xl shadow hover:bg-green-700 transition duration-300">
+                <i class="fas fa-plus mr-2"></i> Nuevo Usuario
+            </button>
+        </div>
+
+        <!-- Tabla de usuarios con scroll -->
+        <div class="overflow-x-auto" style="max-height: 400px; overflow-y: auto;" id="tabla-container">
+            <table class="min-w-full bg-white border border-gray-300 rounded-xl shadow-md">
+                <thead class="bg-green-100 text-green-800 text-left text-sm sticky top-0 z-10">
+                    <tr>
+                        <th class="py-3 px-4">Nombre</th>
+                        <th class="py-3 px-4">Correo</th>
+                        <th class="py-3 px-4">Rol</th>
+                        <th class="py-3 px-4">Estado</th>
+                        <th class="py-3 px-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-usuarios" class="text-sm text-gray-700">
+                    <!-- Fila base para JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Botón Ver más -->
+        <div class="text-center mt-6">
+            <button id="btn-ver-mas" class="bg-green-600 text-white px-6 py-2 rounded-xl shadow hover:bg-green-700 transition duration-300">
+                <i class="fas fa-angle-down mr-2"></i> Ver más
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const usuarios = [
+        {id: 1, nombre: "Juan Pérez", correo: "juan@example.com", rol: "Aprendiz", estado: "Activo"},
+        {id: 2, nombre: "Luisa Torres", correo: "luisa@example.com", rol: "Instructor", estado: "Inactivo"},
+        {id: 3, nombre: "Carlos Gómez", correo: "carlos@example.com", rol: "Administrador", estado: "Activo"},
+        {id: 4, nombre: "Sofía Rojas", correo: "sofia@example.com", rol: "Aprendiz", estado: "Activo"},
+        {id: 5, nombre: "Andrés Muñoz", correo: "andres@example.com", rol: "Instructor", estado: "Inactivo"},
+        {id: 6, nombre: "María Díaz", correo: "maria@example.com", rol: "Aprendiz", estado: "Activo"},
+        {id: 7, nombre: "Daniel Herrera", correo: "daniel@example.com", rol: "Instructor", estado: "Activo"},
+        {id: 8, nombre: "Laura Medina", correo: "laura@example.com", rol: "Administrador", estado: "Activo"},
+        {id: 9, nombre: "Felipe Ramírez", correo: "felipe@example.com", rol: "Aprendiz", estado: "Activo"},
+        {id: 10, nombre: "Ana Morales", correo: "ana@example.com", rol: "Instructor", estado: "Activo"},
+        {id: 11, nombre: "Camila Suárez", correo: "camila@example.com", rol: "Aprendiz", estado: "Activo"},
+        {id: 12, nombre: "Oscar Rivera", correo: "oscar@example.com", rol: "Instructor", estado: "Activo"},
+        {id: 13, nombre: "Juliana Castro", correo: "juliana@example.com", rol: "Administrador", estado: "Activo"},
+        {id: 14, nombre: "Santiago León", correo: "santi@example.com", rol: "Aprendiz", estado: "Activo"},
+        {id: 15, nombre: "Diana Castaño", correo: "diana@example.com", rol: "Instructor", estado: "Activo"}
+    ];
+
+    let indice = 0;
+    const cantidadPorCarga = 5;
+    const tabla = document.getElementById('tabla-usuarios');
+    const btnVerMas = document.getElementById('btn-ver-mas');
+
+    function cargarUsuarios() {
+        const total = usuarios.length;
+        for (let i = indice; i < indice + cantidadPorCarga && i < total; i++) {
+            const user = usuarios[i];
+            const row = `
+                <tr class="border-t">
+                    <td class="py-3 px-4">${user.nombre}</td>
+                    <td class="py-3 px-4">${user.correo}</td>
+                    <td class="py-3 px-4">${user.rol}</td>
+                    <td class="py-3 px-4">
+                        <span class="px-2 py-1 rounded-full ${user.estado === 'Activo' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}">${user.estado}</span>
+                    </td>
+                    <td class="py-3 px-4 space-x-2">
+                        <a href="#" class="text-blue-600 hover:underline"><i class="fas fa-edit"></i> Editar</a>
+                        <button class="text-red-600 hover:underline" onclick="eliminarUsuario(this)"><i class="fas fa-trash"></i> Eliminar</button>
+                    </td>
+                </tr>`;
+            tabla.insertAdjacentHTML('beforeend', row);
+        }
+        indice += cantidadPorCarga;
+        if (indice >= usuarios.length) {
+            btnVerMas.classList.add('hidden');
+        }
+    }
+
+    function eliminarUsuario(btn) {
+        const fila = btn.closest("tr");
+        fila.remove();
+    }
+
+    btnVerMas.addEventListener('click', cargarUsuarios);
+    window.addEventListener('DOMContentLoaded', cargarUsuarios);
+</script>
+{% endblock %}

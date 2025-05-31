@@ -1,0 +1,147 @@
+{% extends 'ontime_app/base.html' %}
+{% load static %}
+
+{% block title %}Perfil - OnTime{% endblock %}
+
+{% block content %}
+<!-- Botón de flecha para retroceder -->
+<div class="mt-6 text-center">
+    <a href="javascript:history.back()" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
+        <i class="fas fa-arrow-left mr-2"></i>
+        Regresar
+    </a>
+  </div>
+<div class="container mx-auto px-4 lg:px-8 mt-12">
+
+    <!-- Panel principal -->
+    <div class="bg-gray-100 rounded-3xl shadow-lg p-10 max-w-7xl mx-auto">
+
+        <!-- Tarjeta de bienvenida con animación -->
+        <div class="relative bg-white/70 backdrop-blur-md shadow-xl rounded-3xl p-6 md:p-10 flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10 mb-12 border border-gray-300 transition-all duration-500 transform hover:scale-105">
+            <!-- Imagen de perfil -->
+            <div class="relative transition-all duration-500 transform hover:scale-110">
+                <img src="{% static 'images/foto_p.jpg' %}" alt="Foto de perfil" class="h-36 w-36 md:h-40 md:w-40 rounded-full border-4 border-green-600 shadow-md object-cover">
+                <div class="absolute -bottom-2 -right-2 bg-green-600 text-white text-xs font-bold rounded-full px-3 py-1 shadow-md">
+                    Apre..
+                </div>
+            </div>
+
+            <!-- Info del usuario -->
+            <div class="flex-1 text-center md:text-left">
+                <h2 class="text-3xl font-extrabold text-green-800 mb-2 animate-pulse">¡Hola, Aprendiz 👋!</h2>
+                <p class="text-base text-gray-600 mb-1">Bienvenido a tu espacio personal en <span class="font-semibold text-green-700">OnTime</span></p>
+                <p class="text-sm text-gray-500">Correo: aprendiz@gmail.com</p>
+
+                <div class="mt-4">
+                    <a href="{% url 'editar_perfil_2' %}" class="inline-block bg-green-600 text-white px-5 py-2 rounded-xl shadow hover:bg-green-700 transition duration-300">
+                        <i class="fas fa-user-edit mr-2"></i> Editar Perfil
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Barra de progreso con animación -->
+        <div class="bg-green-50 rounded-2xl p-6 mb-10 shadow-inner border border-green-200 animate-fade-in">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+
+                <!-- Barra de progreso -->
+                <div class="w-full md:w-2/3">
+                    <h4 class="text-lg font-semibold text-green-800 mb-2">Tu Progreso de Asistencia</h4>
+                    <div class="w-full bg-gray-300 rounded-full h-5 overflow-hidden">
+                        <div class="bg-green-600 h-5 rounded-full progress-bar"></div>
+                    </div>
+                    <p class="mt-2 text-sm text-gray-600">Has asistido al <strong>86%</strong> de tus clases. ¡Sigue así! 💪</p>
+                </div>
+
+                <!-- Medalla de insignia -->
+                <div class="flex flex-col items-center text-green-700">
+                    <i class="fas fa-medal text-6xl mb-2 text-yellow-500 drop-shadow-md animate-pulse"></i>
+                    <p class="font-bold text-md">Nivel: Constante</p>
+                </div>
+
+            </div>
+
+            <!-- Frase motivadora -->
+            <div class="mt-6 text-center">
+                <p class="text-md italic text-gray-700">"La constancia es la clave del éxito. ¡No aflojes!"</p>
+            </div>
+        </div>
+
+        <!-- Accesos rápidos con hover -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Tarjetas con hover -->
+            <div class="bg-white rounded-2xl shadow-md p-6 text-center hover:shadow-xl transition transform hover:-translate-y-1">
+                <a href={% url "registrar_asistencia" %} class="text-green-600 text-xl font-semibold">
+                    <i class="fas fa-check-circle text-4xl mb-3"></i><br> Registrar Asistencia
+                </a>
+                <p class="text-sm text-gray-500 mt-2">Marca tu asistencia de manera rápida y fácil</p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-md p-6 text-center hover:shadow-xl transition transform hover:-translate-y-1">
+                <a href={% url "notificaciones_1" %} class="text-green-600 text-xl font-semibold">
+                    <i class="fas fa-bell text-4xl mb-3"></i><br> Notificaciones
+                </a>
+                <p class="text-sm text-gray-500 mt-2">Consulta tus alertas y recordatorios de asistencia</p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-md p-6 text-center hover:shadow-xl transition transform hover:-translate-y-1">
+                <a href={% url "historial_1" %} class="text-green-600 text-xl font-semibold">
+                    <i class="fas fa-history text-4xl mb-3"></i><br> Historial
+                </a>
+                <p class="text-sm text-gray-500 mt-2">Consulta tu historial completo de asistencia</p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-md p-6 text-center hover:shadow-xl transition transform hover:-translate-y-1">
+                <a href={% url "justificativos_1" %} class="text-green-600 text-xl font-semibold">
+                    <i class="fas fa-file-upload text-4xl mb-3"></i><br> Subir Justificativos
+                </a>
+                <p class="text-sm text-gray-500 mt-2">Envía tu soporte para justificar ausencias</p>
+            </div>
+        </div>
+
+        <!-- Acciones extra -->
+        <div class="mt-12 flex flex-col sm:flex-row justify-center sm:justify-between items-center gap-6 text-center">
+            <a href="{% url 'recuperar_contraseña' %}" class="text-green-600 hover:underline flex items-center gap-2">
+                <i class="fas fa-key"></i> Cambiar Contraseña
+            </a>
+            <a id="logout-link" href="{% url 'inicio' %}" class="text-red-600 hover:underline flex items-center gap-2">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </a>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Spinner de carga -->
+<div id="loading-spinner" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
+    <div class="w-16 h-16 border-4 border-t-4 border-green-600 border-solid rounded-full animate-spin"></div>
+</div>
+
+<style>
+    /* Animación de la barra de progreso */
+    .progress-bar {
+        width: 0%; /* Comienza desde 0 */
+        animation: progress 2s forwards; /* Animación con duración de 2 segundos */
+    }
+
+    /* Definimos la animación */
+    @keyframes progress {
+        0% {
+            width: 0%;
+        }
+        100% {
+            width: 86%; /* Esto puede ser variable según lo que quieras mostrar */
+        }
+    }
+</style>
+
+<script>
+    document.getElementById('logout-link').addEventListener('click', function(event) {
+        event.preventDefault(); // Evitar el comportamiento por defecto del enlace
+        document.getElementById('loading-spinner').classList.remove('hidden'); // Mostrar el spinner
+
+        setTimeout(function() {
+            window.location.href = '{% url "inicio" %}'; // Redirigir a la pantalla de inicio después de un breve retardo
+        }, 2000); // Espera de 2 segundos para mostrar el spinner
+    });
+</script>
+
+{% endblock %}

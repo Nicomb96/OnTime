@@ -1,0 +1,105 @@
+{% extends 'ontime_app/base.html' %}
+{% load static %}
+
+{% block title %}Acerca de - OnTime{% endblock %}
+
+{% block content %}
+<!-- Botón de flecha para retroceder -->
+<div class="mt-6 text-center">
+    <a href="javascript:history.back()" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
+        <i class="fas fa-arrow-left mr-2"></i>
+        Regresar
+    </a>
+  </div>
+<div class="bg-gray-100 shadow-xl rounded-3xl p-0 w-full max-w-6xl mx-auto mt-10 animate__animated animate__fadeIn animate__faster overflow-hidden">
+
+  <!-- Banner con imagen y mensaje -->
+  <div class="relative w-full h-60 bg-cover bg-center flex items-center justify-center" style="background-image: url('{% static 'images/acerca_de.png' %}');">
+    <div class="bg-black bg-opacity-50 w-full h-full absolute top-0 left-0"></div>
+    <div class="relative z-10 text-center text-white">
+      <h2 class="text-3xl md:text-4xl font-extrabold mb-2 animate__animated animate__fadeInDown">¡Maneja tu asistencia fácil y rápido!</h2>
+      <p class="text-sm md:text-base">Transformamos la asistencia con tecnología intuitiva y eficiente.</p>
+    </div>
+  </div>
+
+  <!-- Contenido Informativo -->
+  <div class="p-10 space-y-8 text-gray-700">
+
+    <!-- Objetivo General -->
+    <section>
+      <h3 class="text-xl font-bold text-gray-800 mb-2">🎯 Objetivo General</h3>
+      <p>Desarrollar una app móvil intuitiva que permita a los aprendices registrar su asistencia mediante código QR, ahorrando tiempo y facilitando la gestión tanto para instructores como para bienestar.</p>
+    </section>
+
+    <!-- Objetivos Específicos -->
+    <section>
+      <h3 class="text-xl font-bold text-gray-800 mb-2">✅ Objetivos Específicos</h3>
+      <ul class="list-disc list-inside space-y-1">
+        <li>Facilitar el llamado de lista mediante QR único generado por instructores.</li>
+        <li>Enviar notificaciones a aprendices por inasistencias.</li>
+        <li>Reducir errores en los registros de asistencia.</li>
+        <li>Habilitar historial de asistencia para justificar ausencias.</li>
+      </ul>
+    </section>
+
+    <!-- Diferenciadores Clave -->
+    <section>
+      <h3 class="text-xl font-bold text-gray-800 mb-2">🚀 Diferenciadores Clave</h3>
+      <ul class="list-disc list-inside space-y-1">
+        <li>Fácil implementación sin IA ni configuraciones complejas.</li>
+        <li>QR actualizable en cualquier momento por el instructor.</li>
+        <li>Prevención de fraudes mediante códigos únicos.</li>
+      </ul>
+    </section>
+
+    <!-- Planteamiento del Problema -->
+    <section>
+      <h3 class="text-xl font-bold text-gray-800 mb-2">⚠️ Planteamiento del Problema</h3>
+      <p>En instituciones educativas se presenta una gestión manual de asistencia que genera:</p>
+      <ul class="list-disc list-inside mt-1 space-y-1">
+        <li>Pérdida de tiempo.</li>
+        <li>Errores en los registros.</li>
+        <li>Falta de información en tiempo real.</li>
+        <li>Mala comunicación entre instructores y aprendices.</li>
+        <li>Impacto negativo en la productividad.</li>
+      </ul>
+    </section>
+
+    <!-- Alcance del Proyecto -->
+    <section>
+      <h3 class="text-xl font-bold text-gray-800 mb-2">📌 Alcance del Proyecto</h3>
+      <ul class="list-disc list-inside space-y-1">
+        <li><strong>Usuarios:</strong> Instituciones de Educación.</li>
+        <li><strong>Plataformas:</strong> Institucionales.</li>
+      </ul>
+    </section>
+
+    <!-- Tecnologías Usadas -->
+    <section>
+      <h3 class="text-xl font-bold text-gray-800 mb-2">🛠 Tecnologías Usadas</h3>
+      <ul class="list-disc list-inside space-y-1">
+        <li>MySQL para gestión de datos.</li>
+        <li>Django como framework web.</li>
+        <li>Python para backend, QR, reportes y notificaciones.</li>
+      </ul>
+    </section>
+
+    <!-- Justificación -->
+    <section>
+      <h3 class="text-xl font-bold text-gray-800 mb-2">📚 Justificación</h3>
+      <p>OnTime ofrece una solución moderna sin costos adicionales que ahorra tiempo a instructores y mejora la gestión de asistencia sin depender de métodos tradicionales o plataformas poco eficientes.</p>
+    </section>
+
+    <!-- Integrantes del Proyecto -->
+    <section>
+      <h3 class="text-xl font-bold text-gray-800 mb-2">👥 Integrantes del Proyecto</h3>
+      <ul class="list-disc list-inside space-y-1">
+        <li>Andrés Felipe Martínez Camargo</li>
+        <li>Facsuli María Briñez Yate</li>
+        <li>Nicolás Molina Beltrán</li>
+        <li>Juan Camilo Arias Saenz</li>
+      </ul>
+    </section>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+# Django + PostgreSQL .gitignore
+
+# Entornos virtuales
+.venv/
+env/
+venv/
+ENV/
+
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# SQLite (por si alguien lo llega a usar sin querer)
+*.sqlite3
+db.sqlite3
+
+# Configuración y logs
+*.log
+*.pot
+*.pyc
+
+# Archivos temporales
+*.swp
+*.bak
+*.tmp
+*.orig
+
+# Archivos de configuración del sistema/IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# Archivos de dependencias si se cachean
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Cobertura de tests
+htmlcov/
+.tox/
+.coverage
+.cache
+.nox/
+
+# Archivos de migraciones (opcional)
+# Si generás migraciones de cero, podés descomentarlas
+# */migrations/*.py
+# */migrations/*.pyc
+
+# Carpeta media subida por usuarios
+media/
+
+# Static files generados
+staticfiles/
+static/
+
+# Archivos de bases externas
+*.db
+
+# Archivos compilados por frontend (si usás npm o yarn)
+node_modules/
+build/
+dist/
+
+# Variables de entorno
+.env
+*.env

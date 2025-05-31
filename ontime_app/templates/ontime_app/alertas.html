@@ -1,0 +1,133 @@
+{% extends 'ontime_app/base.html' %}
+{% load static %}
+
+{% block title %}Gestión de Alertas - OnTime{% endblock %}
+
+{% block content %}
+<!-- Botón de flecha para retroceder -->
+<div class="mt-6 text-center">
+  <a href="javascript:history.back()" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
+      <i class="fas fa-arrow-left mr-2"></i>
+      Regresar
+  </a>
+</div>
+<div class="bg-gray-100 shadow-xl rounded-3xl p-10 w-full max-w-4xl mx-auto mt-16 animate__animated animate__fadeIn">
+
+  <!-- Título -->
+  <h2 class="text-4xl font-extrabold text-center text-gray-800 mb-2 animate-pulse">Gestión de Alertas</h2>
+  <p class="text-center text-gray-600 mb-8">Configura, visualiza y maneja las alertas de asistencia de tus aprendices.</p>
+
+  <!-- Filtros -->
+  <div class="grid md:grid-cols-2 gap-10 mb-10 text-gray-600">
+    <div class="flex space-x-4">
+      <input type="text" placeholder="Buscar alerta..." class="px-4 py-2 w-full border rounded-lg shadow-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-600">
+      <select class="px-4 py-2 w-56 border rounded-lg shadow-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-600">
+        <option value="todos">Todos los tipos</option>
+        <option value="inasistencia">Inasistencia</option>
+        <option value="recordatorio">Recordatorio</option>
+        <option value="justificativo">Justificativo</option>
+      </select>
+    </div>
+    <button class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition shadow-md">
+      Filtrar
+    </button>
+  </div>
+
+  <!-- Lista de alertas -->
+  <div id="alertas" class="space-y-6 max-h-96 overflow-y-auto">
+
+    <!-- Alerta 1 -->
+    <div class="alerta bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition relative">
+      <div class="flex justify-between items-start">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800">📊 Grupo sin asistencia registrada</h3>
+          <p class="text-sm text-gray-600 mt-1">No se ha registrado asistencia para el grupo de programación. Revisa y genera el QR a tiempo.</p>
+        </div>
+        <span class="text-xs text-gray-400">Hace 1 hora</span>
+      </div>
+      <div class="flex justify-end space-x-2 mt-4">
+        <button class="btn-marcar-vista text-green-600 hover:underline text-sm">Marcar como vista</button>
+        <button class="btn-eliminar text-red-500 hover:underline text-sm">Eliminar</button>
+      </div>
+    </div>
+
+    <!-- Alerta 2 -->
+    <div class="alerta bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition relative">
+      <div class="flex justify-between items-start">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800">🕒 Recordatorio de generación de código</h3>
+          <p class="text-sm text-gray-600 mt-1">Recuerda generar el código de asistencia antes del inicio de la clase de hoy.</p>
+        </div>
+        <span class="text-xs text-gray-400">Hace 3 horas</span>
+      </div>
+      <div class="flex justify-end space-x-2 mt-4">
+        <button class="btn-marcar-vista text-green-600 hover:underline text-sm">Marcar como vista</button>
+        <button class="btn-eliminar text-red-500 hover:underline text-sm">Eliminar</button>
+      </div>
+    </div>
+
+    <!-- Alerta 3 -->
+    <div class="alerta bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition relative">
+      <div class="flex justify-between items-start">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800">❌ Múltiples inasistencias sin justificar</h3>
+          <p class="text-sm text-gray-600 mt-1">Hay aprendices con 3 o más inasistencias sin justificar. Consulta los reportes.</p>
+        </div>
+        <span class="text-xs text-gray-400">Ayer</span>
+      </div>
+      <div class="flex justify-end space-x-2 mt-4">
+        <button class="btn-marcar-vista text-green-600 hover:underline text-sm">Marcar como vista</button>
+        <button class="btn-eliminar text-red-500 hover:underline text-sm">Eliminar</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Sin alertas -->
+  <div id="sin-alertas" class="hidden text-center mt-10">
+    <img src="{% static 'images/campana.ico' %}" alt="Sin alertas" class="w-60 mx-auto mb-4 animate-bounce" style="width: 150px; height: auto;" />
+    <p class="text-lg text-gray-500">No tienes alertas nuevas por ahora 💤</p>
+  </div>
+
+  <!-- Botón Finalizar -->
+  <div class="text-center mt-10">
+    <a href={% url "inicio_instructor" %} class="bg-green-700 text-white px-8 py-3 rounded-xl hover:bg-green-800 transition shadow-lg">
+      <i class="fas fa-check-circle mr-2"></i>Finalizar
+    </a>
+  </div>
+
+</div>
+
+<script>
+  // Función para eliminar alerta
+  const eliminarBtns = document.querySelectorAll('.btn-eliminar');
+  const vistaBtns = document.querySelectorAll('.btn-marcar-vista');
+  const alertas = document.getElementById('alertas');
+  const sinAlertas = document.getElementById('sin-alertas');
+
+  eliminarBtns.forEach(btn => {
+    btn.addEventListener('click', function () {
+      const alerta = this.closest('.alerta');
+      alerta.classList.add('opacity-0', 'transition', 'duration-500');
+      setTimeout(() => {
+        alerta.remove();
+        if (alertas.children.length === 0) {
+          sinAlertas.classList.remove('hidden');
+        }
+      }, 500);
+    });
+  });
+
+  vistaBtns.forEach(btn => {
+    btn.addEventListener('click', function () {
+      const alerta = this.closest('.alerta');
+      alerta.classList.add('bg-gray-100');
+      this.textContent = "Vista ✅";
+      this.classList.remove('hover:underline', 'text-green-600');
+      this.classList.add('text-gray-500');
+      this.disabled = true;
+    });
+  });
+</script>
+
+{% endblock %}

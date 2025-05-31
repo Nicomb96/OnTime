@@ -1,0 +1,121 @@
+{% extends 'ontime_app/base.html' %}
+{% load static %}
+
+{% block title %}Control de Asistencia - OnTime{% endblock %}
+
+{% block content %}
+<div class="mt-6 text-center">
+    <a href="{% url 'inicio_admin' %}" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
+        <i class="fas fa-arrow-left mr-2"></i> Volver al Panel
+    </a>
+</div>
+
+<div class="container mx-auto px-4 lg:px-8 mt-8">
+    <div class="bg-gray-50 rounded-3xl shadow-lg p-6 md:p-10">
+        <h2 class="text-2xl font-bold text-gray-600 mb-6 text-center animate-pulse">📅 Control de Asistencia</h2>
+
+        <!-- Filtro por fecha -->
+        <div class="flex flex-col md:flex-row justify-center items-center gap-4 mb-6 text-gray-600">
+            <label class="text-gray-700 font-medium">Seleccionar Fecha:</label>
+            <input type="date" id="fecha-asistencia" class="px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+            <button onclick="filtrarPorFecha()" class="bg-green-600 text-white px-6 py-2 rounded-xl shadow hover:bg-green-700 transition duration-300">
+                <i class="fas fa-search mr-2"></i> Consultar
+            </button>
+        </div>
+
+        <!-- Tabla con barra de desplazamiento -->
+        <div class="overflow-x-auto" style="max-height: 400px; overflow-y: auto;">
+            <table class="min-w-full bg-white border border-gray-300 rounded-xl shadow-md">
+                <thead class="bg-green-100 text-green-800 text-left text-sm sticky top-0 z-10">
+                    <tr>
+                        <th class="py-3 px-4">Nombre</th>
+                        <th class="py-3 px-4">Programa</th>
+                        <th class="py-3 px-4">Fecha</th>
+                        <th class="py-3 px-4">Hora de Entrada</th>
+                        <th class="py-3 px-4">Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-asistencias" class="text-sm text-gray-700">
+                    <!-- Aquí va la magia JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Botón Ver más -->
+        <div class="text-center mt-6">
+            <button id="btn-ver-mas" class="bg-green-600 text-white px-6 py-2 rounded-xl shadow hover:bg-green-700 transition duration-300">
+                <i class="fas fa-angle-down mr-2"></i> Ver más
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const asistencias = [
+        { nombre: "Juan Pérez", programa: "Análisis de Datos", fecha: "2025-04-21", hora: "07:00 AM", estado: "Presente" },
+        { nombre: "Luisa Torres", programa: "Redes", fecha: "2025-04-21", hora: "07:02 AM", estado: "Presente" },
+        { nombre: "Carlos Gómez", programa: "Gestión Empresarial", fecha: "2025-04-20", hora: "07:10 AM", estado: "Tarde" },
+        { nombre: "María Díaz", programa: "Contabilidad", fecha: "2025-04-21", hora: "-", estado: "Ausente" },
+        { nombre: "Oscar Rivera", programa: "Programación", fecha: "2025-04-21", hora: "07:01 AM", estado: "Presente" },
+        { nombre: "Diana Castaño", programa: "Diseño Gráfico", fecha: "2025-04-19", hora: "07:15 AM", estado: "Tarde" },
+        { nombre: "Daniel Herrera", programa: "Logística", fecha: "2025-04-21", hora: "-", estado: "Ausente" },
+        { nombre: "Sofía Rojas", programa: "Marketing Digital", fecha: "2025-04-20", hora: "07:08 AM", estado: "Tarde" },
+        { nombre: "Felipe Ramírez", programa: "Seguridad Informática", fecha: "2025-04-21", hora: "07:00 AM", estado: "Presente" },
+        { nombre: "Juliana Castro", programa: "Recursos Humanos", fecha: "2025-04-19", hora: "-", estado: "Ausente" },
+        { nombre: "Camila Suárez", programa: "Programación", fecha: "2025-04-21", hora: "07:05 AM", estado: "Presente" },
+        { nombre: "Santiago León", programa: "Diseño Gráfico", fecha: "2025-04-20", hora: "07:03 AM", estado: "Presente" },
+        { nombre: "Valentina Meza", programa: "Análisis de Datos", fecha: "2025-04-21", hora: "07:07 AM", estado: "Tarde" },
+        { nombre: "Nicolás Díaz", programa: "Logística", fecha: "2025-04-21", hora: "07:01 AM", estado: "Presente" },
+        { nombre: "Ana Morales", programa: "Gestión Empresarial", fecha: "2025-04-18", hora: "-", estado: "Ausente" },
+        { nombre: "Kevin Martínez", programa: "Redes", fecha: "2025-04-21", hora: "07:04 AM", estado: "Presente" }
+    ];
+
+    let indice = 0;
+    const cantidadPorCarga = 5;
+    const tabla = document.getElementById('tabla-asistencias');
+    const btnVerMas = document.getElementById('btn-ver-mas');
+    let datosFiltrados = asistencias;
+
+    function cargarAsistencias() {
+        const total = datosFiltrados.length;
+        for (let i = indice; i < indice + cantidadPorCarga && i < total; i++) {
+            const a = datosFiltrados[i];
+            const fila = `
+                <tr class="border-t">
+                    <td class="py-3 px-4">${a.nombre}</td>
+                    <td class="py-3 px-4">${a.programa}</td>
+                    <td class="py-3 px-4">${a.fecha}</td>
+                    <td class="py-3 px-4">${a.hora}</td>
+                    <td class="py-3 px-4">
+                        <span class="px-2 py-1 rounded-full ${
+                            a.estado === 'Presente' ? 'bg-green-200 text-green-800' :
+                            a.estado === 'Tarde' ? 'bg-yellow-200 text-yellow-800' :
+                            'bg-red-200 text-red-800'
+                        }">${a.estado}</span>
+                    </td>
+                </tr>`;
+            tabla.insertAdjacentHTML('beforeend', fila);
+        }
+        indice += cantidadPorCarga;
+        if (indice >= datosFiltrados.length) {
+            btnVerMas.classList.add('hidden');
+        }
+    }
+
+    function filtrarPorFecha() {
+        const fechaSeleccionada = document.getElementById("fecha-asistencia").value;
+        indice = 0;
+        tabla.innerHTML = "";
+        if (fechaSeleccionada) {
+            datosFiltrados = asistencias.filter(a => a.fecha === fechaSeleccionada);
+        } else {
+            datosFiltrados = asistencias;
+        }
+        btnVerMas.classList.remove('hidden');
+        cargarAsistencias();
+    }
+
+    btnVerMas.addEventListener('click', cargarAsistencias);
+    window.addEventListener('DOMContentLoaded', cargarAsistencias);
+</script>
+{% endblock %}

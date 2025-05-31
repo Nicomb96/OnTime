@@ -1,0 +1,157 @@
+{% extends 'ontime_app/base.html' %}
+{% load static %}
+
+{% block title %}Consultar Asistencias - OnTime{% endblock %}
+
+{% block content %}
+<!-- Botón de flecha para retroceder -->
+<div class="mt-6 text-center">
+  <a href="javascript:history.back()" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
+      <i class="fas fa-arrow-left mr-2"></i>
+      Regresar
+  </a>
+</div>
+<div class="bg-gray-50 shadow-xl rounded-3xl p-10 w-full max-w-5xl mx-auto mt-16 animate__animated animate__fadeIn">
+
+  <h2 class="text-4xl font-extrabold text-center text-gray-800 animate-pulse mb-4">Consultar Asistencias</h2>
+  <p class="text-center text-gray-600 mb-8">Consulta la asistencia de los aprendices por competencia y visualiza los detalles de cada registro.</p>
+
+  <!-- Filtros y Buscador -->
+  <div class="flex justify-between mb-8">
+    <div class="flex items-center gap-4">
+      <label for="competencia" class="font-semibold text-gray-700">Competencia:</label>
+      <select id="competencia" class="px-4 py-2 rounded-lg border border-green-400 focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-gray-600 shadow-md hover:shadow-lg transition-all">
+        <option value="competencia1">Programación de software</option>
+        <option value="competencia2">Matemáticas</option>
+        <option value="competencia3">Inglés</option>
+        <option value="competencia4">Emprendimiento</option>
+      </select>
+    </div>
+
+    <!-- Buscador -->
+    <div class="flex items-center">
+      <input type="text" id="search" class="px-4 py-2 rounded-lg border border-green-400 focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-gray-800 shadow-md hover:shadow-lg transition-all" placeholder="Buscar aprendiz...">
+      <button class="ml-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">Buscar</button>
+    </div>
+  </div>
+
+  <!-- Tabla de Asistencias -->
+  <div class="overflow-x-auto bg-white shadow-lg rounded-lg">
+    <table class="min-w-full text-sm text-left text-gray-500" id="attendance-table">
+      <thead class="text-xs text-gray-700 uppercase bg-green-50">
+        <tr>
+          <th class="px-6 py-3">#</th>
+          <th class="px-6 py-3">Nombre del Aprendiz</th>
+          <th class="px-6 py-3">Estado de Asistencia</th>
+          <th class="px-6 py-3">Fecha</th>
+          <th class="px-6 py-3">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="border-b hover:bg-green-50 transition-all">
+          <td class="px-6 py-4">1</td>
+          <td class="px-6 py-4">Juan Pérez</td>
+          <td class="px-6 py-4 text-green-600">Presente</td>
+          <td class="px-6 py-4">2025-04-18</td>
+          <td class="px-6 py-4">
+            <button class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition flex items-center gap-2" onclick="showDetails('Juan Pérez', 'Presente', '2025-04-18')">
+              <i class="fas fa-eye"></i> Ver Detalles
+            </button>
+          </td>
+        </tr>
+        <tr class="border-b hover:bg-green-50 transition-all">
+          <td class="px-6 py-4">2</td>
+          <td class="px-6 py-4">Ana González</td>
+          <td class="px-6 py-4 text-red-600">Ausente</td>
+          <td class="px-6 py-4">2025-04-18</td>
+          <td class="px-6 py-4">
+            <button class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition flex items-center gap-2" onclick="showDetails('Ana González', 'Ausente', '2025-04-18')">
+              <i class="fas fa-eye"></i> Ver Detalles
+            </button>
+          </td>
+        </tr>
+        <tr class="border-b hover:bg-green-50 transition-all">
+          <td class="px-6 py-4">3</td>
+          <td class="px-6 py-4">Carlos López</td>
+          <td class="px-6 py-4 text-yellow-500">Tarde</td>
+          <td class="px-6 py-4">2025-04-17</td>
+          <td class="px-6 py-4">
+            <button class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition flex items-center gap-2" onclick="showDetails('Carlos López', 'Tarde', '2025-04-17')">
+              <i class="fas fa-eye"></i> Ver Detalles
+            </button>
+          </td>
+        </tr>
+        <tr class="border-b hover:bg-green-50 transition-all">
+          <td class="px-6 py-4">4</td>
+          <td class="px-6 py-4">Marta Rodríguez</td>
+          <td class="px-6 py-4 text-green-600">Presente</td>
+          <td class="px-6 py-4">2025-04-16</td>
+          <td class="px-6 py-4">
+            <button class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition flex items-center gap-2" onclick="showDetails('Marta Rodríguez', 'Presente', '2025-04-16')">
+              <i class="fas fa-eye"></i> Ver Detalles
+            </button>
+          </td>
+        </tr>
+        <tr class="border-b hover:bg-green-50 transition-all">
+          <td class="px-6 py-4">5</td>
+          <td class="px-6 py-4">Luis Torres</td>
+          <td class="px-6 py-4 text-red-600">Ausente</td>
+          <td class="px-6 py-4">2025-04-14</td>
+          <td class="px-6 py-4">
+            <button class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition flex items-center gap-2" onclick="showDetails('Luis Torres', 'Ausente', '2025-04-14')">
+              <i class="fas fa-eye"></i> Ver Detalles
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Paginación -->
+  <div class="flex justify-center mt-6">
+    <nav>
+      <ul class="inline-flex -space-x-px">
+        <li>
+          <button class="px-4 py-2 mx-1 text-sm font-medium text-green-600 bg-white border border-green-500 rounded-l-lg hover:bg-green-100 transition" onclick="changePage(-1)">Anterior</button>
+        </li>
+        <li>
+          <button class="px-4 py-2 mx-1 text-sm font-medium text-green-600 bg-white border border-green-500 hover:bg-green-100 transition">1</button>
+        </li>
+        <li>
+          <button class="px-4 py-2 mx-1 text-sm font-medium text-green-600 bg-white border border-green-500 hover:bg-green-100 transition">2</button>
+        </li>
+        <li>
+          <button class="px-4 py-2 mx-1 text-sm font-medium text-green-600 bg-white border border-green-500 rounded-r-lg hover:bg-green-100 transition" onclick="changePage(1)">Siguiente</button>
+        </li>
+      </ul>
+    </nav>
+  </div>
+
+  <!-- Botón para Exportar Reporte -->
+  <div class="text-center mt-8">
+    <button class="bg-green-700 text-white px-6 py-3 rounded-lg hover:bg-green-800 transition shadow-lg">
+      <i class="fas fa-file-export mr-2"></i> Exportar Reporte
+    </button>
+  </div>
+
+</div>
+
+<script>
+  function showDetails(name, status, date) {
+    alert(`Detalles del aprendiz:\nNombre: ${name}\nEstado: ${status}\nFecha: ${date}`);
+  }
+
+  let currentPage = 1;
+
+  function changePage(direction) {
+    currentPage += direction;
+    if (currentPage < 1) {
+      currentPage = 1;
+    }
+
+    // Aquí cambiarías los datos de la tabla según la página
+    alert('Página cambiada a: ' + currentPage);
+  }
+</script>
+
+{% endblock %}

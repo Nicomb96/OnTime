@@ -1,0 +1,107 @@
+{% extends 'ontime_app/base.html' %}
+{% load static %}
+
+{% block title %}Ayuda - OnTime{% endblock %}
+
+{% block content %}
+<!-- Botón de flecha para retroceder -->
+<div class="mt-6 text-center">
+    <a href="javascript:history.back()" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
+        <i class="fas fa-arrow-left mr-2"></i>
+        Regresar
+    </a>
+</div>
+<div class="bg-gray-100 shadow-xl rounded-3xl p-10 w-full max-w-4xl mx-auto mt-20 animate__animated animate__fadeIn animate__faster">
+    <h2 class="text-4xl font-extrabold text-gray-800 text-center mb-6 animate-pulse">Centro de Ayuda</h2>
+    <p class="text-center text-gray-600 mb-10">¿Tienes dudas? Estamos aquí para ayudarte.</p>
+
+    <!-- Barra de búsqueda -->
+    <div class="mb-8">
+        <input type="text" id="search" placeholder="Busca tu pregunta..." class="w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 text-gray-800 mb-4">
+    </div>
+
+    <!-- Notificación de nueva actualización -->
+    <div id="notification" class="bg-green-100 border-l-4 border-green-500 text-gray-700 p-4 mb-6 shadow-lg hidden">
+        <strong>¡Nueva actualización!</strong> Ahora puedes gestionar tu asistencia desde el nuevo dashboard.
+    </div>
+
+    <!-- Sección de preguntas frecuentes -->
+    <div class="space-y-8 max-h-96 overflow-y-auto" id="faq-list">
+        <div class="bg-white shadow-lg rounded-xl p-6">
+            <h3 class="text-2xl font-semibold text-gray-800 mb-4">¿Cómo registrar mi asistencia?</h3>
+            <p class="text-gray-700">Para registrar tu asistencia, solo debes escanear el código QR proporcionado por el instructor o seleccionar la opción correspondiente en tu perfil.</p>
+        </div>
+
+        <div class="bg-white shadow-lg rounded-xl p-6">
+            <h3 class="text-2xl font-semibold text-gray-800 mb-4">¿Cómo ver mis reportes de asistencia?</h3>
+            <p class="text-gray-700">Puedes acceder a tus reportes de asistencia desde la pantalla de 'Historial', donde podrás filtrar por fecha y ver los detalles de tus registros.</p>
+        </div>
+
+        <div class="bg-white shadow-lg rounded-xl p-6">
+            <h3 class="text-2xl font-semibold text-gray-800 mb-4">¿Cómo actualizar mi perfil?</h3>
+            <p class="text-gray-700">Para actualizar tu perfil, solo tienes que ir a la sección 'Editar Perfil' y cambiar los datos que deseas actualizar, como nombre, correo, o teléfono.</p>
+        </div>
+
+        <div class="bg-white shadow-lg rounded-xl p-6">
+            <h3 class="text-2xl font-semibold text-gray-800 mb-4">¿Cómo restablecer mi contraseña?</h3>
+            <p class="text-gray-700">Si has olvidado tu contraseña, puedes restablecerla desde la pantalla de 'Recuperar Contraseña', ingresando tu correo electrónico.</p>
+        </div>
+
+        <div class="bg-white shadow-lg rounded-xl p-6">
+            <h3 class="text-2xl font-semibold text-gray-800 mb-4">¿Cómo generar el código QR?</h3>
+            <p class="text-gray-700">Para generar el código QR, ve a la sección de 'Generar QR' en tu perfil y haz clic en el botón correspondiente para obtener el código único.</p>
+        </div>
+
+        <div class="bg-white shadow-lg rounded-xl p-6">
+            <h3 class="text-2xl font-semibold text-gray-800 mb-4">¿Qué hacer si no puedo acceder a mi cuenta?</h3>
+            <p class="text-gray-700">Si tienes problemas para acceder a tu cuenta, asegúrate de haber ingresado los datos correctamente. Si el problema persiste, contacta con el soporte técnico.</p>
+        </div>
+
+        <div class="bg-white shadow-lg rounded-xl p-6">
+            <h3 class="text-2xl font-semibold text-gray-800 mb-4">¿Cómo contactar al soporte técnico?</h3>
+            <p class="text-gray-700">Si necesitas asistencia técnica, puedes ponerte en contacto con el equipo de soporte mediante correo electrónico o WhatsApp. Verifica los métodos de contacto en la sección correspondiente.</p>
+        </div>
+
+        <div class="bg-white shadow-lg rounded-xl p-6">
+            <h3 class="text-2xl font-semibold text-gray-800 mb-4">¿Puedo modificar mi asistencia registrada?</h3>
+            <p class="text-gray-700">Una vez registrada la asistencia, no es posible modificarla. Si cometiste un error o tienes una situación especial, por favor contacta al instructor o soporte técnico.</p>
+        </div>
+    </div>
+
+    <!-- Sección de contacto -->
+    <div class="mt-12 bg-white shadow-lg rounded-xl p-8">
+        <h3 class="text-2xl font-semibold text-gray-800 mb-4">¿Necesitas más ayuda?</h3>
+        <p class="text-gray-700 mb-6">Si no encuentras lo que buscas, puedes ponerte en contacto con nosotros directamente.</p>
+        <div class="flex gap-6 justify-center">
+            <a href="mailto:soporte@ontime.com" class="bg-green-600 text-white px-6 py-3 rounded-xl hover:bg-green-700 transition shadow-lg flex items-center">
+                <i class="fas fa-envelope mr-2"></i> Contactar por correo
+            </a>
+            <a href="https://wa.me/573144645226" class="bg-green-600 text-white px-6 py-3 rounded-xl hover:bg-green-700 transition shadow-lg flex items-center">
+                <i class="fab fa-whatsapp mr-2"></i> Contactar por WhatsApp
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Mostrar notificación
+    setTimeout(function() {
+        document.getElementById('notification').classList.remove('hidden');
+    }, 2000);
+
+    // Función de búsqueda
+    document.getElementById('search').addEventListener('input', function() {
+        const searchText = this.value.toLowerCase();
+        const faqList = document.querySelectorAll('#faq-list > div');
+        faqList.forEach(function(faq) {
+            const questionText = faq.querySelector('h3').textContent.toLowerCase();
+            if (questionText.includes(searchText)) {
+                faq.style.display = 'block';
+            } else {
+                faq.style.display = 'none';
+            }
+        });
+    });
+</script>
+
+{% endblock %}

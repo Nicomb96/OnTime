@@ -1,0 +1,46 @@
+{% extends 'ontime_app/base.html' %}
+{% load static %}
+
+{% block title %}Normalización - OnTime{% endblock %}
+
+{% block content %}
+<!-- Botón de flecha para retroceder -->
+<div class="mt-6 text-center">
+    <a href="javascript:history.back()" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
+        <i class="fas fa-arrow-left mr-2"></i>
+        Regresar
+    </a>
+  </div>
+<div class="text-center mb-10">
+    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-4 flex items-center justify-center gap-2 animate-pulse">
+        <i class="fas fa-sitemap text-green-400 text-4xl"></i> Normalización MR
+    </h1>
+</div>
+
+<!-- Mini resumen -->
+<div class="bg-white bg-opacity-5 backdrop-blur-sm rounded-xl p-6 shadow-inner max-w-4xl mx-auto mb-10">
+    <p class="text-gray-300 text-lg mb-2">
+        Se presenta el proceso de normalización aplicado al modelo relacional de <span class="text-white font-semibold">OnTime</span>, garantizando integridad, reducción de redundancias y una estructura eficiente mediante el uso de formas normales hasta alcanzar la Tercera Forma Normal (3FN).
+    </p>
+    <p class="text-gray-400">
+        Este proceso permitió identificar y corregir posibles dependencias funcionales indebidas, separando correctamente las entidades y atributos para optimizar el diseño lógico de la base de datos. Como resultado, se mejora la consistencia de los datos, se facilita el mantenimiento del sistema y se prepara la estructura para futuras ampliaciones.
+    </p>
+</div>
+
+<!-- Botones -->
+<div class="mt-10 text-center flex flex-col md:flex-row justify-center gap-4">
+    <!-- Abrir Normalización -->
+    <a href="https://docs.google.com/spreadsheets/d/1MqmUUx56GYf1oaUzY6ML_JeQpU2xP2Qn/edit?usp=drive_link&ouid=115931929253187671274&rtpof=true&sd=true" target="_blank"
+       class="inline-block bg-blue-500 text-white px-6 py-3 rounded-lg shadow-md hover:shadow-blue-400/60 hover:scale-105 transition-all duration-300">
+       <i class="fas fa-external-link-alt mr-2"></i> Abrir Normalización
+    </a>
+
+    <!-- Descargar Normalización -->
+    <a href="{% static 'files/normalizacion_mr.xlsx' %}" download="normalizacion_mr.xlsx"
+       class="inline-block bg-green-500 text-white px-6 py-3 rounded-lg shadow-md hover:shadow-green-400/60 hover:scale-105 transition-all duration-300">
+       <i class="fas fa-cloud-download-alt mr-2"></i> Descargar Normalización
+    </a>
+</div>
+
+{% endblock %}
+

@@ -1,0 +1,137 @@
+{% extends 'ontime_app/base.html' %}
+{% load static %}
+
+{% block title %}Carga Masiva - OnTime{% endblock %}
+
+{% block content %}
+<div class="mt-6 text-center">
+  <a href="{% url 'inicio_admin' %}" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
+    <i class="fas fa-arrow-left mr-2"></i> Volver al Panel
+  </a>
+</div>
+
+<div class="container mx-auto px-4 lg:px-8 mt-8">
+  <div class="bg-gray-50 rounded-3xl shadow-lg p-6 md:p-10">
+    <h2 class="text-2xl font-bold text-gray-500 mb-6 text-center animate-pulse">📥 Carga Masiva de Aprendices</h2>
+
+    <div class="text-center mb-6">
+      <a href="{% static 'files/plantilla_carga_aprendices.xlsx' %}" class="bg-green-600 text-white px-6 py-2 rounded-xl shadow hover:bg-green-700 transition duration-300 inline-block">
+        <i class="fas fa-download mr-2"></i> Descargar Plantilla
+      </a>
+    </div>
+
+    <form id="form-carga" enctype="multipart/form-data" class="space-y-4">
+      <div class="flex flex-col items-center">
+        <label class="text-gray-700 mb-2 font-semibold">Selecciona archivo .xlsx:</label>
+        <input id="archivo" type="file" accept=".xlsx" required class="block w-full max-w-md px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+      </div>
+
+      <div class="flex justify-center mt-4">
+        <button type="submit" class="bg-green-600 text-white px-8 py-2 rounded-xl shadow hover:bg-green-700 transition duration-300">
+          <i class="fas fa-upload mr-2"></i> Subir Datos
+        </button>
+      </div>
+
+      <div class="hidden text-center mt-4 text-sm text-gray-700" id="mensaje"></div>
+
+      <!-- Barra de progreso -->
+      <div id="progreso-container" class="hidden mt-6">
+        <div class="h-3 bg-gray-200 rounded-full overflow-hidden">
+          <div id="barra-progreso" class="h-full bg-green-600 w-0 transition-all duration-500 ease-in-out"></div>
+        </div>
+      </div>
+    </form>
+
+    <!-- Vista previa -->
+    <div id="preview" class="hidden mt-8 max-h-60 overflow-y-auto">
+      <h3 class="text-lg font-semibold text-gray-700 mb-2">Vista previa de datos:</h3>
+      <table class="min-w-full bg-white border border-gray-300 text-sm rounded-xl shadow">
+        <thead class="bg-green-100 text-green-800 sticky top-0 z-10">
+          <tr>
+            <th class="py-2 px-4">Nombre</th>
+            <th class="py-2 px-4">Documento</th>
+            <th class="py-2 px-4">Correo</th>
+            <th class="py-2 px-4">Programa</th>
+          </tr>
+        </thead>
+        <tbody id="preview-body" class="text-gray-700">
+          <!-- JS insertará filas acá -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Historial de cargas -->
+    <div class="mt-8 max-h-40 overflow-y-auto">
+      <h3 class="text-lg font-semibold text-gray-700 mb-2">Historial de cargas recientes:</h3>
+      <ul class="list-disc list-inside text-sm text-gray-600 space-y-1" id="historial">
+        <li>12/04/2025 - 45 registros cargados</li>
+        <li>09/04/2025 - 32 registros cargados</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+  const form = document.getElementById('form-carga');
+  const archivo = document.getElementById('archivo');
+  const mensaje = document.getElementById('mensaje');
+  const preview = document.getElementById('preview');
+  const previewBody = document.getElementById('preview-body');
+  const progreso = document.getElementById('progreso-container');
+  const barra = document.getElementById('barra-progreso');
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    if (!archivo.files.length) {
+      mensaje.textContent = 'Por favor selecciona un archivo.';
+      mensaje.classList.remove('hidden');
+      mensaje.classList.add('text-red-600');
+      return;
+    }
+
+    mensaje.classList.remove('text-red-600');
+    mensaje.classList.add('text-green-600');
+    mensaje.textContent = 'Subiendo archivo...';
+    mensaje.classList.remove('hidden');
+
+    progreso.classList.remove('hidden');
+    barra.style.width = '0%';
+
+    // Simular barra de carga
+    let porcentaje = 0;
+    const carga = setInterval(() => {
+      porcentaje += 10;
+      barra.style.width = porcentaje + '%';
+
+      if (porcentaje >= 100) {
+        clearInterval(carga);
+        mensaje.textContent = '✅ Archivo subido correctamente.';
+        mostrarVistaPrevia();
+        // Aquí podrías actualizar el historial si fuera dinámico
+      }
+    }, 200);
+  });
+
+  function mostrarVistaPrevia() {
+    preview.classList.remove('hidden');
+    previewBody.innerHTML = '';
+
+    const datosSimulados = [
+      { nombre: 'Camilo Pardo', doc: '1032456789', correo: 'camilo@sena.edu.co', programa: 'ADSO' },
+      { nombre: 'Paola Jiménez', doc: '1098765432', correo: 'paola@sena.edu.co', programa: 'Contabilidad' },
+      { nombre: 'Sergio López', doc: '1023456789', correo: 'sergio@sena.edu.co', programa: 'Electricidad' }
+    ];
+
+    datosSimulados.forEach(item => {
+      const fila = `<tr>
+        <td class="py-2 px-4">${item.nombre}</td>
+        <td class="py-2 px-4">${item.doc}</td>
+        <td class="py-2 px-4">${item.correo}</td>
+        <td class="py-2 px-4">${item.programa}</td>
+      </tr>`;
+      previewBody.insertAdjacentHTML('beforeend', fila);
+    });
+  }
+</script>
+{% endblock %}

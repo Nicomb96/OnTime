@@ -1,0 +1,93 @@
+{% extends 'ontime_app/base.html' %}
+{% load static %}
+
+{% block title %}Generar QR y Código - OnTime{% endblock %}
+
+{% block content %}
+<!-- Botón de flecha para retroceder -->
+<div class="mt-6 text-center">
+  <a href="javascript:history.back()" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
+      <i class="fas fa-arrow-left mr-2"></i>
+      Regresar
+  </a>
+</div>
+<div class="bg-gray-100 shadow-xl rounded-3xl p-10 w-full max-w-4xl mx-auto mt-16 animate__animated animate__fadeIn">
+
+  <h2 class="text-4xl font-extrabold text-center text-gray-800 mb-2 animate-pulse">Generar QR y Código</h2>
+  <p class="text-center text-gray-600 mb-8">Crea un código de asistencia único para tu sesión y compártelo con tus aprendices.</p>
+
+  <!-- Sección de QR y Código -->
+  <div class="grid md:grid-cols-2 gap-10 items-center">
+    
+    <!-- Vista del QR -->
+    <div class="bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center justify-center hover:shadow-2xl transition">
+      <div id="qr-container" class="w-64 h-64 bg-gray-50 border-4 border-dashed border-green-400 rounded-xl flex items-center justify-center mb-4">
+        <img id="qr-image" src="{% static 'images/qr.png' %}" alt="QR generado" class="w-48 h-48 opacity-70">
+      </div>
+      <p class="text-sm text-gray-500 text-center">Este QR debe ser escaneado por los aprendices para registrar la asistencia.</p>
+    </div>
+
+    <!-- Código dinámico -->
+    <div class="bg-green-50 rounded-2xl p-6 shadow-lg flex flex-col justify-center hover:shadow-2xl transition">
+      <h3 class="text-xl font-bold text-green-700 mb-4 text-center">Código generado:</h3>
+
+      <div class="bg-white rounded-lg border border-green-400 p-4 text-center text-xl font-mono tracking-widest text-green-700 shadow-inner animate-pulse" id="codigo-dinamico">
+        ABC123
+      </div>
+
+      <div class="flex justify-center mt-4 gap-4">
+        <button onclick="copiarCodigo()" class="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition flex items-center gap-2">
+          <i class="fas fa-copy"></i> Copiar Código
+        </button>
+        <button onclick="regenerarCodigo()" class="bg-white text-green-700 border border-green-500 px-6 py-2 rounded-md hover:bg-green-50 transition flex items-center gap-2">
+          <i class="fas fa-sync-alt"></i> Regenerar
+        </button>
+      </div>
+
+      <p id="copiar-msg" class="text-center text-sm text-gray-500 mt-3"></p>
+
+      <!-- Fecha y hora generadas dinámicamente -->
+      <div class="mt-6 text-center text-gray-500 text-sm">
+        <p>Generado el: <span id="fechaHora"></span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botón Finalizar -->
+  <div class="text-center mt-10">
+    <a href={% url "inicio_instructor" %} class="bg-green-700 text-white px-8 py-3 rounded-xl hover:bg-green-800 transition shadow-lg">
+      <i class="fas fa-check-circle mr-2"></i>Finalizar
+    </a>
+  </div>
+
+</div>
+
+<script>
+  // Función para copiar el código
+  function copiarCodigo() {
+    const codigo = document.getElementById("codigo-dinamico").innerText;
+    navigator.clipboard.writeText(codigo).then(() => {
+      document.getElementById("copiar-msg").innerText = "✅ Código copiado al portapapeles.";
+    }).catch(err => {
+      document.getElementById("copiar-msg").innerText = "❌ No se pudo copiar el código.";
+    });
+  }
+
+  // Función para regenerar el código
+  function regenerarCodigo() {
+    // Simulamos regeneración (en un caso real vendría del backend)
+    const nuevoCodigo = Math.random().toString(36).substring(2, 8).toUpperCase();
+    document.getElementById("codigo-dinamico").innerText = nuevoCodigo;
+    document.getElementById("copiar-msg").innerText = "";
+    // También se podría cambiar el QR dinámicamente
+    document.getElementById("qr-image").src = "{% static 'images/qr_placeholder.png' %}?v=" + Date.now(); // Simula recarga del QR
+  }
+
+  // Mostrar fecha y hora actual
+  document.addEventListener("DOMContentLoaded", function () {
+    const fechaHora = new Date().toLocaleString();
+    document.getElementById("fechaHora").textContent = fechaHora;
+  });
+</script>
+
+{% endblock %}

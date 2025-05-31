@@ -1,0 +1,140 @@
+{% extends 'ontime_app/base.html' %}
+{% load static %}
+
+{% block title %}Historial - OnTime{% endblock %}
+
+{% block content %}
+<div class="mt-6 text-center">
+  <a href="{% url 'inicio_admin' %}" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
+    <i class="fas fa-arrow-left mr-2"></i> Volver al Panel
+  </a>
+</div>
+
+<div class="container mx-auto px-4 lg:px-8 mt-8">
+  <div class="bg-gray-50 rounded-3xl shadow-lg p-6 md:p-10">
+    <h2 class="text-2xl font-bold text-gray-500 mb-6 text-center animate-pulse">🕒 Historial del Sistema</h2>
+
+    <!-- Filtros -->
+    <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+      <input id="filtro-usuario" type="text" placeholder="Filtrar por usuario..." class="w-full md:w-1/3 px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+      <input id="filtro-fecha" type="date" class="w-full md:w-1/3 px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-500">
+      <select id="filtro-accion" class="w-full md:w-1/3 px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-500">
+        <option value="">Filtrar por acción</option>
+        <option value="Edición de perfil">Edición de perfil</option>
+        <option value="Registro de asistencia">Registro de asistencia</option>
+        <option value="Carga masiva">Carga masiva</option>
+        <option value="Creación de usuario">Creación de usuario</option>
+        <option value="Eliminación de usuario">Eliminación de usuario</option>
+        <option value="Creación de alerta">Creación de alerta</option>
+        <option value="Ingreso al sistema">Ingreso al sistema</option>
+        <option value="Cambio de contraseña">Cambio de contraseña</option>
+      </select>
+    </div>
+
+    <div class="overflow-x-auto" style="max-height: 400px; overflow-y: auto;">
+      <table id="tabla-excel" class="min-w-full bg-white border border-gray-300 rounded-xl shadow-md">
+        <thead class="bg-green-100 text-green-800 text-left text-sm sticky top-0 z-10">
+          <tr>
+            <th class="py-3 px-4">Fecha</th>
+            <th class="py-3 px-4">Usuario</th>
+            <th class="py-3 px-4">Acción</th>
+            <th class="py-3 px-4">Detalle</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-historial" class="text-sm text-gray-700">
+          <!-- Se carga por JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="text-center mt-6 space-x-4">
+      <button id="btn-ver-mas" class="bg-green-600 text-white px-6 py-2 rounded-xl shadow hover:bg-green-700 transition duration-300">
+        <i class="fas fa-angle-down mr-2"></i> Ver más
+      </button>
+      <button onclick="exportarExcel()" class="bg-green-600 text-white px-6 py-2 rounded-xl shadow hover:bg-blue-700 transition duration-300">
+        <i class="fas fa-file-excel mr-2"></i> Exportar a Excel
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const historial = [
+    {fecha: "2025-04-22 10:15", usuario: "admin01", accion: "Edición de perfil", detalle: "Cambió la foto de perfil."},
+    {fecha: "2025-04-22 09:45", usuario: "instructor22", accion: "Registro de asistencia", detalle: "Registró asistencia de ficha 2654321."},
+    {fecha: "2025-04-21 17:30", usuario: "aprendiz99", accion: "Ingreso al sistema", detalle: "Inicio de sesión exitoso."},
+    {fecha: "2025-04-21 16:10", usuario: "admin01", accion: "Carga masiva", detalle: "Subió 150 aprendices nuevos."},
+    {fecha: "2025-04-20 11:00", usuario: "admin01", accion: "Creación de usuario", detalle: "Agregó nuevo instructor: jlopez."},
+    {fecha: "2025-04-19 14:55", usuario: "instructor22", accion: "Edición de horario", detalle: "Modificó horario de clase Ficha 2541234."},
+    {fecha: "2025-04-18 08:00", usuario: "aprendiz21", accion: "Cambio de contraseña", detalle: "Actualizó su contraseña desde perfil."},
+    {fecha: "2025-04-17 13:20", usuario: "admin01", accion: "Eliminación de usuario", detalle: "Eliminó aprendiz: jramirez."},
+    {fecha: "2025-04-17 09:00", usuario: "admin01", accion: "Creación de alerta", detalle: "Generó alerta de inasistencia masiva."},
+    {fecha: "2025-04-16 15:40", usuario: "instructor11", accion: "Ver asistencia", detalle: "Consultó asistencia ficha 2523456."},
+    {fecha: "2025-04-15 10:10", usuario: "aprendiz12", accion: "Ingreso al sistema", detalle: "Inicio de sesión exitoso."},
+    {fecha: "2025-04-14 11:11", usuario: "admin02", accion: "Creación de alerta", detalle: "Alerta de retrasos repetitivos."},
+    {fecha: "2025-04-13 12:20", usuario: "instructor22", accion: "Registro de asistencia", detalle: "Marcó asistencia de ficha 987654."},
+  ];
+
+  let indice = 0;
+  const cantidadPorCarga = 5;
+  const tabla = document.getElementById('tabla-historial');
+  const btnVerMas = document.getElementById('btn-ver-mas');
+
+  function cargarHistorial() {
+    let cargados = 0;
+    for (let i = indice; i < historial.length && cargados < cantidadPorCarga; i++) {
+      const item = historial[i];
+      if (pasaFiltros(item)) {
+        const row = `
+          <tr class="border-t">
+            <td class="py-3 px-4">${item.fecha}</td>
+            <td class="py-3 px-4">${item.usuario}</td>
+            <td class="py-3 px-4">${item.accion}</td>
+            <td class="py-3 px-4">${item.detalle}</td>
+          </tr>`;
+        tabla.insertAdjacentHTML('beforeend', row);
+        cargados++;
+      }
+      indice++;
+    }
+    if (indice >= historial.length) {
+      btnVerMas.classList.add('hidden');
+    }
+  }
+
+  function pasaFiltros(item) {
+    const usuario = document.getElementById('filtro-usuario').value.toLowerCase();
+    const fecha = document.getElementById('filtro-fecha').value;
+    const accion = document.getElementById('filtro-accion').value;
+    return (!usuario || item.usuario.toLowerCase().includes(usuario)) &&
+           (!fecha || item.fecha.includes(fecha)) &&
+           (!accion || item.accion === accion);
+  }
+
+  document.getElementById('filtro-usuario').addEventListener('input', filtrar);
+  document.getElementById('filtro-fecha').addEventListener('change', filtrar);
+  document.getElementById('filtro-accion').addEventListener('change', filtrar);
+
+  function filtrar() {
+    tabla.innerHTML = '';
+    indice = 0;
+    cargarHistorial();
+    if (indice >= historial.length) {
+      btnVerMas.classList.add('hidden');
+    } else {
+      btnVerMas.classList.remove('hidden');
+    }
+  }
+
+  btnVerMas.addEventListener('click', cargarHistorial);
+
+  function exportarExcel() {
+    let tabla = document.getElementById("tabla-excel");
+    let wb = XLSX.utils.table_to_book(tabla, {sheet: "Historial"});
+    XLSX.writeFile(wb, "historial.xlsx");
+  }
+
+  window.addEventListener('DOMContentLoaded', cargarHistorial);
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+{% endblock %}

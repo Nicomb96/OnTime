@@ -1,0 +1,110 @@
+{% extends 'ontime_app/base.html' %}
+{% load static %}
+
+{% block title %}Gestión de Horarios - OnTime{% endblock %}
+
+{% block content %}
+<div class="mt-6 text-center">
+    <a href="{% url 'inicio_admin' %}" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
+        <i class="fas fa-arrow-left mr-2"></i> Volver al Panel
+    </a>
+</div>
+
+<div class="container mx-auto px-4 lg:px-8 mt-8">
+    <div class="bg-gray-50 rounded-3xl shadow-lg p-6 md:p-10">
+        <h2 class="text-2xl font-bold text-gray-500 mb-6 text-center animate-pulse">📅 Gestión de Horarios</h2>
+
+        <!-- Buscador y filtros -->
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+            <input id="buscador" type="text" placeholder="Buscar por clase, instructor, día..." class="w-full md:w-1/2 px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+            
+            <select id="filtro-dia" class="w-full md:w-1/4 px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-500">
+                <option value="">Filtrar por Día</option>
+                <option value="Lunes">Lunes</option>
+                <option value="Martes">Martes</option>
+                <option value="Miércoles">Miércoles</option>
+                <option value="Jueves">Jueves</option>
+                <option value="Viernes">Viernes</option>
+            </select>
+
+            <button class="bg-green-600 text-white px-6 py-2 rounded-xl shadow hover:bg-green-700 transition duration-300">
+                <i class="fas fa-plus mr-2"></i> Nuevo Horario
+            </button>
+        </div>
+
+        <!-- Tabla con scroll -->
+        <div class="overflow-x-auto" style="max-height: 400px; overflow-y: auto;" id="tabla-container">
+            <table class="min-w-full bg-white border border-gray-300 rounded-xl shadow-md">
+                <thead class="bg-green-100 text-green-800 text-left text-sm sticky top-0 z-10">
+                    <tr>
+                        <th class="py-3 px-4">Clase</th>
+                        <th class="py-3 px-4">Instructor</th>
+                        <th class="py-3 px-4">Día</th>
+                        <th class="py-3 px-4">Hora</th>
+                        <th class="py-3 px-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-horarios" class="text-sm text-gray-700">
+                    <!-- Fila base para JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Botón Ver más -->
+        <div class="text-center mt-6">
+            <button id="btn-ver-mas" class="bg-green-600 text-white px-6 py-2 rounded-xl shadow hover:bg-green-700 transition duration-300">
+                <i class="fas fa-angle-down mr-2"></i> Ver más
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const horarios = [
+        {clase: "Matemáticas", instructor: "Profe Mario", dia: "Lunes", hora: "08:00 - 10:00"},
+        {clase: "Biología", instructor: "Profe Laura", dia: "Martes", hora: "10:00 - 12:00"},
+        {clase: "Programación", instructor: "Profe Jairo", dia: "Miércoles", hora: "14:00 - 16:00"},
+        {clase: "Física", instructor: "Profe Ana", dia: "Jueves", hora: "08:00 - 10:00"},
+        {clase: "Inglés", instructor: "Profe Lina", dia: "Viernes", hora: "13:00 - 15:00"},
+        {clase: "Contabilidad", instructor: "Profe David", dia: "Lunes", hora: "10:00 - 12:00"},
+        {clase: "Diseño", instructor: "Profe Karen", dia: "Martes", hora: "08:00 - 10:00"},
+        {clase: "Redes", instructor: "Profe Andrés", dia: "Miércoles", hora: "15:00 - 17:00"},
+    ];
+
+    let indice = 0;
+    const cantidadPorCarga = 4;
+    const tabla = document.getElementById('tabla-horarios');
+    const btnVerMas = document.getElementById('btn-ver-mas');
+
+    function cargarHorarios() {
+        const total = horarios.length;
+        for (let i = indice; i < indice + cantidadPorCarga && i < total; i++) {
+            const h = horarios[i];
+            const row = `
+                <tr class="border-t">
+                    <td class="py-3 px-4">${h.clase}</td>
+                    <td class="py-3 px-4">${h.instructor}</td>
+                    <td class="py-3 px-4">${h.dia}</td>
+                    <td class="py-3 px-4">${h.hora}</td>
+                    <td class="py-3 px-4 space-x-2">
+                        <button class="text-blue-600 hover:underline"><i class="fas fa-edit"></i> Editar</button>
+                        <button class="text-red-600 hover:underline" onclick="eliminarHorario(this)"><i class="fas fa-trash"></i> Eliminar</button>
+                    </td>
+                </tr>`;
+            tabla.insertAdjacentHTML('beforeend', row);
+        }
+        indice += cantidadPorCarga;
+        if (indice >= horarios.length) {
+            btnVerMas.classList.add('hidden');
+        }
+    }
+
+    function eliminarHorario(btn) {
+        const fila = btn.closest("tr");
+        fila.remove();
+    }
+
+    btnVerMas.addEventListener('click', cargarHorarios);
+    window.addEventListener('DOMContentLoaded', cargarHorarios);
+</script>
+{% endblock %}

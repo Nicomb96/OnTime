@@ -1,0 +1,278 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}OnTime{% endblock %}</title>
+
+    <!-- Estilos -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
+    <link rel="icon" href="{% static 'images/info' %}" />
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to bottom right, #2a2b2e, #1e3d28),
+                        url("{% static 'images/textura_institucional.png' %}");
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-blend-mode: overlay;
+            color: #e5e7eb;
+        }
+
+        .text-primary { color: #34d399; }
+        .bg-primary { background-color: #065f46; }
+
+        .header {
+            background: linear-gradient(to right, #1e3d28, #065f46);
+            padding: 20px 0;
+            animation: slideDown 1s ease-out;
+        }
+
+        .footer {
+            background: #022c22;
+            color: #bbf7d0;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        .header .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+        }
+
+        .header .logo img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .header nav a {
+            color: white;
+            font-size: 1rem;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .header nav a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .form-container {
+            background-color: rgba(0, 0, 0, 0.6);
+            border-radius: 12px;
+            box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.5);
+            padding: 7rem;
+            max-width: 1200px;
+            margin-top: 5rem;
+            width: 100%;
+            animation: slideUp 1s ease-out;
+        }
+
+        #particles-js {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .button-primary {
+            background-color: #34d399;
+            color: white;
+            border-radius: 8px;
+            padding: 12px 24px;
+            text-transform: uppercase;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+
+        .button-primary:hover { background-color: #065f46; }
+
+        .footer a {
+            color: #bbf7d0;
+            text-decoration: underline;
+        }
+
+        @keyframes slideDown {
+            0% { opacity: 0; transform: translateY(-100px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .header .logo,
+        .header nav a {
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @media (max-width: 768px) {
+            .header .logo {
+                font-size: 1.5rem;
+                text-align: center;
+                width: 100%;
+            }
+
+            .header .logo img {
+                margin-right: 0;
+                width: 35px;
+                height: 35px;
+            }
+
+            .footer {
+                font-size: 0.85rem;
+            }
+        }
+
+        .role-option i {
+            margin-right: 10px;
+        }
+    </style>
+
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body class="flex flex-col min-h-screen">
+    <div id="particles-js"></div>
+
+    <!-- Header -->
+    <header class="header shadow-md mb-6">
+        <div class="container mx-auto px-6 flex justify-between items-center">
+            <a href="{% url 'inicio' %}" class="flex items-center space-x-3">
+                <img src="{% static 'images/.png' %}" class="h-10 w-10 rounded-full" alt="Logo" />
+                <span class="text-3xl font-bold text-white">OnTime</span>
+            </a>
+            <div class="relative flex items-center space-x-4">
+                <a href="{% url 'inicio' %}" class="text-white hover:bg-white hover:bg-opacity-10 px-4 py-2 rounded-lg transition flex items-center">
+                    <i class="fas fa-home mr-2"></i>Inicio
+                </a>
+
+                <!-- Menú Rol -->
+                <div class="relative">
+                    <button id="toggleMenu" class="text-white hover:bg-white hover:bg-opacity-10 px-4 py-2 rounded-lg transition flex items-center">
+                        <i class="fas fa-user-circle mr-2"></i>Roles
+                        <i class="fas fa-chevron-down ml-2"></i>
+                    </button>
+                    <div id="menuDropdown" class="hidden absolute right-0 mt-2 w-48 rounded-lg shadow-lg z-50" style="background-color: #e5e7eb;">
+                        <a href="{% url 'inicio_aprendiz' %}" class="text-gray-600 block px-4 py-3 hover:bg-green-500 hover:bg-opacity-20 text-white flex items-center role-option">
+                            <i class="fas fa-user-graduate"></i>Aprendiz
+                        </a>
+                        <a href="{% url 'inicio_instructor' %}" class="text-gray-600 block px-4 py-3 hover:bg-green-500 hover:bg-opacity-20 text-white flex items-center role-option">
+                            <i class="fas fa-chalkboard-teacher"></i>Instructor
+                        </a>
+                        <a href="{% url 'inicio_admin' %}" class="text-gray-600 block px-4 py-3 hover:bg-green-500 hover:bg-opacity-20 text-white flex items-center role-option">
+                            <i class="fas fa-user-shield"></i>Admin
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Menú Entregables -->
+                <div class="relative">
+                    <button id="toggleEntregables" class="text-white hover:bg-white hover:bg-opacity-10 px-4 py-2 rounded-lg transition flex items-center">
+                        <i class="fas fa-folder-open mr-2"></i>Entregables
+                        <i class="fas fa-chevron-down ml-2"></i>
+                    </button>
+                    <div id="entregablesDropdown" class="hidden absolute right-0 mt-2 w-60 rounded-lg shadow-lg z-50" style="background-color: #e5e7eb;">
+                        <a href="{% url 'normalizacion_mr' %}" class="text-gray-700 block px-4 py-3 hover:bg-green-500 hover:bg-opacity-20 text-white">Normalización MR</a>
+                        <a href="{% url 'modelo_relacional' %}" class="text-gray-700 block px-4 py-3 hover:bg-green-500 hover:bg-opacity-20 text-white">Modelo Relacional</a>
+                        <a href="{% url 'diccionario_datos' %}" class="text-gray-700 block px-4 py-3 hover:bg-green-500 hover:bg-opacity-20 text-white">Diccionario de Datos</a>
+                        <a href="{% url 'sentencias' %}" class="text-gray-700 block px-4 py-3 hover:bg-green-500 hover:bg-opacity-20 text-white">Sentencias DDL y DML</a>
+                        <a href="{% url 'diagrama_clases' %}" class="text-gray-700 block px-4 py-3 hover:bg-green-500 hover:bg-opacity-20 text-white">Diagrama de Clases</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main -->
+    <main class="flex-grow mb-16">
+        <div class="flex justify-center px-6">
+            <div class="form-container w-full">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer text-xs">
+        <p>&copy; 2025 OnTime. Todos los derechos reservados.</p>
+        <p>Ficha: 3069239 - Grupo #1 - Proyecto SENA</p>
+        <div class="mt-3">
+            <a href="{% url 'acerca_de' %}" class="hover:underline mx-2">Acerca de</a>
+            <a href="{% url 'contacto' %}" class="hover:underline mx-2">Contacto</a>
+            <a href="{% url 'ayuda' %}" class="hover:underline mx-2">Ayuda</a>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        particlesJS("particles-js", {
+            "particles": {
+                "number": { "value": 60, "density": { "enable": true, "value_area": 800 }},
+                "color": { "value": "#34d399" },
+                "shape": { "type": "circle" },
+                "opacity": { "value": 0.4, "random": true },
+                "size": { "value": 4, "random": true },
+                "move": { "enable": true, "speed": 1, "direction": "none", "out_mode": "out" }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": {
+                    "onhover": { "enable": false },
+                    "onclick": { "enable": false }
+                }
+            },
+            "retina_detect": true
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const toggleMenu = document.getElementById("toggleMenu");
+            const menuDropdown = document.getElementById("menuDropdown");
+            const toggleEntregables = document.getElementById("toggleEntregables");
+            const entregablesDropdown = document.getElementById("entregablesDropdown");
+
+            if (toggleMenu && menuDropdown) {
+                toggleMenu.addEventListener("click", function (e) {
+                    e.stopPropagation();
+                    menuDropdown.classList.toggle("hidden");
+                    entregablesDropdown.classList.add("hidden");
+                });
+            }
+
+            if (toggleEntregables && entregablesDropdown) {
+                toggleEntregables.addEventListener("click", function (e) {
+                    e.stopPropagation();
+                    entregablesDropdown.classList.toggle("hidden");
+                    menuDropdown.classList.add("hidden");
+                });
+            }
+
+            document.addEventListener("click", function (e) {
+                if (!menuDropdown.contains(e.target) && !toggleMenu.contains(e.target)) {
+                    menuDropdown.classList.add("hidden");
+                }
+                if (!entregablesDropdown.contains(e.target) && !toggleEntregables.contains(e.target)) {
+                    entregablesDropdown.classList.add("hidden");
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
