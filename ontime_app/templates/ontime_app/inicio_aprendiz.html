@@ -19,18 +19,18 @@
         <!-- Tarjeta de bienvenida con animación -->
         <div class="relative bg-white/70 backdrop-blur-md shadow-xl rounded-3xl p-6 md:p-10 flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10 mb-12 border border-gray-300 transition-all duration-500 transform hover:scale-105">
             <!-- Imagen de perfil -->
-            <div class="relative transition-all duration-500 transform hover:scale-110">
-                <img src="{% static 'images/foto_p.jpg' %}" alt="Foto de perfil" class="h-36 w-36 md:h-40 md:w-40 rounded-full border-4 border-green-600 shadow-md object-cover">
+             <div class="relative transition-all duration-500 transform hover:scale-110">
+                <img src="{% if usuario.foto_perfil %}{{ usuario.foto_perfil.url }}{% else %}{% static 'images/foto_p.png' %}{% endif %}" alt="Foto de perfil" class="h-36 w-36 md:h-40 md:w-40 rounded-full border-4 border-green-600 shadow-md object-cover">
                 <div class="absolute -bottom-2 -right-2 bg-green-600 text-white text-xs font-bold rounded-full px-3 py-1 shadow-md">
-                    Apre..
+                    {{ usuario.get_rol_display|slice:":8" }}
                 </div>
             </div>
 
             <!-- Info del usuario -->
             <div class="flex-1 text-center md:text-left">
-                <h2 class="text-3xl font-extrabold text-green-800 mb-2 animate-pulse">¡Hola, Aprendiz 👋!</h2>
+                <h2 class="text-3xl font-extrabold text-green-800 mb-2 animate-pulse">¡Hola, {{ usuario.first_name }} {{ usuario.last_name }} 👋!</h2>
                 <p class="text-base text-gray-600 mb-1">Bienvenido a tu espacio personal en <span class="font-semibold text-green-700">OnTime</span></p>
-                <p class="text-sm text-gray-500">Correo: aprendiz@gmail.com</p>
+                <p class="text-sm text-gray-500">Correo: {{ usuario.email }}</p>
 
                 <div class="mt-4">
                     <a href="{% url 'editar_perfil_2' %}" class="inline-block bg-green-600 text-white px-5 py-2 rounded-xl shadow hover:bg-green-700 transition duration-300">
@@ -98,10 +98,10 @@
 
         <!-- Acciones extra -->
         <div class="mt-12 flex flex-col sm:flex-row justify-center sm:justify-between items-center gap-6 text-center">
-            <a href="{% url 'recuperar_contraseña' %}" class="text-green-600 hover:underline flex items-center gap-2">
+            <a href="{% url 'password_reset' %}" class="text-green-600 hover:underline flex items-center gap-2">
                 <i class="fas fa-key"></i> Cambiar Contraseña
             </a>
-            <a id="logout-link" href="{% url 'inicio' %}" class="text-red-600 hover:underline flex items-center gap-2">
+            <a id="logout-link" href="{% url 'cerrar_sesion' %}" class="text-red-600 hover:underline flex items-center gap-2">
                 <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
             </a>
         </div>
@@ -132,16 +132,5 @@
         }
     }
 </style>
-
-<script>
-    document.getElementById('logout-link').addEventListener('click', function(event) {
-        event.preventDefault(); // Evitar el comportamiento por defecto del enlace
-        document.getElementById('loading-spinner').classList.remove('hidden'); // Mostrar el spinner
-
-        setTimeout(function() {
-            window.location.href = '{% url "inicio" %}'; // Redirigir a la pantalla de inicio después de un breve retardo
-        }, 2000); // Espera de 2 segundos para mostrar el spinner
-    });
-</script>
 
 {% endblock %}

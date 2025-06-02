@@ -1,10 +1,10 @@
 from django.urls import path
 from . import views
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path("iniciar_sesion/", views.iniciar_sesion, name="iniciar_sesion"),
     path("registrarse/", views.registrarse, name="registrarse"),
-    path("recuperar_contraseña/", views.recuperar_contraseña, name="recuperar_contraseña"),
     path("cambiar_contraseña/", views.cambiar_contraseña, name="cambiar_contraseña"),
     path("contraseña_actualizada/", views.contraseña_actualizada, name="contraseña_actualizada"),
     path("inicio_aprendiz/", views.inicio_aprendiz, name="inicio_aprendiz"),
@@ -23,6 +23,7 @@ urlpatterns = [
     path("ayuda/", views.ayuda, name="ayuda"),
     path("acerca_de/", views.acerca_de, name="acerca_de"),
     path("editar_perfil_2/", views.editar_perfil_2, name="editar_perfil_2"),
+    path('recuperar_contraseña/', views.recuperar_contraseña, name='recuperar_contraseña'),
 
     # Pantallas extra en el sistema
     
@@ -45,4 +46,31 @@ urlpatterns = [
     path("control_asistencia/", views.control_asistencia, name="control_asistencia"),
     path("carga_masiva/", views.carga_masiva, name="carga_masiva"),
     path("historial/", views.historial, name="historial"),
+
+    # Cerrae sesión
+    path('cerrar_sesion/', views.cerrar_sesion, name='cerrar_sesion'),
+
+    # Eliminar foto de perfil
+    path('eliminar-foto/', views.eliminar_foto_perfil, name='eliminar_foto_perfil'),
+
+    # Vista que manda el correo
+    path('password_reset/', auth_views.PasswordResetView.as_view(
+        template_name='ontime_app/recuperar_contraseña.html',
+        email_template_name='registration/password_reset_email.html',
+        subject_template_name='registration/password_reset_subject.txt',
+        success_url='/password_reset/done/'
+    ), name='password_reset'),
+
+    path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(
+        template_name='ontime_app/registration/password_reset_done.html'
+    ), name='password_reset_done'),
+
+    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
+        template_name='ontime_app/registration/password_reset_confirm.html',
+        success_url='/reset/done/'
+    ), name='password_reset_confirm'),
+
+    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(
+        template_name='ontime_app/registration/password_reset_complete.html'
+    ), name='password_reset_complete'),
 ]
