@@ -3,18 +3,20 @@ from django.dispatch import receiver
 from .models import UsuarioPersonalizado
 import os
 
+
+# Al borrar un usuario, también se borra la foto de perfil si existe
 @receiver(post_delete, sender=UsuarioPersonalizado)
 def borrar_foto_al_borrar_usuario(sender, instance, **kwargs):
-    # Cuando borran un usuario, borra la foto de perfil si existe
     if instance.foto_perfil:
         if os.path.isfile(instance.foto_perfil.path):
             os.remove(instance.foto_perfil.path)
 
+
+# Al actualizar la foto de perfil, borra la vieja para no llenar el disco
 @receiver(pre_save, sender=UsuarioPersonalizado)
 def borrar_foto_vieja_al_actualizar(sender, instance, **kwargs):
-    # Cuando actualizan la foto de perfil, borra la vieja para no llenar el disco
     if not instance.pk:
-        return  # Si es un usuario nuevo, no hay vieja foto que borrar
+        return  # Usuario nuevo, no hay foto vieja que borrar
 
     try:
         old_usuario = UsuarioPersonalizado.objects.get(pk=instance.pk)

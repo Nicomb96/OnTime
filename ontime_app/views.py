@@ -2,25 +2,29 @@ import os
 from .forms import RegistroForm, EditarPerfilForm, MiFormularioCambioContrasena
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.cache import never_cache
-from django.contrib.auth import logout
 from django.conf import settings
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.models import User
 from django.utils.http import urlsafe_base64_decode
-from django.views import View
 from django.utils.encoding import force_str
+from django.views import View
+from django.contrib.auth.views import PasswordResetView
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
 
 # Vista para iniciar sesión
 def iniciar_sesion(request):
+    correo = None
+
     if request.method == 'POST':
-        correo = request.POST.get('correo')
+        username = request.POST.get('correo')
         contrasena = request.POST.get('contrasena')
 
-        user = authenticate(request, email=correo, password=contrasena)
+        user = authenticate(request, username=username, password=contrasena)
 
         if user is not None:
             login(request, user)
@@ -33,13 +37,16 @@ def iniciar_sesion(request):
             elif rol == 'admin':
                 return redirect('inicio_admin')
             else:
+                # En caso de que alguien tenga un rol que no exista
                 messages.error(request, 'Rol desconocido, contacta al admin.')
+                logout(request)
+                return redirect('iniciar_sesion')
         else:
             messages.error(request, 'Correo o contraseña incorrectos.')
+            correo = request.POST.get('correo')
+            return render(request, 'ontime_app/iniciar_sesion.html', {'correo': correo})
 
-        return render(request, 'ontime_app/iniciar_sesion.html', {'correo': correo})
-
-    return render(request, 'ontime_app/iniciar_sesion.html')
+    return render(request, 'ontime_app/iniciar_sesion.html', {'correo': correo})
 
 # Vista para registrarse
 def registrarse(request): 
@@ -97,7 +104,7 @@ def recuperar_contraseña(request):
 
 # Vista para mostrar mensaje de contraseña actualizada
 class MiPasswordResetConfirmView(View):
-    template_name = 'recuperar_contraseña_confirm.html'  # Aquí usas tu template
+    template_name = 'recuperar_contraseña_confirm.html'  # Usa esta plantilla para cambiar la contraseña
 
     def get_user(self, uidb64):
         try:
@@ -113,7 +120,7 @@ class MiPasswordResetConfirmView(View):
             form = MiFormularioCambioContrasena(user=user)
             return render(request, self.template_name, {'form': form})
         else:
-            return render(request, 'password_reset_invalid.html')  # Ponle una plantilla para token inválido
+            return render(request, 'password_reset_invalid.html')  # Plantilla para token inválido
 
     def post(self, request, uidb64=None, token=None):
         user = self.get_user(uidb64)
@@ -121,13 +128,32 @@ class MiPasswordResetConfirmView(View):
             form = MiFormularioCambioContrasena(user=user, data=request.POST)
             if form.is_valid():
                 form.save()
-                return redirect('contraseña_actualizada')  # O a donde quieras mandar
+                return redirect('contraseña_actualizada')  # Redirige a pantalla de confirmación
             else:
                 return render(request, self.template_name, {'form': form})
         else:
             return render(request, 'password_reset_invalid.html')
-        
-# Vista para cambiar contraseña
+
+# Vista personalizada para el envío del correo de recuperación
+class CustomPasswordResetView(PasswordResetView):
+    def send_mail(self, subject_template_name, email_template_name,
+                  context, from_email, to_email, html_email_template_name=None):
+
+        # Renderizar asunto del correo
+        subject = render_to_string(subject_template_name, context).strip()
+
+        # Renderizar cuerpo en texto plano
+        body = render_to_string(email_template_name, context)
+
+        # Renderizar cuerpo en HTML
+        html_body = render_to_string(html_email_template_name or email_template_name, context)
+
+        # Construir y enviar correo con versión HTML y texto plano
+        email_message = EmailMultiAlternatives(subject, body, from_email, [to_email])
+        email_message.attach_alternative(html_body, 'text/html')
+        email_message.send()
+
+# Vista para cambiar contraseña con token (confirmación)
 def cambiar_contrasena(request, uidb64, token):
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
@@ -148,26 +174,26 @@ def cambiar_contrasena(request, uidb64, token):
     else:
         return render(request, 'ontime_app/password_reset_invalid.html')
 
-# Vista para cambiar la contraseña
+# Vista para mostrar formulario para cambiar la contraseña
 def cambiar_contraseña(request):
     return render(request, 'ontime_app/cambiar_contraseña.html')
 
-# Vista contraseña actualizada
+# Vista para mostrar mensaje de contraseña actualizada
 def contraseña_actualizada(request):
     return render(request, 'ontime_app/contraseña_actualizada.html')
 
-# Vista para la página de inicio del aprendiz
+# Vistas para la página de inicio según rol
+
+# Inicio aprendiz
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def inicio_aprendiz(request):
     if request.user.rol != 'aprendiz':
-        return redirect('inicio')  # Lo sacamos si no es aprendiz
-    usuario = request.user  # Obtenemos el usuario actual
-    return render(request, 'ontime_app/inicio_aprendiz.html', {
-        'usuario': usuario  # Lo mandamos al template
-    })
+        return redirect('inicio')
+    usuario = request.user
+    return render(request, 'ontime_app/inicio_aprendiz.html', {'usuario': usuario})
 
-# Vista para la página de registrar asistencia QR
+# Registrar asistencia (aprendiz)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def registrar_asistencia(request):
@@ -175,7 +201,7 @@ def registrar_asistencia(request):
         return redirect('inicio')
     return render(request, 'ontime_app/registrar_asistencia.html')
 
-# Vista para la página de notificaciones
+# Notificaciones (aprendiz)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def notificaciones_1(request):
@@ -183,7 +209,7 @@ def notificaciones_1(request):
         return redirect('inicio')
     return render(request, 'ontime_app/notificaciones_1.html')
 
-# Vista para la página de historial
+# Historial (aprendiz)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def historial_1(request):
@@ -191,7 +217,7 @@ def historial_1(request):
         return redirect('inicio')
     return render(request, 'ontime_app/historial_1.html')
 
-# Vista para la página de justificativos
+# Justificativos (aprendiz)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def justificativos_1(request):
@@ -199,7 +225,7 @@ def justificativos_1(request):
         return redirect('inicio')
     return render(request, 'ontime_app/justificativos_1.html')
 
-# Vista para la página de editar perfil 1
+# Editar perfil 1 (aprendiz)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def editar_perfil_1(request):
@@ -207,7 +233,7 @@ def editar_perfil_1(request):
         return redirect('inicio')
     return render(request, 'ontime_app/editar_perfil_1.html')
 
-# Vista para la página de inicio del instructor
+# Inicio instructor
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def inicio_instructor(request):
@@ -215,7 +241,7 @@ def inicio_instructor(request):
         return redirect('inicio')
     return render(request, 'ontime_app/inicio_instructor.html')
 
-# Vista para la página de generar qr
+# Generar QR (instructor)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def generar_qr(request):
@@ -223,7 +249,7 @@ def generar_qr(request):
         return redirect('inicio')
     return render(request, 'ontime_app/generar_qr.html')
 
-# Vista para la página de consultar asistencias
+# Consultar asistencias (instructor)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def consultar_asistencias(request):
@@ -231,7 +257,7 @@ def consultar_asistencias(request):
         return redirect('inicio')
     return render(request, 'ontime_app/consultar_asistencias.html')
 
-# Vista para la página de alertas
+# Alertas (instructor)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def alertas(request):
@@ -239,7 +265,7 @@ def alertas(request):
         return redirect('inicio')
     return render(request, 'ontime_app/alertas.html')
 
-# Vista para la página de gestion de reportes
+# Gestión de reportes (instructor)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def gestion_reportes(request):
@@ -247,23 +273,23 @@ def gestion_reportes(request):
         return redirect('inicio')
     return render(request, 'ontime_app/gestion_reportes.html')
 
-# Vista para la página de inicio
+# Inicio general (sin login)
 def inicio(request):
     return render(request, 'ontime_app/inicio.html')
 
-# Vista para la página de contacto
+# Contacto
 def contacto(request):
     return render(request, 'ontime_app/contacto.html')
 
-# Vista para la página de ayuda
+# Ayuda
 def ayuda(request):
     return render(request, 'ontime_app/ayuda.html')
 
-# Vista para la página de acerca de
+# Acerca de
 def acerca_de(request):
     return render(request, 'ontime_app/acerca_de.html')
 
-# Vista para la página de editar perfil 2
+# Editar perfil 2 (aprendiz)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def editar_perfil_2(request):
@@ -281,43 +307,47 @@ def editar_perfil_2(request):
 
     return render(request, 'ontime_app/editar_perfil_2.html', {'form': form, 'usuario': usuario})
 
-# Patallas extra en el sistema
+# Pantallas extra
 
-# Vista para la página de modelo relacional
 def modelo_relacional(request):
     return render(request, 'ontime_app/modelo_relacional.html')
 
-# Vista para la página de normalizacion del MR
 def normalizacion_mr(request):
     return render(request, 'ontime_app/normalizacion_mr.html')
 
-# Vista para la página de diccionario datos
 def diccionario_datos(request):
     return render(request, 'ontime_app/diccionario_datos.html')
 
-# Vista para la página de diccionario datoss
 def diccionario_datoss(request):
     return render(request, 'ontime_app/diccionario_datoss.html')
 
-# Vista para la página de sentencias DDL Y DML
 def sentencias(request):
     return render(request, 'ontime_app/sentencias.html')
 
-# Vista para la página de diagrama de clases
 def diagrama_clases(request):
     return render(request, 'ontime_app/diagrama_clases.html')
 
 # Pantalla admin
 
-# vista para la página de inicio del administrador
-@never_cache
-@login_required(login_url='iniciar_sesion')
-def inicio_admin(request):
-    if request.user.rol != 'admin':
-        return redirect('inicio')
-    return render(request, 'ontime_app/inicio_admin.html')
+# Inicio admin
+def es_admin(user):
+    return user.is_authenticated and user.rol == 'admin'
 
-# vista para la página de gestion de usuarios
+@login_required(login_url='iniciar_sesion')
+@user_passes_test(es_admin, login_url='iniciar_sesion')
+def inicio_admin(request):
+    form = RegistroForm()
+
+    if request.method == 'POST':
+        form = RegistroForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, '¡Usuario creado correctamente!')
+            return redirect('inicio_admin')
+
+    return render(request, 'ontime_app/inicio_admin.html', {'form': form})
+
+# Gestión usuarios (admin)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def gestion_usuarios(request):
@@ -325,7 +355,7 @@ def gestion_usuarios(request):
         return redirect('inicio')
     return render(request, 'ontime_app/gestion_usuarios.html')
 
-# vista para la página de ver asistencias
+# Ver asistencias (admin)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def ver_asistencias(request):
@@ -333,7 +363,7 @@ def ver_asistencias(request):
         return redirect('inicio')
     return render(request, 'ontime_app/ver_asistencias.html')
 
-# vista para la página de gestion de alertas
+# Gestión alertas (admin)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def gestion_alertas(request):
@@ -341,7 +371,7 @@ def gestion_alertas(request):
         return redirect('inicio')
     return render(request, 'ontime_app/gestion_alertas.html')
 
-# vista para la página de reportes
+# Reportes (admin)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def reportes(request):
@@ -349,7 +379,7 @@ def reportes(request):
         return redirect('inicio')
     return render(request, 'ontime_app/reportes.html')
 
-# vista para la página editar perfil admin
+# Editar perfil admin
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def editar_perfil_adm(request):
@@ -357,7 +387,7 @@ def editar_perfil_adm(request):
         return redirect('inicio')
     return render(request, 'ontime_app/editar_perfil_adm.html')
 
-# vista para la página gestion de horarios
+# Gestión horarios (admin)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def gestion_horarios(request):
@@ -365,7 +395,7 @@ def gestion_horarios(request):
         return redirect('inicio')
     return render(request, 'ontime_app/gestion_horarios.html')
 
-# vista para la página de control de asistencia
+# Control asistencia (admin)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def control_asistencia(request):
@@ -373,7 +403,7 @@ def control_asistencia(request):
         return redirect('inicio')
     return render(request, 'ontime_app/control_asistencia.html')
 
-# vista para la página de cargar masiva
+# Carga masiva (admin)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def carga_masiva(request):
@@ -381,10 +411,31 @@ def carga_masiva(request):
         return redirect('inicio')
     return render(request, 'ontime_app/carga_masiva.html')
 
-# vista para la página de historial
+# Historial (admin)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def historial(request):
     if request.user.rol != 'admin':
         return redirect('inicio')
     return render(request, 'ontime_app/historial.html')
+
+def es_admin(user):
+    return user.is_authenticated and user.rol == 'admin'
+
+# Crear usuarios (admin)
+@login_required
+@user_passes_test(es_admin)
+def crear_usuario(request):
+    if request.method == 'POST':
+        form = RegistroForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Usuario creado con éxito.")
+            return redirect('nombre_de_la_ruta_a_donde_quieras_llevar_al_usuario')
+        else:
+            messages.error(request, "Algo está mal con los datos, revisa bien.")
+    else:
+        form = RegistroForm()
+    
+    return render(request, 'ontime_app/crear_usuario.html', {'form': form})
+

@@ -15,17 +15,19 @@
     <div class="bg-gray-50 rounded-3xl shadow-lg p-6 md:p-10 max-w-2xl mx-auto">
         <h2 class="text-2xl font-bold text-gray-600 mb-6 text-center animate-pulse">Editar Perfil</h2>
 
-        <!-- Foto actual del perfil -->
+        <!-- Vista previa de la foto de perfil -->
         <div class="flex flex-col items-center mb-4">
-            <img id="preview-foto" src="{% if user.foto_perfil %}{{ user.foto_perfil.url }}{% else %}{% static 'images/foto_p.png' %}{% endif %}"
-                alt="Foto de perfil" class="w-32 h-32 rounded-full border-4 border-green-400 object-cover mb-2">
-            
-            <!-- Botón Cambiar foto -->
+            <img
+                id="preview-foto"
+                src="{% if user.foto_perfil %}{{ user.foto_perfil.url }}{% else %}{% static 'images/foto_p.png' %}{% endif %}"
+                alt="Foto de perfil"
+                class="w-32 h-32 rounded-full border-4 border-green-400 object-cover mb-2"
+            >
+
             <label for="foto_perfil" class="text-sm text-gray-600 cursor-pointer hover:underline mb-1">
                 Cambiar foto de perfil
             </label>
-            
-            <!-- Botón Eliminar foto (si hay una) -->
+
             {% if user.foto_perfil %}
             <form method="POST" action="{% url 'eliminar_foto_perfil' %}">
                 {% csrf_token %}
@@ -36,37 +38,29 @@
             {% endif %}
         </div>
 
-        <!-- Formulario Django -->
         <form method="POST" enctype="multipart/form-data" class="space-y-4 text-gray-700">
             {% csrf_token %}
             {{ form.non_field_errors }}
 
             <div class="grid grid-cols-1 gap-4">
-                <!-- Nombre -->
                 {{ form.first_name.label_tag }}
                 {{ form.first_name|add_class:"px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600" }}
 
-                <!-- Apellido -->
                 {{ form.last_name.label_tag }}
                 {{ form.last_name|add_class:"px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600" }}
 
-                <!-- Correo -->
                 {{ form.email.label_tag }}
                 {{ form.email|add_class:"px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600" }}
 
-                <!-- Input oculto para foto -->
                 <input type="file" name="foto_perfil" id="foto_perfil" accept="image/*" class="hidden">
 
-                <!-- Contraseña nueva -->
                 {{ form.password.label_tag }}
                 {{ form.password|add_class:"px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600" }}
 
-                <!-- Confirmar contraseña -->
                 {{ form.confirmar_password.label_tag }}
                 {{ form.confirmar_password|add_class:"px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600" }}
             </div>
 
-            <!-- Botón de guardar -->
             <div class="mt-6 text-center">
                 <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded-xl shadow hover:bg-green-700 transition duration-300">
                     <i class="fas fa-save mr-2"></i> Guardar Cambios
@@ -89,4 +83,3 @@
     });
 </script>
 {% endblock %}
-

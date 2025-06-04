@@ -1,4 +1,4 @@
-{% extends 'ontime_app/base.html' %}
+{% extends 'ontime_app/base.html' %} 
 {% load static %}
 
 {% block title %}Gestión de Usuarios - OnTime{% endblock %}
@@ -11,7 +11,7 @@
 </div>
 
 <div class="container mx-auto px-4 lg:px-8 mt-8">
-    <div class="bg-gray-50 rounded-3xl shadow-lg p-6 md:p-10"> <!-- Cambio aquí -->
+    <div class="bg-gray-50 rounded-3xl shadow-lg p-6 md:p-10">
         <h2 class="text-2xl font-bold text-gray-500 mb-6 text-center animate-pulse">👥 Gestión de Usuarios</h2>
 
         <!-- Buscador y filtros -->
@@ -30,7 +30,7 @@
             </button>
         </div>
 
-        <!-- Tabla de usuarios con scroll -->
+        <!-- Tabla de usuarios -->
         <div class="overflow-x-auto" style="max-height: 400px; overflow-y: auto;" id="tabla-container">
             <table class="min-w-full bg-white border border-gray-300 rounded-xl shadow-md">
                 <thead class="bg-green-100 text-green-800 text-left text-sm sticky top-0 z-10">
@@ -46,6 +46,54 @@
                     <!-- Fila base para JS -->
                 </tbody>
             </table>
+        </div>
+
+        <!-- Gestión de Roles y Permisos -->
+        <div class="mt-12 bg-white rounded-3xl shadow-lg p-6 md:p-10">
+            <h3 class="text-xl font-bold text-gray-600 mb-4 text-center">🔐 Gestión de Roles y Permisos</h3>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Crear Rol -->
+                <div>
+                    <h4 class="font-semibold text-gray-500 mb-2">➕ Crear Rol</h4>
+                    <div class="flex space-x-2">
+                        <input type="text" placeholder="Nombre del rol" class="w-full px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+                        <button class="bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700 transition">
+                            Crear
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Asignar Permisos -->
+                <div>
+                    <h4 class="font-semibold text-gray-500 mb-2">🛡️ Asignar Permisos</h4>
+                    <div class="space-y-2">
+                        <select class="w-full px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-500">
+                            <option value="">Seleccionar Rol</option>
+                            <option value="Aprendiz">Aprendiz</option>
+                            <option value="Instructor">Instructor</option>
+                            <option value="Administrador">Administrador</option>
+                        </select>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" class="rounded text-green-600"> <span>Crear</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" class="rounded text-green-600"> <span>Editar</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" class="rounded text-green-600"> <span>Eliminar</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" class="rounded text-green-600"> <span>Ver</span>
+                            </label>
+                        </div>
+                        <button class="mt-2 bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700 transition">
+                            Guardar Permisos
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Botón Ver más -->
@@ -115,3 +163,4 @@
     window.addEventListener('DOMContentLoaded', cargarUsuarios);
 </script>
 {% endblock %}
+

@@ -51,20 +51,19 @@
 
     <!-- Correo -->
     <div class="mb-6">
-      <label for="correo" class="block text-sm font-medium text-gray-800 mb-1">Correo Electrónico</label>
+      <label for="correo" class="block text-sm font-medium text-gray-800 mb-1">Correo</label>
       <input 
-  type="email" 
-  id="correo" 
-  name="correo" 
-  required
-  autocomplete="email"
-  oninput="validarCorreo()"
-  placeholder="Ingresa tu correo electrónico"
-  value="{{ correo|default:'' }}"
-  class="mt-1 block w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 text-gray-800"
-/>
+        type="text" 
+        id="correo" 
+        name="correo" 
+        required
+        autocomplete="username"
+        placeholder="Ingresa tu correo"
+        value="{{ correo|default:'' }}"
+        class="mt-1 block w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 text-gray-800"
+      />
       <p id="errorCorreo" class="text-red-600 text-sm mt-1 hidden">
-        Ingresa un correo válido.
+        El correo es obligatorio.
       </p>
     </div>
 
@@ -117,9 +116,6 @@
     <div class="flex justify-between items-center text-sm mt-6">
       <a href="{% url 'recuperar_contraseña' %}" class="text-green-600 underline">¿Contraseña olvidada? Recuperar</a>
     </div>
-    <div class="flex justify-between items-center text-sm mt-6">
-      <a href="{% url 'registrarse' %}" class="text-green-600 underline">¿Sin cuenta? Crear una</a>
-    </div>
   </form>
 </div>
 
@@ -142,10 +138,7 @@
     const correo = document.getElementById("correo").value;
     const errorCorreo = document.getElementById("errorCorreo");
 
-    // Regex más robusto para validar correo
-    const regexCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!regexCorreo.test(correo)) {
+    if (!correo.trim()) {
       errorCorreo.classList.remove("hidden");
     } else {
       errorCorreo.classList.add("hidden");
@@ -167,10 +160,10 @@
     validarCorreo();
     validarContrasena();
 
-    const correo = document.getElementById("correo").value;
+    const correo = document.getElementById("correo").value.trim();
     const contrasena = document.getElementById("contrasena").value;
 
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo) && contrasena.length >= 8;
+    return correo !== '' && contrasena.length >= 8;
   }
 </script>
 {% endblock %}

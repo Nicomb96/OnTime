@@ -6,25 +6,20 @@
 {% block content %}
   <div class="bg-gray-100 shadow-xl rounded-3xl p-10 w-full max-w-lg mx-auto mt-23 animate__animated animate__fadeIn animate__faster">
     
-    <!-- Título con mensaje atractivo -->
+    <!-- Título con mensaje -->
     <div class="text-center mb-8">
       <h2 class="text-6xl font-extrabold text-gray-800 mb-4 tracking-tight animate-pulse">
         ¡Bienvenido a OnTime!
       </h2>
-      <p class="text-gray-600 text-xl opacity-90">La forma más rápida y eficiente de manejar tu asistencia. Inicia sesión o crea una cuenta para empezar.</p>
+      <p class="text-gray-600 text-xl opacity-90">La forma más rápida y eficiente de manejar tu asistencia. Inicia sesión para empezar.</p>
     </div>
 
-    <!-- Botones en estilo más organizado -->
+    <!-- Botones en estilo -->
     <div class="flex flex-col gap-6 mt-10">
       
       <!-- Botón Iniciar sesión -->
       <a href="{% url 'iniciar_sesion' %}" class="w-full text-center bg-green-600 text-white py-4 rounded-lg shadow-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105 focus:ring-4 focus:ring-green-500 focus:outline-none">
         Iniciar sesión
-      </a>
-
-      <!-- Botón Crear cuenta -->
-      <a href="{% url 'registrarse' %}" class="w-full text-center bg-white text-green-600 py-4 rounded-lg border-2 border-green-600 hover:bg-green-50 transition-all duration-300 transform hover:scale-105 shadow-lg focus:ring-4 focus:ring-green-500 focus:outline-none">
-        Crear cuenta
       </a>
   </div>
 {% endblock %}

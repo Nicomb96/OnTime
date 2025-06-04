@@ -42,7 +42,8 @@
                 <a href={% url "recuperar_contraseña" %} class="text-green-600 hover:underline text-sm mt-2">
                     <i class="fas fa-key mr-1"></i> Cambiar Contraseña
                 </a>
-                <a id="logout-link" href="{% url 'inicio' %}" class="text-red-600 hover:underline text-sm">
+                <!-- Cambio aquí: link simple sin JS ni spinner -->
+                <a href="{% url 'cerrar_sesion' %}" class="text-red-600 hover:underline text-sm">
                     <i class="fas fa-sign-out-alt mr-1"></i> Cerrar Sesión
                 </a>
                 <!-- Modo oscuro -->
@@ -56,7 +57,7 @@
         <div class="w-full lg:w-2/3 space-y-8">
 
             <!-- Bienvenida -->
-            <div class="text-2xl font-semibold text-green-700 animate-fade- animate-pulse">
+            <div class="text-2xl font-semibold text-green-700 animate-fade-in animate-pulse">
                 ¡Hola Admin, que tengas un gran día! 😎
             </div>
 
@@ -97,6 +98,16 @@
             <!-- Herramientas Adicionales -->
             <div class="bg-white rounded-3xl shadow-md p-6 animate-slide-up">
                 <h3 class="text-xl font-semibold text-green-800 mb-4">🛠 Herramientas Adicionales</h3>
+
+                <!-- Mensajes -->
+                {% if messages %}
+                  {% for message in messages %}
+                    <div class="bg-green-100 text-green-800 p-4 rounded-lg shadow mb-4">
+                        {{ message }}
+                    </div>
+                  {% endfor %}
+                {% endif %}
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div class="bg-white rounded-xl shadow-md p-4 text-center hover:shadow-lg transition transform hover:-translate-y-1">
                         <a href={% url "gestion_horarios" %} class="text-green-600 font-semibold block">
@@ -131,11 +142,6 @@
     </div>
 </div>
 
-<!-- Spinner -->
-<div id="loading-spinner" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
-    <div class="w-16 h-16 border-4 border-t-4 border-green-600 border-solid rounded-full animate-spin"></div>
-</div>
-
 <!-- Scripts -->
 <script>
     function actualizarHora() {
@@ -146,44 +152,9 @@
     setInterval(actualizarHora, 1000);
     actualizarHora();
 
-    document.getElementById('logout-link').addEventListener('click', function(event) {
-        event.preventDefault();
-        document.getElementById('loading-spinner').classList.remove('hidden');
-        setTimeout(function() {
-            window.location.href = '{% url "inicio" %}';
-        }, 2000);
-    });
-
     document.getElementById('modo-oscuro').addEventListener('click', function () {
         document.getElementById('admin-panel').classList.toggle('bg-gray-800');
         document.getElementById('admin-panel').classList.toggle('text-white');
     });
 </script>
-
-<!-- Estilos adicionales -->
-<style>
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes slideUp {
-        from { opacity: 0; transform: translateY(30px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .animate-fade-in {
-        animation: fadeIn 1s ease-out;
-    }
-
-    .animate-slide-up {
-        animation: slideUp 0.8s ease-out;
-    }
-
-    @media (max-width: 640px) {
-        .grid-cols-4 {
-            grid-template-columns: 1fr !important;
-        }
-    }
-</style>
 {% endblock %}

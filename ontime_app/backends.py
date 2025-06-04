@@ -2,9 +2,11 @@ from django.contrib.auth.backends import ModelBackend
 from .models import UsuarioPersonalizado
 
 class EmailBackend(ModelBackend):
+    # Autentica usuario usando email y contraseña
     def authenticate(self, request, email=None, password=None, **kwargs):
         if email is None or password is None:
             return None
+
         try:
             user = UsuarioPersonalizado.objects.get(email=email)
         except UsuarioPersonalizado.DoesNotExist:
@@ -12,4 +14,5 @@ class EmailBackend(ModelBackend):
 
         if user.check_password(password) and self.user_can_authenticate(user):
             return user
+        
         return None

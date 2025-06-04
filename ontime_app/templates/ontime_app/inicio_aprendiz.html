@@ -4,22 +4,25 @@
 {% block title %}Perfil - OnTime{% endblock %}
 
 {% block content %}
-<!-- Botón de flecha para retroceder -->
+
+<!-- Botón para regresar -->
 <div class="mt-6 text-center">
     <a href="javascript:history.back()" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
         <i class="fas fa-arrow-left mr-2"></i>
         Regresar
     </a>
-  </div>
+</div>
+
 <div class="container mx-auto px-4 lg:px-8 mt-12">
 
     <!-- Panel principal -->
     <div class="bg-gray-100 rounded-3xl shadow-lg p-10 max-w-7xl mx-auto">
 
-        <!-- Tarjeta de bienvenida con animación -->
+        <!-- Tarjeta de bienvenida -->
         <div class="relative bg-white/70 backdrop-blur-md shadow-xl rounded-3xl p-6 md:p-10 flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10 mb-12 border border-gray-300 transition-all duration-500 transform hover:scale-105">
+            
             <!-- Imagen de perfil -->
-             <div class="relative transition-all duration-500 transform hover:scale-110">
+            <div class="relative transition-all duration-500 transform hover:scale-110">
                 <img src="{% if usuario.foto_perfil %}{{ usuario.foto_perfil.url }}{% else %}{% static 'images/foto_p.png' %}{% endif %}" alt="Foto de perfil" class="h-36 w-36 md:h-40 md:w-40 rounded-full border-4 border-green-600 shadow-md object-cover">
                 <div class="absolute -bottom-2 -right-2 bg-green-600 text-white text-xs font-bold rounded-full px-3 py-1 shadow-md">
                     {{ usuario.get_rol_display|slice:":8" }}
@@ -40,7 +43,7 @@
             </div>
         </div>
 
-        <!-- Barra de progreso con animación -->
+        <!-- Sección de progreso -->
         <div class="bg-green-50 rounded-2xl p-6 mb-10 shadow-inner border border-green-200 animate-fade-in">
             <div class="flex flex-col md:flex-row items-center justify-between gap-6">
 
@@ -53,12 +56,11 @@
                     <p class="mt-2 text-sm text-gray-600">Has asistido al <strong>86%</strong> de tus clases. ¡Sigue así! 💪</p>
                 </div>
 
-                <!-- Medalla de insignia -->
+                <!-- Medalla -->
                 <div class="flex flex-col items-center text-green-700">
                     <i class="fas fa-medal text-6xl mb-2 text-yellow-500 drop-shadow-md animate-pulse"></i>
                     <p class="font-bold text-md">Nivel: Constante</p>
                 </div>
-
             </div>
 
             <!-- Frase motivadora -->
@@ -67,9 +69,8 @@
             </div>
         </div>
 
-        <!-- Accesos rápidos con hover -->
+        <!-- Accesos rápidos -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Tarjetas con hover -->
             <div class="bg-white rounded-2xl shadow-md p-6 text-center hover:shadow-xl transition transform hover:-translate-y-1">
                 <a href={% url "registrar_asistencia" %} class="text-green-600 text-xl font-semibold">
                     <i class="fas fa-check-circle text-4xl mb-3"></i><br> Registrar Asistencia
@@ -107,7 +108,6 @@
         </div>
 
     </div>
-
 </div>
 
 <!-- Spinner de carga -->
@@ -115,21 +115,16 @@
     <div class="w-16 h-16 border-4 border-t-4 border-green-600 border-solid rounded-full animate-spin"></div>
 </div>
 
+<!-- Estilos -->
 <style>
-    /* Animación de la barra de progreso */
     .progress-bar {
-        width: 0%; /* Comienza desde 0 */
-        animation: progress 2s forwards; /* Animación con duración de 2 segundos */
+        width: 0%;
+        animation: progress 2s forwards;
     }
 
-    /* Definimos la animación */
     @keyframes progress {
-        0% {
-            width: 0%;
-        }
-        100% {
-            width: 86%; /* Esto puede ser variable según lo que quieras mostrar */
-        }
+        0% { width: 0%; }
+        100% { width: 86%; }
     }
 </style>
 
