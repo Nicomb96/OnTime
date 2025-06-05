@@ -1,9 +1,11 @@
+
 {% extends 'ontime_app/base.html' %}
 {% load static %}
 
 {% block title %}Perfil - OnTime{% endblock %}
 
 {% block content %}
+
 <!-- Botón de flecha para retroceder -->
 <div class="mt-6 text-center">
     <a href="javascript:history.back()" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
@@ -89,10 +91,7 @@
         </div>
 
         <!-- Acciones extra -->
-        <div class="mt-12 flex flex-col sm:flex-row justify-center sm:justify-between items-center gap-6 text-center">
-            <a href="{% url 'recuperar_contraseña' %}" class="text-green-600 hover:underline flex items-center gap-2">
-                <i class="fas fa-key"></i> Cambiar Contraseña
-            </a>
+        <br>
             <a id="logout-link" href="{% url 'cerrar_sesion' %}" class="text-red-600 hover:underline flex items-center gap-2">
                 <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
             </a>
@@ -100,17 +99,21 @@
     </div>
 </div>
 
+<!-- Spinner de carga -->
 <div id="loading-spinner" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
     <div class="w-16 h-16 border-4 border-t-4 border-green-600 border-solid rounded-full animate-spin"></div>
 </div>
 
-<script>
-    document.getElementById('logout-link').addEventListener('click', function(event) {
-        event.preventDefault();
-        document.getElementById('loading-spinner').classList.remove('hidden');
-        setTimeout(function() {
-            window.location.href = '{% url "inicio" %}';
-        }, 2000);
-    });
-</script>
+<!-- Estilos -->
+<style>
+    .progress-bar {
+        width: 0%;
+        animation: progress 2s forwards;
+    }
+
+    @keyframes progress {
+        0% { width: 0%; }
+        100% { width: 86%; }
+    }
+</style>
 {% endblock %}

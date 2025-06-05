@@ -15,6 +15,9 @@ from django.views import View
 from django.contrib.auth.views import PasswordResetView
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
+from django.http import JsonResponse
+from .models import Asistencia
+from django.utils import timezone
 
 # Vista para iniciar sesión
 def iniciar_sesion(request):
@@ -68,7 +71,7 @@ def registrarse(request):
 @never_cache
 def cerrar_sesion(request):
     logout(request)
-    return redirect('iniciar_sesion')
+    return redirect('inicio')
 
 # Vista para eliminar foto de perfil
 @never_cache
@@ -104,7 +107,7 @@ def recuperar_contraseña(request):
 
 # Vista para mostrar mensaje de contraseña actualizada
 class MiPasswordResetConfirmView(View):
-    template_name = 'recuperar_contraseña_confirm.html'  # Usa esta plantilla para cambiar la contraseña
+    template_name = 'recuperar_contraseña_confirm.html'  # Plantilla para cambiar la contraseña
 
     def get_user(self, uidb64):
         try:
@@ -439,3 +442,22 @@ def crear_usuario(request):
     
     return render(request, 'ontime_app/crear_usuario.html', {'form': form})
 
+# Vistas para la página de registar asistencia
+@login_required
+def registrar_asistencia(request):
+    if request.method == 'POST':
+        codigo = request.POST.get('codigo')
+        print("🔍 Código recibido:", codigo)
+
+        if codigo == "ABC123":
+            Asistencia.objects.create(
+                aprendiz=request.user,
+                codigo=codigo,
+                fecha=timezone.now(),
+                validada=True
+            )
+            return JsonResponse({'status': 'ok', 'msg': 'Asistencia registrada'})
+        else:
+            return JsonResponse({'status': 'error', 'msg': 'Código inválido'})
+
+    return render(request, 'ontime_app/registrar_asistencia.html')

@@ -12,19 +12,17 @@
   </a>
 </div>
 <div class="bg-gray-100 shadow-xl rounded-3xl p-10 w-full max-w-lg mx-auto mt-18 animate__animated animate__fadeIn animate__faster">
-  
+
   <h2 class="text-4xl font-extrabold text-gray-800 animate-pulse text-center mb-6">Registrar Asistencia</h2>
   <p class="text-center text-gray-600 mb-8">Escanea el código QR generado por tu instructor para registrar tu asistencia.</p>
 
-  <form id="formRegistrar" method="POST" onsubmit="return validarFormulario()">
+  <form id="formRegistrar" method="POST">
     {% csrf_token %}
 
-    <!-- Área para escanear el QR -->
+    <!-- Escáner real de QR -->
     <div class="mb-6 flex justify-center">
-      <div class="w-full max-w-xs border-4 border-dashed border-green-500 rounded-xl p-4 bg-white shadow-xl hover:shadow-2xl transition duration-300">
-        <div id="scanner" class="w-full h-56 bg-gray-50 flex flex-col items-center justify-center rounded-xl cursor-pointer">
-          <img src="{% static 'images/qr.png' %}" alt="QR Placeholder" class="h-44 w-44 mb-2 opacity-70">
-        </div>
+      <div class="w-full max-w-xs border-4 border-dashed border-green-500 rounded-xl p-4 bg-white shadow-xl">
+        <div id="reader" class="w-full h-56 rounded-xl"></div>
       </div>
     </div>
 
@@ -37,8 +35,8 @@
       <p class="mt-2 text-green-600 font-medium">Procesando escaneo...</p>
     </div>
 
-    <!-- Botón que inicia el escaneo -->
-    <div class="text-center mb-6">
+    <!-- Botón que inicia el escaneo (queda oculto pero no se elimina) -->
+    <div class="text-center mb-6 hidden">
       <button id="btn-simular-escaneo" type="button" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition shadow-md">
         <i class="fas fa-qrcode mr-2"></i>Iniciar Escaneo
       </button>
@@ -47,10 +45,10 @@
     <!-- Campo para ingresar código manual -->
     <div class="max-w-md mx-auto mb-4 bg-gray-100 p-4 rounded-xl shadow-md">
       <h3 class="text-lg font-semibold text-center text-green-700 mb-2">¿No puedes escanear? Ingresa el código aquí:</h3>
-      <form id="codigo-form" class="flex flex-col sm:flex-row gap-2">
-        <input type="text" id="codigo-manual" placeholder="Ej: ABC123" class="flex-1 px-4 py-2 rounded-md border border-green-400 focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 bg-white" required>
-        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition">Enviar</button>
-      </form>
+      <div id="codigo-form" class="flex flex-col sm:flex-row gap-2">
+        <input type="text" id="codigo-manual" name="codigo" placeholder="Ej: ABC123" class="flex-1 px-4 py-2 rounded-md border border-green-400 focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 bg-white" required>
+        <button id="btn-enviar-codigo" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition">Enviar</button>
+      </div>
       <p id="codigo-msg" class="text-sm text-center text-gray-500 mt-2"></p>
     </div>
 
@@ -62,48 +60,77 @@
   </form>
 </div>
 
-<!-- Script para simular el escaneo del QR -->
-<script>
-  // Botón "Iniciar Escaneo"
-  document.getElementById("btn-simular-escaneo").addEventListener("click", function () {
-    const loader = document.getElementById("loader");
-    loader.classList.remove("hidden");  // Mostrar el loader
+<script src="https://unpkg.com/html5-qrcode@2.3.7/html5-qrcode.min.js"></script>
 
-    // Simula el escaneo y redirige después
-    setTimeout(() => {
-      loader.classList.add("hidden");  // Ocultar el loader
-      alert("✅ ¡Asistencia registrada exitosamente!");
-      window.location.href = "/notificaciones_1";  // Redirige a notificaciones
-    }, 2000);  // Ajusta el tiempo a 2 segundos o lo que necesites
+<script>
+  const msg = document.getElementById("codigo-msg");
+  const loader = document.getElementById("loader");
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  function registrarAsistencia(codigo) {
+    loader.classList.remove("hidden");
+
+    fetch("{% url 'registrar_asistencia' %}", {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": getCookie("csrftoken"),
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: `codigo=${encodeURIComponent(codigo)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+      loader.classList.add("hidden");
+      if (data.status === "ok") {
+        msg.textContent = "✅ Asistencia registrada con éxito.";
+        msg.className = "text-green-600 text-sm text-center mt-2";
+        setTimeout(() => {
+          window.location.href = "/notificaciones_1";
+        }, 2000);
+      } else {
+        msg.textContent = "❌ " + data.msg;
+        msg.className = "text-red-500 text-sm text-center mt-2";
+      }
+    });
+  }
+
+  // Escaneo automático con la cámara
+  const html5QrCode = new Html5Qrcode("reader");
+  const qrConfig = { fps: 10, qrbox: 250 };
+
+  html5QrCode.start(
+    { facingMode: "environment" },
+    qrConfig,
+    (decodedText) => {
+      html5QrCode.stop();  // Detiene la cámara al detectar
+      registrarAsistencia(decodedText.trim());
+    },
+    (errorMessage) => {
+      console.log("Error escaneando:", errorMessage);
+    }
+  ).catch(err => {
+    console.error("No se pudo iniciar la cámara:", err);
   });
 
-  // Validar código manual cuando se presiona "Enviar"
-  document.getElementById("codigo-form").addEventListener("submit", function (e) {
+  // Envío de código manual
+  document.getElementById("btn-enviar-codigo").addEventListener("click", function (e) {
     e.preventDefault();
     const codigo = document.getElementById("codigo-manual").value.trim();
-    const msg = document.getElementById("codigo-msg");
-    const loader = document.getElementById("loader");
-
-    // Simulando validación del código
-    if (codigo === "ABC123") { // Si el código es "ABC123", es válido
-      msg.textContent = "✅ Código válido. Registrando asistencia...";
-      msg.classList.remove("text-red-500");
-      msg.classList.add("text-green-600");
-
-      // Mostrar loader y redirigir después de 2 segundos
-      loader.classList.remove("hidden");  // Mostrar el loader
-
-      setTimeout(() => {
-        loader.classList.add("hidden");  // Ocultar el loader
-        window.location.href = "/notificaciones_1";  // Redirige a notificaciones
-      }, 2000);  // Ajusta el tiempo a 2 segundos o lo que necesites
-    } else {
-      // Si el código no es válido, muestra mensaje de error
-      msg.textContent = "❌ Código inválido o caducado.";
-      msg.classList.remove("text-green-600");
-      msg.classList.add("text-red-500");
-    }
+    registrarAsistencia(codigo);
   });
 </script>
-
 {% endblock %}

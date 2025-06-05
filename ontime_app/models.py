@@ -2,8 +2,9 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models.signals import post_delete, pre_save
 from django.dispatch import receiver
+from django.conf import settings
+from datetime import datetime
 import os
-
 
 class UsuarioPersonalizado(AbstractUser):
     # Define los roles posibles para el usuario
@@ -49,3 +50,15 @@ def eliminar_foto_anterior(sender, instance, **kwargs):
     if foto_anterior and foto_anterior != nueva_foto:
         if os.path.isfile(foto_anterior.path):
             os.remove(foto_anterior.path)
+
+# Models de Asitencia
+class Asistencia(models.Model):
+    aprendiz = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    codigo = models.CharField(max_length=100)
+    fecha = models.DateTimeField(default=datetime.now)
+    validada = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Asistencia de {self.aprendiz.username} - {self.codigo}"
+
+
