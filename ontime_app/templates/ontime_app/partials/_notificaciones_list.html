@@ -1,0 +1,25 @@
+{% for n in notificaciones %}
+  <div id="notificacion-{{ n.id }}" class="notification flex items-center bg-white shadow-md rounded-lg p-5 hover:shadow-lg transition-all duration-300 hover:bg-gray-50"
+       data-id="{{ n.id }}" data-date="{{ n.fecha|date:'Y-m-d' }}" data-type="{{ n.tipo }}">
+    <div class="flex-1 flex items-center">
+      <i class="fas fa-bell text-green-600 mr-4 text-xl"></i>
+      <div>
+        <h3 class="text-lg font-semibold text-green-600">{{ n.titulo }}</h3>
+        <p class="text-sm text-gray-600 mt-2">{{ n.descripcion }}</p>
+      </div>
+    </div>
+    <div class="ml-4 text-gray-500 text-sm">
+      <p>{{ n.fecha|timesince }} atrás</p>
+    </div>
+    <div class="flex space-x-4 ml-4">
+      <button class="text-sm text-gray-500 hover:text-gray-700 marcar-leida" data-id="{{ n.id }}" {% if n.leida %}disabled{% endif %}>
+        {% if n.leida %}Vista{% else %}Marcar como vista{% endif %}
+      </button>
+      <button class="text-red-500 text-sm hover:text-red-700 eliminar-notificacion" data-id="{{ n.id }}">
+        Eliminar
+      </button>
+    </div>
+  </div>
+{% empty %}
+  <p class="text-center text-gray-600">No hay notificaciones para esos filtros.</p>
+{% endfor %}

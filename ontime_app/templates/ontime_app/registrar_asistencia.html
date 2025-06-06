@@ -56,8 +56,15 @@
     <div class="text-center mt-6">
       <p class="text-sm text-gray-500">¿Problemas con el escaneo? Contacta al instructor o intenta desde otro dispositivo.</p>
     </div>
-
   </form>
+</div>
+
+<!-- Mostrar mensaje -->
+<div id="mensajeAsistencia" class="hidden fixed top-6 left-1/2 transform -translate-x-1/2 bg-white border border-green-500 text-green-700 px-4 py-2 rounded-xl shadow-lg text-sm z-50 transition-opacity duration-500"></div>
+
+<!-- Botón opcional para ir a notificaciones -->
+<div id="irNotificaciones" class="hidden mt-4 text-center">
+  <a href="{% url 'notificaciones_1' %}" class="text-green-600 hover:text-green-800 underline">Ver notificaciones</a>
 </div>
 
 <script src="https://unpkg.com/html5-qrcode@2.3.7/html5-qrcode.min.js"></script>
@@ -65,6 +72,8 @@
 <script>
   const msg = document.getElementById("codigo-msg");
   const loader = document.getElementById("loader");
+  const mensajeDiv = document.getElementById("mensajeAsistencia");
+  const irNotiDiv = document.getElementById("irNotificaciones");
 
   function getCookie(name) {
     let cookieValue = null;
@@ -95,16 +104,32 @@
     .then(response => response.json())
     .then(data => {
       loader.classList.add("hidden");
-      if (data.status === "ok") {
-        msg.textContent = "✅ Asistencia registrada con éxito.";
-        msg.className = "text-green-600 text-sm text-center mt-2";
-        setTimeout(() => {
-          window.location.href = "/notificaciones_1";
-        }, 2000);
-      } else {
-        msg.textContent = "❌ " + data.msg;
-        msg.className = "text-red-500 text-sm text-center mt-2";
-      }
+
+      mensajeDiv.textContent = data.msg;
+mensajeDiv.classList.remove("hidden");
+
+if (data.status === "ok") {
+  msg.textContent = "✅ Asistencia registrada con éxito.";
+  msg.className = "text-green-600 text-sm text-center mt-2";
+  mensajeDiv.classList.remove("border-red-500", "text-red-700");
+  mensajeDiv.classList.add("border-green-500", "text-green-700");
+  irNotiDiv.classList.remove('hidden');
+} else {
+  msg.textContent = "❌ " + data.msg;
+  msg.className = "text-red-500 text-sm text-center mt-2";
+  mensajeDiv.classList.remove("border-green-500", "text-green-700");
+  mensajeDiv.classList.add("border-red-500", "text-red-700");
+  irNotiDiv.classList.add('hidden');
+}
+
+// Ocultar suavemente
+setTimeout(() => {
+  mensajeDiv.classList.add("opacity-0");
+  setTimeout(() => {
+    mensajeDiv.classList.add("hidden");
+    mensajeDiv.classList.remove("opacity-0");
+  }, 500);
+}, 4000);
     });
   }
 

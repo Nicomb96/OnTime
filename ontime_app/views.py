@@ -1,6 +1,7 @@
 import os
 from .forms import RegistroForm, EditarPerfilForm, MiFormularioCambioContrasena
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -18,6 +19,8 @@ from django.template.loader import render_to_string
 from django.http import JsonResponse
 from .models import Asistencia
 from django.utils import timezone
+from .models import Notificacion
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 # Vista para iniciar sesión
 def iniciar_sesion(request):
@@ -205,12 +208,23 @@ def registrar_asistencia(request):
     return render(request, 'ontime_app/registrar_asistencia.html')
 
 # Notificaciones (aprendiz)
-@never_cache
-@login_required(login_url='iniciar_sesion')
+@login_required
 def notificaciones_1(request):
     if request.user.rol != 'aprendiz':
         return redirect('inicio')
-    return render(request, 'ontime_app/notificaciones_1.html')
+
+    usuario = request.user
+    notis = Notificacion.objects.filter(usuario=usuario).order_by('-fecha')
+    paginador = Paginator(notis, 5)  # 5 notis por página
+    try:
+        primera_pagina = paginador.page(1)
+    except EmptyPage:
+        primera_pagina = []
+
+    return render(request, 'ontime_app/notificaciones_1.html', {
+        'notificaciones': primera_pagina,
+        'hay_mas': primera_pagina.has_next() if primera_pagina else False
+    })
 
 # Historial (aprendiz)
 @never_cache
@@ -447,17 +461,88 @@ def crear_usuario(request):
 def registrar_asistencia(request):
     if request.method == 'POST':
         codigo = request.POST.get('codigo')
-        print("🔍 Código recibido:", codigo)
+        print("Código recibido:", codigo)
 
         if codigo == "ABC123":
-            Asistencia.objects.create(
+            # Crear la asistencia
+            asistencia = Asistencia.objects.create(
                 aprendiz=request.user,
                 codigo=codigo,
                 fecha=timezone.now(),
                 validada=True
             )
+
+            # Crear notificación automática
+            Notificacion.objects.create(
+                usuario=request.user,
+                titulo='Asistencia registrada',
+                descripcion=f'Se registró tu asistencia con el código {codigo} el {asistencia.fecha.strftime("%d/%m/%Y a las %H:%M")}',
+                tipo='registro'
+            )
+
             return JsonResponse({'status': 'ok', 'msg': 'Asistencia registrada'})
         else:
             return JsonResponse({'status': 'error', 'msg': 'Código inválido'})
 
     return render(request, 'ontime_app/registrar_asistencia.html')
+
+# Vistas para la página de Notificacion
+@login_required
+def notificaciones(request):
+    notificaciones = Notificacion.objects.filter(usuario=request.user).order_by('-fecha')
+    return render(request, 'ontime_app/notificaciones.html', {'notificaciones': notificaciones})
+
+# Vistas para marcar como leída y eliminar
+@require_POST
+def marcar_notificacion_leida(request, id):
+    notificacion = get_object_or_404(Notificacion, id=id, usuario=request.user)
+    notificacion.leida = True
+    notificacion.save()
+    return JsonResponse({'status': 'ok', 'id': id})
+
+@require_POST
+def eliminar_notificacion(request, id):
+    notificacion = get_object_or_404(Notificacion, id=id, usuario=request.user)
+    notificacion.delete()
+    return JsonResponse({'status': 'ok', 'id': id})
+
+# Vista para filtrar notificaciones
+@login_required
+def filtrar_notificaciones(request):
+    tipo = request.GET.get('tipo')
+    fecha = request.GET.get('fecha')
+
+    notificaciones = Notificacion.objects.filter(usuario=request.user)
+
+    if tipo:
+        notificaciones = notificaciones.filter(tipo=tipo)
+    if fecha:
+        notificaciones = notificaciones.filter(fecha__date=fecha)
+
+    html = render_to_string('ontime_app/partials/partial_notificaciones.html', {'notificaciones': notificaciones})
+    return JsonResponse({'html': html})
+
+# Vista que recibe la petición AJAX con el número de página, (paginar las notificaciones)
+def cargar_mas_notificaciones(request):
+    pagina = request.GET.get('pagina', 1)
+    tipo = request.GET.get('tipo')
+    fecha = request.GET.get('fecha')
+
+    notis = Notificacion.objects.filter(usuario=request.user).order_by('-fecha')
+
+    if tipo:
+        notis = notis.filter(tipo=tipo)
+    if fecha:
+        notis = notis.filter(fecha__date=fecha)
+
+    paginator = Paginator(notis, 10)
+
+    try:
+        notis_pagina = paginator.page(pagina)
+    except (EmptyPage, PageNotAnInteger):
+        return JsonResponse({'html': '', 'hay_mas': False})
+
+    html = render_to_string('ontime_app/partials/partial_notificaciones.html', {'notificaciones': notis_pagina})
+    hay_mas = notis_pagina.has_next()
+
+    return JsonResponse({'html': html, 'hay_mas': hay_mas})

@@ -61,4 +61,20 @@ class Asistencia(models.Model):
     def __str__(self):
         return f"Asistencia de {self.aprendiz.username} - {self.codigo}"
 
+# Models Notificacion
+class Notificacion(models.Model):
+    TIPOS = [
+        ('sistema', 'Del sistema'),
+        ('instructor', 'De instructores'),
+        ('asistencia', 'De registro de asistencias'),
+    ]
 
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    titulo = models.CharField(max_length=255)
+    descripcion = models.TextField()
+    tipo = models.CharField(max_length=20, choices=TIPOS)
+    fecha = models.DateTimeField(auto_now_add=True)
+    leida = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.titulo} - {self.usuario.username}"

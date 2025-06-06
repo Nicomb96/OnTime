@@ -4,187 +4,179 @@
 {% block title %}Notificaciones - OnTime{% endblock %}
 
 {% block content %}
-<!-- Botón de flecha para retroceder -->
+
 <div class="mt-6 text-center">
   <a href="javascript:history.back()" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
       <i class="fas fa-arrow-left mr-2"></i>
       Regresar
   </a>
 </div>
-  <div class="bg-gray-100 shadow-xl rounded-3xl p-10 w-full max-w-4xl mx-auto mt-18">
-    <h2 class="text-4xl font-extrabold text-gray-800 text-center mb-6 animate-pulse">Revisa tus Notificaciones</h2>
-    <p class="text-center text-gray-600 mb-8">Aquí puedes ver las notificaciones importantes del sistema, tus instructores y de registro de asistencias.</p>
 
-    <!-- Filtros -->
-    <div class="mb-8 flex justify-start space-x-6 items-center text-gray-600">
-      <div class="flex items-center space-x-4">
-        <label for="filtroFecha" class="text-sm font-medium text-gray-600">Filtrar por fecha</label>
-        <input type="date" id="filtroFecha" class="py-2 px-4 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-      </div>
-      
-      <div class="flex items-center space-x-4">
-        <label for="filtroTipo" class="text-sm font-medium text-gray-600">Filtrar por tipo</label>
-        <select id="filtroTipo" class="py-2 px-4 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-          <option value="">-- Todos --</option>
-          <option value="sistema">Del sistema</option>
-          <option value="instructor">De instructores</option>
-          <option value="instructor">De registro de asistencias</option>
-        </select>
-      </div>
+<div class="bg-gray-100 shadow-xl rounded-3xl p-10 w-full max-w-4xl mx-auto mt-18">
+  <h2 class="text-4xl font-extrabold text-gray-800 text-center mb-6 animate-pulse">Revisa tus Notificaciones</h2>
+  <p class="text-center text-gray-600 mb-8">Aquí puedes ver las notificaciones importantes del sistema, tus instructores y de registro de asistencias.</p>
+
+  <!-- Filtros -->
+  <div class="mb-8 flex justify-start space-x-6 items-center text-gray-600">
+    <div class="flex items-center space-x-4">
+      <label for="filtroFecha" class="text-sm font-medium text-gray-600">Filtrar por fecha</label>
+      <input type="date" id="filtroFecha" class="py-2 px-4 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
     </div>
-
-    <!-- Notificaciones -->
-    <div class="space-y-6 max-h-80 overflow-y-auto" id="notificationList">
-      <!-- Notificaciones Iniciales -->
-      <div class="flex items-center bg-white shadow-md rounded-lg p-5 hover:shadow-lg transition-all duration-300 hover:bg-gray-50 notification" 
-           data-date="2025-04-18" data-type="sistema">
-        <div class="flex-1 flex items-center">
-          <i class="fas fa-bell text-green-600 mr-4 text-xl"></i>
-          <div>
-            <h3 class="text-lg font-semibold text-green-600">¡Nueva Actualización de Sistema!</h3>
-            <p class="text-sm text-gray-600 mt-2">El sistema ha sido actualizado con nuevas funcionalidades para mejorar tu experiencia. ¡Revisa los cambios ahora!</p>
-          </div>
-        </div>
-        <div class="ml-4 text-gray-500 text-sm">
-          <p>Hace 2 horas</p>
-        </div>
-        <div class="flex space-x-4 ml-4">
-          <button class="text-sm text-gray-500 hover:text-gray-700" onclick="markAsRead(this)">Marcar como vista</button>
-          <button class="text-red-500 text-sm hover:text-red-700" onclick="deleteNotification(this)">Eliminar</button>
-        </div>
-      </div>
-
-      <div class="flex items-center bg-white shadow-md rounded-lg p-5 hover:shadow-lg transition-all duration-300 hover:bg-gray-50 notification" 
-           data-date="2025-04-17" data-type="instructor">
-        <div class="flex-1 flex items-center">
-          <i class="fas fa-bell text-green-600 mr-4 text-xl"></i>
-          <div>
-            <h3 class="text-lg font-semibold text-green-600">¡Recordatorio de Instructor!</h3>
-            <p class="text-sm text-gray-600 mt-2">Tu instructor te ha enviado un recordatorio para completar la tarea de la semana.</p>
-          </div>
-        </div>
-        <div class="ml-4 text-gray-500 text-sm">
-          <p>Hace 5 horas</p>
-        </div>
-        <div class="flex space-x-4 ml-4">
-          <button class="text-sm text-gray-500 hover:text-gray-700" onclick="markAsRead(this)">Marcar como vista</button>
-          <button class="text-red-500 text-sm hover:text-red-700" onclick="deleteNotification(this)">Eliminar</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Botón de ver más -->
-    <div class="mt-8 text-center">
-        <button id="verMasBtn" class="bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-all duration-300 focus:ring-4 focus:ring-green-500 focus:outline-none" onclick="loadMoreNotifications()">Ver más notificaciones</button>
-    </div>
-
-    <!-- Si no hay notificaciones -->
-    <div id="noNotificationsMessage" class="hidden text-center text-gray-600 mt-8">
-      <p>No tienes más notificaciones por el momento.</p>
-    </div>
-    <!-- Mensaje cuando se eliminan todas las notificaciones -->
-    <div id="noNotificationsMessageAfterDelete" class="hidden text-center text-gray-600 mt-8">
-      <p>¡Todas las notificaciones han sido eliminadas!</p>
+    
+    <div class="flex items-center space-x-4">
+      <label for="filtroTipo" class="text-sm font-medium text-gray-600">Filtrar por tipo</label>
+      <select id="filtroTipo" class="py-2 px-4 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <option value="">-- Todos --</option>
+        <option value="sistema">Del sistema</option>
+        <option value="instructor">De instructores</option>
+        <option value="registro">De registro de asistencias</option>
+      </select>
     </div>
   </div>
 
-  <!-- Script -->
-  <script>
-    let notificationCounter = 2;  // Contador para saber cuántas notificaciones se han cargado
+  <!-- Notificaciones -->
+  <div class="space-y-6 max-h-80 overflow-y-auto" id="notificationList">
+    <!-- Las notificaciones se cargarán dinámicamente con JavaScript -->
+  </div>
 
-    // Función para cargar más notificaciones
-    function loadMoreNotifications() {
-      const notificationList = document.getElementById('notificationList');
+  <!-- Botón de ver más y mensaje de no hay más -->
+  <div class="w-full flex justify-center mt-8" id="verMasContainer">
+    <button id="verMasBtn" class="bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-all duration-300 focus:ring-4 focus:ring-green-500 focus:outline-none" onclick="loadMoreNotifications()">
+      Ver más notificaciones
+    </button>
+  </div>
+  <p id="noNotificationsMessage" class="hidden text-center text-gray-600 mt-4"></p>
+  <div id="noNotificationsMessageAfterDelete" class="hidden text-center text-gray-600 mt-8">
+    <p>¡Todas las notificaciones han sido eliminadas!</p>
+  </div>
+</div>
 
-      // Aquí agregamos más notificaciones al hacer clic en "Ver más"
-      const newNotifications = [
-        {
-          date: "2025-04-16",
-          type: "sistema",
-          title: "¡Nuevo Sistema de Reportes!",
-          description: "Ahora puedes generar reportes directamente desde la aplicación. ¡Revisa cómo hacerlo!",
-          timeAgo: "Hace 1 día"
-        },
-        {
-          date: "2025-04-15",
-          type: "instructor",
-          title: "¡Tarea pendiente de tu Instructor!",
-          description: "Tu instructor te ha dejado una nueva tarea pendiente para este mes. No olvides completarla.",
-          timeAgo: "Hace 2 días"
-        },
-        {
-          date: "2025-04-14",
-          type: "sistema",
-          title: "¡Recordatorio de Actividad de Sistema!",
-          description: "Recuerda que la actividad de mantenimiento del sistema será mañana. ¡Revisa las horas de corte!",
-          timeAgo: "Hace 3 días"
+<!-- FontAwesome -->
+<script src="https://kit.fontawesome.com/a076d05399.js"></script>
+
+<!-- Script principal -->
+<script>
+  let paginaActual = 1;
+  let filtroFecha = '';
+  let filtroTipo = '';
+
+  function loadMoreNotifications(reset = false) {
+    if (reset) {
+      paginaActual = 1;
+      document.getElementById('notificationList').innerHTML = '';
+    }
+
+    filtroFecha = document.getElementById('filtroFecha').value;
+    filtroTipo = document.getElementById('filtroTipo').value;
+
+    const url = new URL('/notificaciones_1/cargar_mas/', window.location.origin);
+    url.searchParams.append('pagina', paginaActual);
+    if (filtroFecha) url.searchParams.append('fecha', filtroFecha);
+    if (filtroTipo) url.searchParams.append('tipo', filtroTipo);
+
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        const lista = document.getElementById('notificationList');
+        if (data.html && data.html.trim() !== '') {
+          // Evitar duplicados por ID
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = data.html;
+          const nuevosIds = Array.from(tempDiv.children).map(el => el.getAttribute('id'));
+
+          nuevosIds.forEach(id => {
+            if (document.getElementById(id)) {
+              // Ya existe, lo quitamos del tempDiv para no agregarlo
+              const child = tempDiv.querySelector(`#${id}`);
+              if(child) child.remove();
+            }
+          });
+
+          lista.insertAdjacentHTML('beforeend', tempDiv.innerHTML);
+          paginaActual++;
+
+          document.getElementById('verMasBtn').style.display = data.hay_mas ? 'block' : 'none';
+          document.getElementById('noNotificationsMessage').style.display = 'none';
+        } else {
+          if (paginaActual === 1) {
+            lista.innerHTML = '<p class="text-center text-gray-600">No hay notificaciones para estos filtros, bro.</p>';
+          }
+          document.getElementById('verMasBtn').style.display = 'none';
+          document.getElementById('noNotificationsMessage').style.display = 'block';
         }
-      ];
-
-      // Añadir las nuevas notificaciones
-      newNotifications.forEach(notification => {
-        const notificationElement = document.createElement('div');
-        notificationElement.classList.add('flex', 'items-center', 'bg-white', 'shadow-md', 'rounded-lg', 'p-5', 'hover:shadow-lg', 'transition-all', 'duration-300', 'hover:bg-gray-50', 'notification');
-        notificationElement.setAttribute('data-date', notification.date);
-        notificationElement.setAttribute('data-type', notification.type);
-
-        notificationElement.innerHTML = `
-          <div class="flex-1 flex items-center">
-            <i class="fas fa-bell text-green-600 mr-4 text-xl"></i>
-            <div>
-              <h3 class="text-lg font-semibold text-green-600">${notification.title}</h3>
-              <p class="text-sm text-gray-600 mt-2">${notification.description}</p>
-            </div>
-          </div>
-          <div class="ml-4 text-gray-500 text-sm">
-            <p>${notification.timeAgo}</p>
-          </div>
-          <div class="flex space-x-4 ml-4">
-            <button class="text-sm text-gray-500 hover:text-gray-700" onclick="markAsRead(this)">Marcar como vista</button>
-            <button class="text-red-500 text-sm hover:text-red-700" onclick="deleteNotification(this)">Eliminar</button>
-          </div>
-        `;
-
-        // Agregar la notificación al final de la lista
-        notificationList.appendChild(notificationElement);
+      }).catch(err => {
+        console.error('Error cargando notificaciones:', err);
       });
+  }
 
-      notificationCounter++;
+  document.getElementById('filtroFecha').addEventListener('change', () => loadMoreNotifications(true));
+  document.getElementById('filtroTipo').addEventListener('change', () => loadMoreNotifications(true));
 
-      // Si ya hemos cargado suficientes notificaciones, ocultamos el botón
-      if (notificationCounter > 5) {
-        document.getElementById('verMasBtn').style.display = 'none';
-      }
-
-      // Si ya no hay más notificaciones
-      if (notificationCounter > 5 && document.getElementById('notificationList').children.length > 0) {
-        document.getElementById('noNotificationsMessage').style.display = 'block';
-      }
+  // Delegación de eventos para marcar como vista y eliminar
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('marcar-leida')) {
+      const id = e.target.getAttribute('data-id');
+      fetch(`/notificaciones_1/leida/${id}/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': getCookie('csrftoken'),
+        },
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'ok') {
+          e.target.textContent = 'Vista';
+          e.target.disabled = true;
+          const contenedor = document.querySelector(`#notificacion-${id}`);
+          if (contenedor) contenedor.style.opacity = '0.5';
+        }
+      });
     }
 
-    // Marcar notificación como vista
-    function markAsRead(button) {
-      const notification = button.closest('.notification');
-      notification.style.opacity = 0.5; // Cambiar opacidad para marcarla como vista
-      button.setAttribute('disabled', 'true');  // Desactivar el botón de marcar como vista
-      button.textContent = 'Vista';  // Cambiar texto del botón
+    if (e.target.classList.contains('eliminar-notificacion')) {
+      const id = e.target.getAttribute('data-id');
+      fetch(`/notificaciones_1/eliminar/${id}/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': getCookie('csrftoken'),
+        },
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'ok') {
+          const noti = document.querySelector(`#notificacion-${id}`);
+          if (noti) noti.remove();
+
+          if (document.querySelectorAll('.notification').length === 0) {
+            document.getElementById('noNotificationsMessage').classList.add('hidden');
+            document.getElementById('noNotificationsMessageAfterDelete').classList.remove('hidden');
+            document.getElementById('verMasBtn').style.display = 'none';
+          }
+        }
+      });
     }
+  });
 
-    // Eliminar notificación
-    function deleteNotification(button) {
-      const notification = button.closest('.notification');
-      notification.remove();  // Eliminar la notificación
-
-      // Si ya no quedan notificaciones, mostrar mensaje
-      const notificationList = document.getElementById('notificationList');
-      if (notificationList.children.length === 0) {
-        document.getElementById('noNotificationsMessage').style.display = 'none';
-        document.getElementById('noNotificationsMessageAfterDelete').style.display = 'block';
+  // Función para obtener la cookie CSRF
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.startsWith(name + '=')) {
+          cookieValue = decodeURIComponent(cookie.slice(name.length + 1));
+          break;
+        }
       }
     }
-  </script>
+    return cookieValue;
+  }
 
-  <!-- Iconos FontAwesome -->
-  <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+  // Carga inicial
+  document.addEventListener('DOMContentLoaded', () => {
+    loadMoreNotifications();  // Carga inicial si no hay notificaciones cargadas por defecto
+  });
+</script>
 
 {% endblock %}

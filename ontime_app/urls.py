@@ -28,6 +28,11 @@ urlpatterns = [
     path("notificaciones_1/", views.notificaciones_1, name="notificaciones_1"),
     path("historial_1/", views.historial_1, name="historial_1"),
     path("justificativos_1/", views.justificativos_1, name="justificativos_1"),
+    path('notificaciones_1/leida/<int:id>/', views.marcar_notificacion_leida, name='marcar_notificacion_leida'),
+    path('notificaciones_1/eliminar/<int:id>/', views.eliminar_notificacion, name='eliminar_notificacion'),
+    path('notificaciones_1/filtrar/', views.filtrar_notificaciones, name='filtrar_notificaciones'),
+    path('notificaciones_1/cargar_mas/', views.cargar_mas_notificaciones, name='cargar_mas_notificaciones'),
+
 
     # Instructor
     path("inicio_instructor/", views.inicio_instructor, name="inicio_instructor"),
