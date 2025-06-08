@@ -4,66 +4,83 @@
 {% block title %}Recuperar Contraseña - OnTime{% endblock %}
 
 {% block content %}
-<!-- Botón de flecha para retroceder -->
 <div class="mt-6 text-center">
+  {# Enlace que utiliza JavaScript para volver a la página anterior en el historial del navegador #}
   <a href="javascript:history.back()" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
-      <i class="fas fa-arrow-left mr-2"></i>
+      <i class="fas fa-arrow-left mr-2"></i> {# Icono de flecha izquierda de Font Awesome #}
       Regresar
   </a>
 </div>
 
+{# Contenedor principal del formulario de recuperación de contraseña, con estilos Tailwind CSS #}
 <div class="bg-gray-100 shadow-xl rounded-3xl p-10 w-full max-w-lg mx-auto mt-20 animate__animated animate__fadeIn animate__faster">
+  {# Título principal de la sección, con estilos y animación de pulso #}
   <h2 class="text-4xl font-extrabold text-gray-800 animate-pulse text-center mb-6">Recuperar Contraseña</h2>
   <p class="text-center text-gray-600 mb-8">Ingresa el correo electrónico asociado a tu cuenta.</p>
 
-  <!-- Mensaje de éxito (invisible por defecto) -->
+  {# Mensaje de éxito predefinido, oculto por defecto y que puede ser mostrado por JavaScript #}
   <div id="mensajeExito" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6 text-center hidden">
     Se ha enviado un enlace de recuperación a tu correo.
   </div>
 
+  {# Sección para mostrar mensajes del sistema (ej. confirmación de envío de correo) #}
   {% if messages %}
     {% for message in messages %}
       <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6 text-center">
-        {{ message }}
+        {{ message }} {# Muestra el mensaje de Django #}
       </div>
     {% endfor %}
   {% endif %}
 
-  <!-- Formulario de recuperación -->
+  {# Formulario para solicitar la recuperación de contraseña, enviando a la URL 'password_reset' #}
   <form method="POST" action="{% url 'password_reset' %}">
-    {% csrf_token %}
+    {% csrf_token %} {# Token de seguridad requerido por Django para proteger contra ataques CSRF #}
     <div class="mb-6">
       <label for="correo" class="block text-sm font-medium text-gray-800 mb-1">Correo Electrónico</label>
+      {# Campo de entrada para el correo electrónico #}
       <input 
         type="email" 
         id="correo" 
-        name="email" 
+        name="email" {# El nombre del campo debe ser 'email' para que Django lo reconozca en password_reset #}
         required 
         placeholder="Ingresa tu correo electrónico"
         class="mt-1 block w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 text-gray-800"
       >
     </div>
 
+    {# Botón para enviar la solicitud de recuperación de contraseña #}
     <button 
       type="submit" 
       class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition duration-300 shadow-md focus:ring-4 focus:ring-green-500 focus:outline-none mt-2">
       Enviar enlace
     </button>
 
+    {# Enlace para volver a la página de inicio de sesión #}
     <div class="text-center mt-6">
       <a href="{% url 'iniciar_sesion' %}" class="text-green-600 underline">Volver al inicio de sesión</a>
     </div>
   </form>
 </div>
 
-<!-- Script para mostrar y ocultar el mensaje -->
 <script>
+  {# Función JavaScript para mostrar el mensaje de éxito y ocultarlo después de 4 segundos #}
   function mostrarMensaje() {
     const mensaje = document.getElementById('mensajeExito');
-    mensaje.classList.remove('hidden');
+    mensaje.classList.remove('hidden'); // Hace visible el mensaje
     setTimeout(() => {
-      mensaje.classList.add('hidden');
+      mensaje.classList.add('hidden'); // Oculta el mensaje después de 4 segundos
     }, 4000);
   }
+
+  {# Si hay un mensaje de éxito en la página (ej. del backend), se muestra automáticamente al cargar #}
+  {% if messages %}
+    // Check if there are any success messages to display
+    {% for message in messages %}
+      {% if message.tags == "success" %} // Assuming "success" tag for successful email sending
+        window.addEventListener('DOMContentLoaded', mostrarMensaje);
+        break; // Only need to call it once if a success message exists
+      {% endif %}
+    {% endfor %}
+  {% endif %}
 </script>
 {% endblock %}

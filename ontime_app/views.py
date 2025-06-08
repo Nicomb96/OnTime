@@ -17,22 +17,36 @@ from django.contrib.auth.views import PasswordResetView
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.http import JsonResponse
-from .models import Asistencia
+from .models import Asistencia, Notificacion
 from django.utils import timezone
-from .models import Notificacion
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+import json
+from django.utils.dateparse import parse_date
+from django.core.serializers import serialize
+from datetime import datetime, timedelta
+from django.utils.timezone import make_aware
+from django.utils.timezone import now
+from django.utils.timezone import localtime
+from .models import Asistencia, Notificacion
 
-# Vista para iniciar sesión
+# --- Vistas de Autenticación y Perfil ---
+
 def iniciar_sesion(request):
+    """
+    Vista para manejar el inicio de sesión de usuarios.
+    Autentica al usuario y redirige según su rol.
+    """
     correo = None
 
     if request.method == 'POST':
         username = request.POST.get('correo')
         contrasena = request.POST.get('contrasena')
 
+        # Autentica al usuario con las credenciales
         user = authenticate(request, username=username, password=contrasena)
 
         if user is not None:
+            # Inicia sesión y redirige según el rol
             login(request, user)
             rol = user.rol
 
@@ -43,26 +57,32 @@ def iniciar_sesion(request):
             elif rol == 'admin':
                 return redirect('inicio_admin')
             else:
-                # En caso de que alguien tenga un rol que no exista
+                # Manejo de rol desconocido
                 messages.error(request, 'Rol desconocido, contacta al admin.')
                 logout(request)
                 return redirect('iniciar_sesion')
         else:
+            # Muestra mensaje de error si las credenciales son incorrectas
             messages.error(request, 'Correo o contraseña incorrectos.')
             correo = request.POST.get('correo')
             return render(request, 'ontime_app/iniciar_sesion.html', {'correo': correo})
 
     return render(request, 'ontime_app/iniciar_sesion.html', {'correo': correo})
 
-# Vista para registrarse
 def registrarse(request): 
+    """
+    Vista para el registro de nuevos usuarios.
+    Crea un nuevo usuario si el formulario es válido.
+    """
     if request.method == 'POST':
         form = RegistroForm(request.POST)
         if form.is_valid():
+            # Guarda el nuevo usuario
             form.save()
             messages.success(request, 'Cuenta creada correctamente.')
             return redirect('iniciar_sesion')
         else:
+            # Muestra errores del formulario
             print(form.errors)
             messages.error(request, 'Corrige los errores del formulario.')
     else:
@@ -70,32 +90,45 @@ def registrarse(request):
     
     return render(request, 'ontime_app/registrarse.html', {'form': form})
 
-# Vista para cerrar sesión
 @never_cache
 def cerrar_sesion(request):
+    """
+    Vista para cerrar la sesión del usuario actual.
+    """
     logout(request)
     return redirect('inicio')
 
-# Vista para eliminar foto de perfil
 @never_cache
 @login_required
 def eliminar_foto_perfil(request):
+    """
+    Vista para eliminar la foto de perfil del usuario logueado.
+    Elimina el archivo físico y la referencia en la base de datos.
+    """
     usuario = request.user
 
     if usuario.foto_perfil:
+        # Elimina la foto de perfil del sistema de archivos
         ruta = os.path.join(settings.MEDIA_ROOT, str(usuario.foto_perfil))
         if os.path.isfile(ruta):
             os.remove(ruta)
+        # Elimina la referencia en la base de datos
         usuario.foto_perfil = None
         usuario.save()
 
     return redirect('editar_perfil_2')
 
-# Vista para recuperar la contraseña
+# --- Vistas de Recuperación y Cambio de Contraseña ---
+
 def recuperar_contraseña(request):
+    """
+    Vista para solicitar el restablecimiento de contraseña.
+    Envía un correo con un enlace de recuperación.
+    """
     if request.method == 'POST':
         form = PasswordResetForm(request.POST)
         if form.is_valid():
+            # Envía el correo de restablecimiento de contraseña
             form.save(
                 request=request,
                 email_template_name='registration/password_reset_email.html',
@@ -108,11 +141,14 @@ def recuperar_contraseña(request):
         form = PasswordResetForm()
     return render(request, 'ontime_app/recuperar_contraseña.html', {'form': form})
 
-# Vista para mostrar mensaje de contraseña actualizada
 class MiPasswordResetConfirmView(View):
+    """
+    Vista para confirmar el restablecimiento de contraseña y permitir al usuario cambiarla.
+    """
     template_name = 'recuperar_contraseña_confirm.html'  # Plantilla para cambiar la contraseña
 
     def get_user(self, uidb64):
+        """Decodifica el UID y obtiene el usuario."""
         try:
             uid = urlsafe_base64_decode(uidb64).decode()
             user = User.objects.get(pk=uid)
@@ -121,6 +157,7 @@ class MiPasswordResetConfirmView(View):
         return user
 
     def get(self, request, uidb64=None, token=None):
+        """Renderiza el formulario para cambiar la contraseña."""
         user = self.get_user(uidb64)
         if user is not None and default_token_generator.check_token(user, token):
             form = MiFormularioCambioContrasena(user=user)
@@ -129,6 +166,7 @@ class MiPasswordResetConfirmView(View):
             return render(request, 'password_reset_invalid.html')  # Plantilla para token inválido
 
     def post(self, request, uidb64=None, token=None):
+        """Procesa el cambio de contraseña."""
         user = self.get_user(uidb64)
         if user is not None and default_token_generator.check_token(user, token):
             form = MiFormularioCambioContrasena(user=user, data=request.POST)
@@ -140,27 +178,26 @@ class MiPasswordResetConfirmView(View):
         else:
             return render(request, 'password_reset_invalid.html')
 
-# Vista personalizada para el envío del correo de recuperación
 class CustomPasswordResetView(PasswordResetView):
+    """
+    Vista personalizada para el envío de correo de recuperación.
+    Permite enviar correos con versiones HTML y de texto plano.
+    """
     def send_mail(self, subject_template_name, email_template_name,
                   context, from_email, to_email, html_email_template_name=None):
-
-        # Renderizar asunto del correo
+        """Envía el correo de restablecimiento."""
         subject = render_to_string(subject_template_name, context).strip()
-
-        # Renderizar cuerpo en texto plano
         body = render_to_string(email_template_name, context)
-
-        # Renderizar cuerpo en HTML
         html_body = render_to_string(html_email_template_name or email_template_name, context)
 
-        # Construir y enviar correo con versión HTML y texto plano
         email_message = EmailMultiAlternatives(subject, body, from_email, [to_email])
         email_message.attach_alternative(html_body, 'text/html')
         email_message.send()
 
-# Vista para cambiar contraseña con token (confirmación)
 def cambiar_contrasena(request, uidb64, token):
+    """
+    Vista para cambiar la contraseña usando un token de recuperación.
+    """
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
         usuario = User.objects.get(pk=uid)
@@ -180,42 +217,54 @@ def cambiar_contrasena(request, uidb64, token):
     else:
         return render(request, 'ontime_app/password_reset_invalid.html')
 
-# Vista para mostrar formulario para cambiar la contraseña
 def cambiar_contraseña(request):
+    """
+    Vista para mostrar el formulario de cambio de contraseña.
+    """
     return render(request, 'ontime_app/cambiar_contraseña.html')
 
-# Vista para mostrar mensaje de contraseña actualizada
 def contraseña_actualizada(request):
+    """
+    Vista para mostrar un mensaje de confirmación de contraseña actualizada.
+    """
     return render(request, 'ontime_app/contraseña_actualizada.html')
 
-# Vistas para la página de inicio según rol
+# --- Vistas por Rol: Aprendiz ---
 
-# Inicio aprendiz
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def inicio_aprendiz(request):
+    """
+    Página de inicio para usuarios con rol 'aprendiz'.
+    Requiere autenticación y redirige si el rol no coincide.
+    """
     if request.user.rol != 'aprendiz':
         return redirect('inicio')
     usuario = request.user
     return render(request, 'ontime_app/inicio_aprendiz.html', {'usuario': usuario})
 
-# Registrar asistencia (aprendiz)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def registrar_asistencia(request):
+    """
+    Vista para que el aprendiz registre su asistencia.
+    """
     if request.user.rol != 'aprendiz':
         return redirect('inicio')
     return render(request, 'ontime_app/registrar_asistencia.html')
 
-# Notificaciones (aprendiz)
 @login_required
 def notificaciones_1(request):
+    """
+    Vista para mostrar las notificaciones de un aprendiz, con paginación.
+    """
     if request.user.rol != 'aprendiz':
         return redirect('inicio')
 
     usuario = request.user
+    # Obtiene las notificaciones del usuario, ordenadas por fecha
     notis = Notificacion.objects.filter(usuario=usuario).order_by('-fecha')
-    paginador = Paginator(notis, 5)  # 5 notis por página
+    paginador = Paginator(notis, 5)  # 5 notificaciones por página
     try:
         primera_pagina = paginador.page(1)
     except EmptyPage:
@@ -226,95 +275,128 @@ def notificaciones_1(request):
         'hay_mas': primera_pagina.has_next() if primera_pagina else False
     })
 
-# Historial (aprendiz)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def historial_1(request):
+    """
+    Vista del historial para usuarios con rol 'aprendiz'.
+    """
     if request.user.rol != 'aprendiz':
         return redirect('inicio')
     return render(request, 'ontime_app/historial_1.html')
 
-# Justificativos (aprendiz)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def justificativos_1(request):
+    """
+    Vista de justificativos para usuarios con rol 'aprendiz'.
+    """
     if request.user.rol != 'aprendiz':
         return redirect('inicio')
     return render(request, 'ontime_app/justificativos_1.html')
 
-# Editar perfil 1 (aprendiz)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def editar_perfil_1(request):
+    """
+    Vista para editar el perfil del aprendiz (primera versión).
+    """
     if request.user.rol != 'aprendiz':
         return redirect('inicio')
     return render(request, 'ontime_app/editar_perfil_1.html')
 
-# Inicio instructor
+# --- Vistas por Rol: Instructor ---
+
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def inicio_instructor(request):
+    """
+    Página de inicio para usuarios con rol 'instructor'.
+    Requiere autenticación y redirige si el rol no coincide.
+    """
     if request.user.rol != 'instructor':
         return redirect('inicio')
     return render(request, 'ontime_app/inicio_instructor.html')
 
-# Generar QR (instructor)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def generar_qr(request):
+    """
+    Vista para que el instructor genere códigos QR.
+    """
     if request.user.rol != 'instructor':
         return redirect('inicio')
     return render(request, 'ontime_app/generar_qr.html')
 
-# Consultar asistencias (instructor)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def consultar_asistencias(request):
+    """
+    Vista para que el instructor consulte asistencias.
+    """
     if request.user.rol != 'instructor':
         return redirect('inicio')
     return render(request, 'ontime_app/consultar_asistencias.html')
 
-# Alertas (instructor)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def alertas(request):
+    """
+    Vista para que el instructor gestione alertas.
+    """
     if request.user.rol != 'instructor':
         return redirect('inicio')
     return render(request, 'ontime_app/alertas.html')
 
-# Gestión de reportes (instructor)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def gestion_reportes(request):
+    """
+    Vista para que el instructor gestione reportes.
+    """
     if request.user.rol != 'instructor':
         return redirect('inicio')
     return render(request, 'ontime_app/gestion_reportes.html')
 
-# Inicio general (sin login)
+# --- Vistas Generales ---
+
 def inicio(request):
+    """
+    Página de inicio general para usuarios no autenticados.
+    """
     return render(request, 'ontime_app/inicio.html')
 
-# Contacto
 def contacto(request):
+    """
+    Vista para la página de contacto.
+    """
     return render(request, 'ontime_app/contacto.html')
 
-# Ayuda
 def ayuda(request):
+    """
+    Vista para la página de ayuda.
+    """
     return render(request, 'ontime_app/ayuda.html')
 
-# Acerca de
 def acerca_de(request):
+    """
+    Vista para la página "Acerca de".
+    """
     return render(request, 'ontime_app/acerca_de.html')
 
-# Editar perfil 2 (aprendiz)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def editar_perfil_2(request):
+    """
+    Vista para editar el perfil del usuario (versión mejorada).
+    Permite actualizar datos y cambiar la contraseña.
+    """
     usuario = request.user
 
     if request.method == 'POST':
         form = EditarPerfilForm(request.POST, request.FILES, instance=usuario)
         if form.is_valid():
+            # Si se proporcionó una nueva contraseña, la establece
             if form.cleaned_data['password']:
                 usuario.set_password(form.cleaned_data['password'])
             form.save()
@@ -324,35 +406,47 @@ def editar_perfil_2(request):
 
     return render(request, 'ontime_app/editar_perfil_2.html', {'form': form, 'usuario': usuario})
 
-# Pantallas extra
+# --- Vistas de Documentación y Diseño ---
 
 def modelo_relacional(request):
+    """Vista para mostrar el modelo relacional."""
     return render(request, 'ontime_app/modelo_relacional.html')
 
 def normalizacion_mr(request):
+    """Vista para mostrar la normalización del modelo relacional."""
     return render(request, 'ontime_app/normalizacion_mr.html')
 
 def diccionario_datos(request):
+    """Vista para mostrar el diccionario de datos (primera versión)."""
     return render(request, 'ontime_app/diccionario_datos.html')
 
 def diccionario_datoss(request):
+    """Vista para mostrar el diccionario de datos (segunda versión)."""
     return render(request, 'ontime_app/diccionario_datoss.html')
 
 def sentencias(request):
+    """Vista para mostrar sentencias SQL o similares."""
     return render(request, 'ontime_app/sentencias.html')
 
 def diagrama_clases(request):
+    """Vista para mostrar el diagrama de clases."""
     return render(request, 'ontime_app/diagrama_clases.html')
 
-# Pantalla admin
+# --- Vistas por Rol: Administrador ---
 
-# Inicio admin
 def es_admin(user):
+    """
+    Función de ayuda para verificar si un usuario es administrador.
+    """
     return user.is_authenticated and user.rol == 'admin'
 
 @login_required(login_url='iniciar_sesion')
 @user_passes_test(es_admin, login_url='iniciar_sesion')
 def inicio_admin(request):
+    """
+    Página de inicio para usuarios con rol 'admin'.
+    Permite el registro de nuevos usuarios desde esta vista.
+    """
     form = RegistroForm()
 
     if request.method == 'POST':
@@ -364,85 +458,102 @@ def inicio_admin(request):
 
     return render(request, 'ontime_app/inicio_admin.html', {'form': form})
 
-# Gestión usuarios (admin)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def gestion_usuarios(request):
+    """
+    Vista para que el administrador gestione usuarios.
+    """
     if request.user.rol != 'admin':
         return redirect('inicio')
     return render(request, 'ontime_app/gestion_usuarios.html')
 
-# Ver asistencias (admin)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def ver_asistencias(request):
+    """
+    Vista para que el administrador vea las asistencias.
+    """
     if request.user.rol != 'admin':
         return redirect('inicio')
     return render(request, 'ontime_app/ver_asistencias.html')
 
-# Gestión alertas (admin)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def gestion_alertas(request):
+    """
+    Vista para que el administrador gestione alertas.
+    """
     if request.user.rol != 'admin':
         return redirect('inicio')
     return render(request, 'ontime_app/gestion_alertas.html')
 
-# Reportes (admin)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def reportes(request):
+    """
+    Vista para que el administrador genere reportes.
+    """
     if request.user.rol != 'admin':
         return redirect('inicio')
     return render(request, 'ontime_app/reportes.html')
 
-# Editar perfil admin
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def editar_perfil_adm(request):
+    """
+    Vista para que el administrador edite su perfil.
+    """
     if request.user.rol != 'admin':
         return redirect('inicio')
     return render(request, 'ontime_app/editar_perfil_adm.html')
 
-# Gestión horarios (admin)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def gestion_horarios(request):
+    """
+    Vista para que el administrador gestione horarios.
+    """
     if request.user.rol != 'admin':
         return redirect('inicio')
     return render(request, 'ontime_app/gestion_horarios.html')
 
-# Control asistencia (admin)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def control_asistencia(request):
+    """
+    Vista para que el administrador controle la asistencia.
+    """
     if request.user.rol != 'admin':
         return redirect('inicio')
     return render(request, 'ontime_app/control_asistencia.html')
 
-# Carga masiva (admin)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def carga_masiva(request):
+    """
+    Vista para que el administrador realice cargas masivas de datos.
+    """
     if request.user.rol != 'admin':
         return redirect('inicio')
     return render(request, 'ontime_app/carga_masiva.html')
 
-# Historial (admin)
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def historial(request):
+    """
+    Vista del historial para usuarios con rol 'admin'.
+    """
     if request.user.rol != 'admin':
         return redirect('inicio')
     return render(request, 'ontime_app/historial.html')
 
-def es_admin(user):
-    return user.is_authenticated and user.rol == 'admin'
-
-# Crear usuarios (admin)
 @login_required
 @user_passes_test(es_admin)
 def crear_usuario(request):
+    """
+    Vista para que el administrador cree nuevos usuarios.
+    """
     if request.method == 'POST':
         form = RegistroForm(request.POST)
         if form.is_valid():
@@ -456,45 +567,67 @@ def crear_usuario(request):
     
     return render(request, 'ontime_app/crear_usuario.html', {'form': form})
 
-# Vistas para la página de registar asistencia
+# --- Vistas para el registro de asistencia (AJAX) ---
+
 @login_required
 def registrar_asistencia(request):
     if request.method == 'POST':
+        user = request.user
         codigo = request.POST.get('codigo')
-        print("Código recibido:", codigo)
 
-        if codigo == "ABC123":
-            # Crear la asistencia
-            asistencia = Asistencia.objects.create(
-                aprendiz=request.user,
-                codigo=codigo,
-                fecha=timezone.now(),
-                validada=True
-            )
+        if not codigo:
+            return JsonResponse({'status': 'fail', 'msg': 'Código es obligatorio'})
 
-            # Crear notificación automática
-            Notificacion.objects.create(
-                usuario=request.user,
-                titulo='Asistencia registrada',
-                descripcion=f'Se registró tu asistencia con el código {codigo} el {asistencia.fecha.strftime("%d/%m/%Y a las %H:%M")}',
-                tipo='registro'
-            )
+        ahora = localtime()
 
-            return JsonResponse({'status': 'ok', 'msg': 'Asistencia registrada'})
-        else:
-            return JsonResponse({'status': 'error', 'msg': 'Código inválido'})
+        inicio_dia = ahora.replace(hour=0, minute=0, second=0, microsecond=0)
+        fin_dia = ahora.replace(hour=23, minute=59, second=59, microsecond=999999)
 
+        existe = Asistencia.objects.filter(
+            aprendiz=user,
+            fecha__range=(inicio_dia, fin_dia)
+        ).exists()
+
+        if existe:
+            return JsonResponse({'status': 'fail', 'msg': 'Ya registraste asistencia hoy.'})
+        
+        # Crear nueva asistencia
+        nueva_asistencia = Asistencia.objects.create(
+            aprendiz=user,
+            codigo=codigo,
+            fecha=ahora,
+            validada=True
+        )
+
+    # Crear notificación para avisar
+        Notificacion.objects.create(
+            usuario=user,
+            titulo="Registro de Asistencia",
+            descripcion=f"Has registrado tu asistencia correctamente el {ahora.strftime('%d/%m/%Y a las %H:%M')}",
+            tipo="asistencia"
+        )
+
+        return JsonResponse({'status': 'ok', 'msg': 'Asistencia registrada.'})
+
+    # Si es GET, mostramos el template para escanear o ingresar código
     return render(request, 'ontime_app/registrar_asistencia.html')
 
-# Vistas para la página de Notificacion
+# --- Vistas para Notificaciones ---
+
 @login_required
 def notificaciones(request):
+    """
+    Vista para mostrar todas las notificaciones del usuario actual.
+    """
     notificaciones = Notificacion.objects.filter(usuario=request.user).order_by('-fecha')
     return render(request, 'ontime_app/notificaciones.html', {'notificaciones': notificaciones})
 
-# Vistas para marcar como leída y eliminar
 @require_POST
 def marcar_notificacion_leida(request, id):
+    """
+    Marca una notificación específica como leída.
+    Solo accesible vía POST.
+    """
     notificacion = get_object_or_404(Notificacion, id=id, usuario=request.user)
     notificacion.leida = True
     notificacion.save()
@@ -502,13 +635,20 @@ def marcar_notificacion_leida(request, id):
 
 @require_POST
 def eliminar_notificacion(request, id):
+    """
+    Elimina una notificación específica.
+    Solo accesible vía POST.
+    """
     notificacion = get_object_or_404(Notificacion, id=id, usuario=request.user)
     notificacion.delete()
     return JsonResponse({'status': 'ok', 'id': id})
 
-# Vista para filtrar notificaciones
 @login_required
 def filtrar_notificaciones(request):
+    """
+    Filtra las notificaciones del usuario según tipo y fecha.
+    Retorna HTML parcial con las notificaciones filtradas.
+    """
     tipo = request.GET.get('tipo')
     fecha = request.GET.get('fecha')
 
@@ -522,8 +662,10 @@ def filtrar_notificaciones(request):
     html = render_to_string('ontime_app/partials/partial_notificaciones.html', {'notificaciones': notificaciones})
     return JsonResponse({'html': html})
 
-# Vista que recibe la petición AJAX con el número de página, (paginar las notificaciones)
 def cargar_mas_notificaciones(request):
+    """
+    Carga más notificaciones para la paginación infinita.
+    """
     pagina = request.GET.get('pagina', 1)
     tipo = request.GET.get('tipo')
     fecha = request.GET.get('fecha')
@@ -535,7 +677,7 @@ def cargar_mas_notificaciones(request):
     if fecha:
         notis = notis.filter(fecha__date=fecha)
 
-    paginator = Paginator(notis, 10)
+    paginator = Paginator(notis, 10) # 10 notificaciones por página
 
     try:
         notis_pagina = paginator.page(pagina)
@@ -546,3 +688,75 @@ def cargar_mas_notificaciones(request):
     hay_mas = notis_pagina.has_next()
 
     return JsonResponse({'html': html, 'hay_mas': hay_mas})
+
+
+
+
+
+def historial_api(request):
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+
+    queryset = Asistencia.objects.all().order_by('-fecha')
+
+    if fecha_inicio and fecha_fin:
+        queryset = queryset.filter(fecha__date__range=[fecha_inicio, fecha_fin])
+
+    datos = []
+    for asistencia in queryset:
+        datos.append({
+            'id': asistencia.id,
+            'fecha': asistencia.fecha.strftime('%Y-%m-%d'),
+            'curso': asistencia.codigo,  # Aquí usamos 'codigo' como el nombre de la clase o módulo
+            'estado': 'Asistido' if asistencia.validada else 'Faltante',
+            'detalles': f"Asistencia de {asistencia.aprendiz.username}. Estado: {'Validada' if asistencia.validada else 'No validada'}."
+        })
+
+    return JsonResponse(datos, safe=False)
+
+
+
+
+@login_required
+def historial_asistencia(request):
+    asistencias = Asistencia.objects.filter(aprendiz=request.user).order_by('-fecha')
+
+    datos = []
+    for a in asistencias:
+        fecha_local = localtime(a.fecha) # Convierte a hora local
+        datos.append({
+            'id': a.id,
+            'fecha': fecha_local.strftime('%Y-%m-%d %H:%M'), # Usa la fecha local
+            'curso': 'Programación de software',  # Nombre fijo o dinámico
+            'estado': 'Asistido' if a.validada else 'No asistió',
+            'detalles': f'Código: {a.codigo}, validado: {a.validada}'
+        })
+
+    return render(request, 'ontime_app/historial_1.html', {
+        'datos_asistencia': json.dumps(datos)
+    })
+
+
+@login_required
+def filtrar_asistencia(request):
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+
+    query = Asistencia.objects.filter(aprendiz=request.user)
+
+    if fecha_inicio:
+        query = query.filter(fecha__gte=parse_date(fecha_inicio))
+    if fecha_fin:
+        query = query.filter(fecha__lte=parse_date(fecha_fin))
+
+    datos = []
+    for a in query.order_by('-fecha'):
+        datos.append({
+            'id': a.id,
+            'fecha': a.fecha.strftime('%Y-%m-%d %H:%M'),
+            'curso': 'Programación de software',
+            'estado': 'Asistido' if a.validada else 'No asistió',
+            'detalles': f'Código: {a.codigo}, validado: {a.validada}'
+        })
+
+    return JsonResponse({'datos': datos})

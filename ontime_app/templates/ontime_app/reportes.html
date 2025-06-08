@@ -5,6 +5,7 @@
 
 {% block content %}
 <div class="mt-6 text-center">
+    {# Enlace para volver al panel de administrador #}
     <a href="{% url 'inicio_admin' %}" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
         <i class="fas fa-arrow-left mr-2"></i> Volver al Panel
     </a>
@@ -12,23 +13,27 @@
 
 <div class="container mx-auto px-4 lg:px-8 mt-8">
     <div class="bg-gray-50 rounded-3xl shadow-lg p-6 md:p-10">
+        {# Título principal de la sección de reportes, con estilos Tailwind CSS y una animación de pulso #}
         <h2 class="text-2xl font-bold text-gray-600 mb-6 text-center animate-pulse">📊 Reportes de Asistencia</h2>
 
-        <!-- Filtros -->
         <div class="flex flex-col md:flex-row gap-4 justify-between mb-6">
+            {# Campo de entrada para seleccionar una fecha #}
             <input type="date" class="w-full md:w-1/4 px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-500">
+            {# Campo de entrada para buscar reportes por nombre #}
             <input type="text" placeholder="Buscar por nombre..." class="w-full md:w-1/3 px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+            {# Selector desplegable para elegir el tipo de reporte (Asistencia o Inasistencia) #}
             <select class="w-full md:w-1/4 px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-500">
-                <option value="">Tipo de Reporte</option>
+                <option value="">Tipo de Reporte</option> {# Opción por defecto #}
                 <option value="Asistencia">Asistencia</option>
                 <option value="Inasistencia">Inasistencia</option>
             </select>
+            {# Botón para exportar los reportes #}
             <button class="bg-green-600 text-white px-6 py-2 rounded-xl shadow hover:bg-green-700 transition duration-300">
                 <i class="fas fa-file-export mr-2"></i> Exportar
             </button>
         </div>
 
-        <!-- Tabla con scroll -->
+        {# Contenedor de la tabla con scroll vertical y horizontal para manejar muchos datos #}
         <div class="overflow-x-auto" style="max-height: 400px; overflow-y: auto;" id="reporte-container">
             <table class="min-w-full bg-white border border-gray-300 rounded-xl shadow-md">
                 <thead class="bg-green-100 text-green-800 text-left text-sm sticky top-0 z-10">
@@ -41,13 +46,12 @@
                     </tr>
                 </thead>
                 <tbody id="tabla-reportes" class="text-sm text-gray-700">
-                    <!-- Reportes aquí -->
-                </tbody>
+                    </tbody>
             </table>
         </div>
 
-        <!-- Botón Ver más -->
         <div class="text-center mt-6">
+            {# Botón para cargar más reportes, visible si hay datos adicionales #}
             <button id="btn-ver-mas" class="bg-green-600 text-white px-6 py-2 rounded-xl shadow hover:bg-green-700 transition duration-300">
                 <i class="fas fa-angle-down mr-2"></i> Ver más
             </button>
@@ -56,6 +60,7 @@
 </div>
 
 <script>
+    // Datos de ejemplo para los reportes (en una aplicación real, esto provendría del backend)
     const reportes = [
         {nombre: "Juan Pérez", fecha: "2024-04-01", entrada: "08:00", salida: "12:00", estado: "Asistencia"},
         {nombre: "Luisa Torres", fecha: "2024-04-01", entrada: "08:30", salida: "12:30", estado: "Asistencia"},
@@ -70,14 +75,18 @@
         {nombre: "Ana Morales", fecha: "2024-04-01", entrada: "--", salida: "--", estado: "Inasistencia"},
     ];
 
-    let index = 0;
-    const porCarga = 5;
-    const contenedor = document.getElementById('tabla-reportes');
-    const btnMas = document.getElementById('btn-ver-mas');
+    let index = 0; // Índice para saber cuántos reportes se han cargado
+    const porCarga = 5; // Cantidad de reportes a cargar en cada acción "Ver más"
+    const contenedor = document.getElementById('tabla-reportes'); // Referencia al tbody de la tabla
+    const btnMas = document.getElementById('btn-ver-mas'); // Referencia al botón "Ver más"
 
     function cargarReportes() {
+        // Itera para cargar un número específico de reportes o hasta el final de la lista
         for (let i = index; i < index + porCarga && i < reportes.length; i++) {
-            const r = reportes[i];
+            const r = reportes[i]; // Obtiene el objeto de reporte actual
+            // Determina la clase CSS para el estado del reporte (verde para Asistencia, rojo para Inasistencia)
+            const estadoClass = r.estado === 'Asistencia' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800';
+            // Crea la fila HTML para el reporte
             const fila = `
                 <tr class="border-t">
                     <td class="py-3 px-4">${r.nombre}</td>
@@ -85,19 +94,22 @@
                     <td class="py-3 px-4">${r.entrada}</td>
                     <td class="py-3 px-4">${r.salida}</td>
                     <td class="py-3 px-4">
-                        <span class="px-2 py-1 rounded-full ${r.estado === 'Asistencia' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}">${r.estado}</span>
+                        <span class="px-2 py-1 rounded-full ${estadoClass}">${r.estado}</span>
                     </td>
                 </tr>
             `;
-            contenedor.insertAdjacentHTML('beforeend', fila);
+            contenedor.insertAdjacentHTML('beforeend', fila); // Inserta la fila en el cuerpo de la tabla
         }
-        index += porCarga;
+        index += porCarga; // Actualiza el índice para la próxima carga
+        // Si ya se han cargado todos los reportes, oculta el botón "Ver más"
         if (index >= reportes.length) {
             btnMas.classList.add('hidden');
         }
     }
 
+    // Agrega un event listener al botón "Ver más" para cargar más reportes al hacer clic
     btnMas.addEventListener('click', cargarReportes);
+    // Agrega un event listener para cargar los reportes iniciales cuando el DOM esté completamente cargado
     window.addEventListener('DOMContentLoaded', cargarReportes);
 </script>
 {% endblock %}

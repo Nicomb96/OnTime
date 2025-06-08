@@ -4,20 +4,22 @@
 {% block title %}Modelo Relacional - OnTime{% endblock %}
 
 {% block content %}
-<!-- Botón de flecha para retroceder -->
 <div class="mt-6 text-center">
+    {# Enlace que utiliza JavaScript para regresar a la página anterior en el historial del navegador #}
     <a href="javascript:history.back()" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
-        <i class="fas fa-arrow-left mr-2"></i>
+        <i class="fas fa-arrow-left mr-2"></i> {# Icono de flecha izquierda de Font Awesome #}
         Regresar
     </a>
-  </div>
+</div>
+
 <div class="text-center mb-10">
+    {# Título principal de la sección, con estilos Tailwind CSS para centrado, tamaño, color y animación #}
     <h1 class="text-3xl md:text-4xl font-bold text-primary mb-4 flex items-center justify-center gap-2 animate-pulse">
-        <i class="fas fa-database text-green-400 text-4xl"></i> Modelo Relacional
+        <i class="fas fa-database text-green-400 text-4xl"></i> Modelo Relacional {# Icono de base de datos de Font Awesome #}
     </h1>
 </div>
 
-<!-- Mini resumen -->
+{# Contenedor para un breve resumen del modelo relacional #}
 <div class="bg-white bg-opacity-5 backdrop-blur-sm rounded-xl p-6 shadow-inner max-w-4xl mx-auto mb-10">
     <p class="text-gray-300 text-lg mb-2">
         Se presenta el modelo relacional de <span class="text-white font-semibold">OnTime</span>, el cual refleja la estructura de la base de datos y las relaciones entre las entidades del sistema.
@@ -27,18 +29,18 @@
     </p>
 </div>
 
-<!-- Botones -->
+{# Contenedor para los botones de acción (Abrir y Descargar Modelo Relacional) #}
 <div class="mt-10 text-center flex flex-col md:flex-row justify-center gap-4">
-    <!-- Abrir Modelo Relacional -->
+    {# Enlace para abrir el archivo PDF del modelo relacional en una nueva pestaña #}
     <a href={% static 'files/modelo_relacional.pdf' %} target="_blank"
        class="inline-block bg-blue-500 text-white px-6 py-3 rounded-lg shadow-md hover:shadow-blue-400/60 hover:scale-105 transition-all duration-300">
-       <i class="fas fa-external-link-alt mr-2"></i> Abrir Modelo Relacional
+       <i class="fas fa-external-link-alt mr-2"></i> Abrir Modelo Relacional {# Icono de enlace externo #}
     </a>
 
-    <!-- Descargar Modelo Relacional -->
-    <a href="{% static 'files/modelo_relacional.pdf' %}" download="modelo_relacional.xlsx"
+    {# Enlace para descargar el archivo PDF del modelo relacional. Nota: el atributo `download` tiene la extensión `xlsx` en lugar de `pdf`. Se recomienda cambiar a `pdf`. #}
+    <a href="{% static 'files/modelo_relacional.pdf' %}" download="modelo_relacional.pdf" {# Se corrigió la extensión a .pdf #}
        class="inline-block bg-green-500 text-white px-6 py-3 rounded-lg shadow-md hover:shadow-green-400/60 hover:scale-105 transition-all duration-300">
-       <i class="fas fa-cloud-download-alt mr-2"></i> Descargar Modelo Relacional
+       <i class="fas fa-cloud-download-alt mr-2"></i> Descargar Modelo Relacional {# Icono de descarga en la nube #}
     </a>
 </div>
 

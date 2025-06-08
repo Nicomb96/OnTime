@@ -5,6 +5,7 @@
 
 {% block content %}
 <div class="mt-6 text-center">
+    {# Enlace para volver al panel de administrador #}
     <a href="{% url 'inicio_admin' %}" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
         <i class="fas fa-arrow-left mr-2"></i> Volver al Panel
     </a>
@@ -14,23 +15,24 @@
     <div class="bg-gray-50 rounded-3xl shadow-lg p-6 md:p-10">
         <h2 class="text-2xl font-bold text-gray-500 mb-6 text-center animate-pulse">🕓 Ver Asistencias</h2>
 
-        <!-- Buscador y filtros -->
         <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+            {# Campo de entrada para buscar por nombre #}
             <input id="buscador" type="text" placeholder="Buscar por nombre..." class="w-full md:w-1/3 px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600">
             
+            {# Selector desplegable para filtrar por fecha #}
             <select id="filtro-fecha" class="w-full md:w-1/4 px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-400">
-                <option value="">Filtrar por Fecha</option>
+                <option value="">Filtrar por Fecha</option> {# Opción por defecto #}
                 <option value="Hoy">Hoy</option>
                 <option value="Semana">Esta Semana</option>
                 <option value="Mes">Este Mes</option>
             </select>
 
+            {# Botón para refrescar la lista de asistencias #}
             <button class="bg-green-600 text-white px-6 py-2 rounded-xl shadow hover:bg-green-700 transition duration-300">
                 <i class="fas fa-sync-alt mr-2"></i> Refrescar
             </button>
         </div>
 
-        <!-- Tabla de asistencias con scroll -->
         <div class="overflow-x-auto" style="max-height: 400px; overflow-y: auto;" id="tabla-container">
             <table class="min-w-full bg-white border border-gray-300 rounded-xl shadow-md">
                 <thead class="bg-green-100 text-green-800 text-left text-sm sticky top-0 z-10">
@@ -42,13 +44,12 @@
                     </tr>
                 </thead>
                 <tbody id="tabla-asistencias" class="text-sm text-gray-700">
-                    <!-- Fila base para JS -->
-                </tbody>
+                    </tbody>
             </table>
         </div>
 
-        <!-- Botón Ver más -->
         <div class="text-center mt-6">
+            {# Botón para cargar más asistencias, visible si hay más datos #}
             <button id="btn-ver-mas" class="bg-green-600 text-white px-6 py-2 rounded-xl shadow hover:bg-green-700 transition duration-300">
                 <i class="fas fa-angle-down mr-2"></i> Ver más
             </button>
@@ -57,6 +58,7 @@
 </div>
 
 <script>
+    // Datos de ejemplo para las asistencias (en un escenario real, esto vendría del backend)
     const asistencias = [
         {nombre: "Juan Pérez", fecha: "2025-04-22", estado: "Presente"},
         {nombre: "Luisa Torres", fecha: "2025-04-21", estado: "Ausente"},
@@ -75,46 +77,58 @@
         {nombre: "Diana Castaño", fecha: "2025-04-09", estado: "Ausente"}
     ];
 
-    let indice = 0;
-    const cantidadPorCarga = 5;
-    const tabla = document.getElementById('tabla-asistencias');
-    const btnVerMas = document.getElementById('btn-ver-mas');
+    let indice = 0; // Índice para controlar qué asistencias se han cargado
+    const cantidadPorCarga = 5; // Número de asistencias a cargar por vez
+    const tabla = document.getElementById('tabla-asistencias'); // Referencia al cuerpo de la tabla
+    const btnVerMas = document.getElementById('btn-ver-mas'); // Referencia al botón "Ver más"
 
     function cargarAsistencias() {
-        const total = asistencias.length;
+        const total = asistencias.length; // Número total de asistencias disponibles
+        // Itera para cargar un número definido de asistencias
         for (let i = indice; i < indice + cantidadPorCarga && i < total; i++) {
-            const asistencia = asistencias[i];
+            const asistencia = asistencias[i]; // Obtiene la asistencia actual
+            // Define las clases CSS para el estado de la asistencia (Presente, Ausente, Tardío)
+            const estadoClass = asistencia.estado === 'Presente' ? 'bg-green-200 text-green-800' : 
+                                asistencia.estado === 'Ausente' ? 'bg-red-200 text-red-800' : 
+                                'bg-yellow-200 text-yellow-800';
+            // Crea la fila HTML para la asistencia
             const row = `
                 <tr class="border-t">
                     <td class="py-3 px-4">${asistencia.nombre}</td>
                     <td class="py-3 px-4">${asistencia.fecha}</td>
                     <td class="py-3 px-4">
-                        <span class="px-2 py-1 rounded-full ${asistencia.estado === 'Presente' ? 'bg-green-200 text-green-800' : asistencia.estado === 'Ausente' ? 'bg-red-200 text-red-800' : 'bg-yellow-200 text-yellow-800'}">${asistencia.estado}</span>
+                        <span class="px-2 py-1 rounded-full ${estadoClass}">${asistencia.estado}</span>
                     </td>
                     <td class="py-3 px-4 space-x-2">
+                        {# Botones de acción para cada fila #}
                         <button class="text-blue-600 hover:underline" onclick="verDetalles(${i})"><i class="fas fa-eye"></i> Ver Detalles</button>
                         <button class="text-red-600 hover:underline" onclick="eliminarAsistencia(this)"><i class="fas fa-trash"></i> Eliminar</button>
                     </td>
                 </tr>`;
-            tabla.insertAdjacentHTML('beforeend', row);
+            tabla.insertAdjacentHTML('beforeend', row); // Inserta la fila al final de la tabla
         }
-        indice += cantidadPorCarga;
+        indice += cantidadPorCarga; // Actualiza el índice para la próxima carga
+        // Si ya no hay más asistencias para cargar, oculta el botón "Ver más"
         if (indice >= asistencias.length) {
             btnVerMas.classList.add('hidden');
         }
     }
 
     function eliminarAsistencia(btn) {
-        const fila = btn.closest("tr");
-        fila.remove();
+        // Función para eliminar una fila de la tabla
+        const fila = btn.closest("tr"); // Encuentra la fila padre del botón
+        fila.remove(); // Elimina la fila del DOM
     }
 
     function verDetalles(indice) {
+        // Función para mostrar detalles de una asistencia en un alert
         const asistencia = asistencias[indice];
         alert(`Detalles de ${asistencia.nombre}:\nFecha: ${asistencia.fecha}\nEstado: ${asistencia.estado}`);
     }
 
+    // Event listener para el botón "Ver más", llama a cargarAsistencias al hacer clic
     btnVerMas.addEventListener('click', cargarAsistencias);
+    // Event listener que se dispara cuando el DOM está completamente cargado, para cargar las asistencias iniciales
     window.addEventListener('DOMContentLoaded', cargarAsistencias);
 </script>
 {% endblock %}

@@ -1,5 +1,5 @@
 {% extends 'ontime_app/base.html' %}
-{% load static %}
+{% load static %} 
 
 {% block title %}Notificaciones - OnTime{% endblock %}
 
@@ -16,7 +16,6 @@
   <h2 class="text-4xl font-extrabold text-gray-800 text-center mb-6 animate-pulse">Revisa tus Notificaciones</h2>
   <p class="text-center text-gray-600 mb-8">Aquí puedes ver las notificaciones importantes del sistema, tus instructores y de registro de asistencias.</p>
 
-  <!-- Filtros -->
   <div class="mb-8 flex justify-start space-x-6 items-center text-gray-600">
     <div class="flex items-center space-x-4">
       <label for="filtroFecha" class="text-sm font-medium text-gray-600">Filtrar por fecha</label>
@@ -29,32 +28,29 @@
         <option value="">-- Todos --</option>
         <option value="sistema">Del sistema</option>
         <option value="instructor">De instructores</option>
-        <option value="registro">De registro de asistencias</option>
+        <option value="asistencia">De registro de asistencias</option>  {# <-- cambio acá #}
       </select>
     </div>
   </div>
 
-  <!-- Notificaciones -->
   <div class="space-y-6 max-h-80 overflow-y-auto" id="notificationList">
-    <!-- Las notificaciones se cargarán dinámicamente con JavaScript -->
   </div>
 
-  <!-- Botón de ver más y mensaje de no hay más -->
   <div class="w-full flex justify-center mt-8" id="verMasContainer">
     <button id="verMasBtn" class="bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-all duration-300 focus:ring-4 focus:ring-green-500 focus:outline-none" onclick="loadMoreNotifications()">
       Ver más notificaciones
     </button>
   </div>
+
   <p id="noNotificationsMessage" class="hidden text-center text-gray-600 mt-4"></p>
+
   <div id="noNotificationsMessageAfterDelete" class="hidden text-center text-gray-600 mt-8">
     <p>¡Todas las notificaciones han sido eliminadas!</p>
   </div>
 </div>
 
-<!-- FontAwesome -->
 <script src="https://kit.fontawesome.com/a076d05399.js"></script>
 
-<!-- Script principal -->
 <script>
   let paginaActual = 1;
   let filtroFecha = '';
@@ -64,6 +60,7 @@
     if (reset) {
       paginaActual = 1;
       document.getElementById('notificationList').innerHTML = '';
+      document.getElementById('noNotificationsMessageAfterDelete').classList.add('hidden');
     }
 
     filtroFecha = document.getElementById('filtroFecha').value;
@@ -79,14 +76,12 @@
       .then(data => {
         const lista = document.getElementById('notificationList');
         if (data.html && data.html.trim() !== '') {
-          // Evitar duplicados por ID
           const tempDiv = document.createElement('div');
           tempDiv.innerHTML = data.html;
           const nuevosIds = Array.from(tempDiv.children).map(el => el.getAttribute('id'));
 
           nuevosIds.forEach(id => {
             if (document.getElementById(id)) {
-              // Ya existe, lo quitamos del tempDiv para no agregarlo
               const child = tempDiv.querySelector(`#${id}`);
               if(child) child.remove();
             }
@@ -100,6 +95,7 @@
         } else {
           if (paginaActual === 1) {
             lista.innerHTML = '<p class="text-center text-gray-600">No hay notificaciones para estos filtros, bro.</p>';
+            document.getElementById('noNotificationsMessageAfterDelete').classList.add('hidden');
           }
           document.getElementById('verMasBtn').style.display = 'none';
           document.getElementById('noNotificationsMessage').style.display = 'block';
@@ -112,7 +108,6 @@
   document.getElementById('filtroFecha').addEventListener('change', () => loadMoreNotifications(true));
   document.getElementById('filtroTipo').addEventListener('change', () => loadMoreNotifications(true));
 
-  // Delegación de eventos para marcar como vista y eliminar
   document.addEventListener('click', function(e) {
     if (e.target.classList.contains('marcar-leida')) {
       const id = e.target.getAttribute('data-id');
@@ -157,7 +152,6 @@
     }
   });
 
-  // Función para obtener la cookie CSRF
   function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -173,9 +167,8 @@
     return cookieValue;
   }
 
-  // Carga inicial
   document.addEventListener('DOMContentLoaded', () => {
-    loadMoreNotifications();  // Carga inicial si no hay notificaciones cargadas por defecto
+    loadMoreNotifications();
   });
 </script>
 

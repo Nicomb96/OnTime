@@ -4,29 +4,26 @@
 {% block title %}Registrar Asistencia - OnTime{% endblock %}
 
 {% block content %}
-<!-- Botón de flecha para retroceder -->
 <div class="mt-6 text-center">
   <a href="javascript:history.back()" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
-      <i class="fas fa-arrow-left mr-2"></i>
+      <i class="fas fa-arrow-left mr-2"></i> 
       Regresar
   </a>
 </div>
-<div class="bg-gray-100 shadow-xl rounded-3xl p-10 w-full max-w-lg mx-auto mt-18 animate__animated animate__fadeIn animate__faster">
 
+<div class="bg-gray-100 shadow-xl rounded-3xl p-10 w-full max-w-lg mx-auto mt-18 animate__animated animate__fadeIn animate__faster">
   <h2 class="text-4xl font-extrabold text-gray-800 animate-pulse text-center mb-6">Registrar Asistencia</h2>
   <p class="text-center text-gray-600 mb-8">Escanea el código QR generado por tu instructor para registrar tu asistencia.</p>
 
-  <form id="formRegistrar" method="POST">
+  <form id="formRegistrar" method="POST" onsubmit="return false;">
     {% csrf_token %}
 
-    <!-- Escáner real de QR -->
     <div class="mb-6 flex justify-center">
       <div class="w-full max-w-xs border-4 border-dashed border-green-500 rounded-xl p-4 bg-white shadow-xl">
         <div id="reader" class="w-full h-56 rounded-xl"></div>
       </div>
     </div>
 
-    <!-- Loader que aparece durante el escaneo -->
     <div id="loader" class="hidden text-center mb-6">
       <svg class="mx-auto h-10 w-10 text-green-500 animate-spin" fill="none" viewBox="0 0 24 24">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -35,14 +32,12 @@
       <p class="mt-2 text-green-600 font-medium">Procesando escaneo...</p>
     </div>
 
-    <!-- Botón que inicia el escaneo (queda oculto pero no se elimina) -->
     <div class="text-center mb-6 hidden">
       <button id="btn-simular-escaneo" type="button" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition shadow-md">
         <i class="fas fa-qrcode mr-2"></i>Iniciar Escaneo
       </button>
     </div>
 
-    <!-- Campo para ingresar código manual -->
     <div class="max-w-md mx-auto mb-4 bg-gray-100 p-4 rounded-xl shadow-md">
       <h3 class="text-lg font-semibold text-center text-green-700 mb-2">¿No puedes escanear? Ingresa el código aquí:</h3>
       <div id="codigo-form" class="flex flex-col sm:flex-row gap-2">
@@ -52,17 +47,14 @@
       <p id="codigo-msg" class="text-sm text-center text-gray-500 mt-2"></p>
     </div>
 
-    <!-- Mensaje de error o soporte -->
     <div class="text-center mt-6">
       <p class="text-sm text-gray-500">¿Problemas con el escaneo? Contacta al instructor o intenta desde otro dispositivo.</p>
     </div>
   </form>
 </div>
 
-<!-- Mostrar mensaje -->
 <div id="mensajeAsistencia" class="hidden fixed top-6 left-1/2 transform -translate-x-1/2 bg-white border border-green-500 text-green-700 px-4 py-2 rounded-xl shadow-lg text-sm z-50 transition-opacity duration-500"></div>
 
-<!-- Botón opcional para ir a notificaciones -->
 <div id="irNotificaciones" class="hidden mt-4 text-center">
   <a href="{% url 'notificaciones_1' %}" class="text-green-600 hover:text-green-800 underline">Ver notificaciones</a>
 </div>
@@ -106,34 +98,32 @@
       loader.classList.add("hidden");
 
       mensajeDiv.textContent = data.msg;
-mensajeDiv.classList.remove("hidden");
+      mensajeDiv.classList.remove("hidden");
 
-if (data.status === "ok") {
-  msg.textContent = "✅ Asistencia registrada con éxito.";
-  msg.className = "text-green-600 text-sm text-center mt-2";
-  mensajeDiv.classList.remove("border-red-500", "text-red-700");
-  mensajeDiv.classList.add("border-green-500", "text-green-700");
-  irNotiDiv.classList.remove('hidden');
-} else {
-  msg.textContent = "❌ " + data.msg;
-  msg.className = "text-red-500 text-sm text-center mt-2";
-  mensajeDiv.classList.remove("border-green-500", "text-green-700");
-  mensajeDiv.classList.add("border-red-500", "text-red-700");
-  irNotiDiv.classList.add('hidden');
-}
+      if (data.status === "ok") {
+        msg.textContent = "Asistencia registrada con éxito.";
+        msg.className = "text-green-600 text-sm text-center mt-2";
+        mensajeDiv.classList.remove("border-red-500", "text-red-700");
+        mensajeDiv.classList.add("border-green-500", "text-green-700");
+        irNotiDiv.classList.remove('hidden');
+      } else {
+        msg.textContent = "❌ " + data.msg;
+        msg.className = "text-red-500 text-sm text-center mt-2";
+        mensajeDiv.classList.remove("border-green-500", "text-green-700");
+        mensajeDiv.classList.add("border-red-500", "text-red-700");
+        irNotiDiv.classList.add('hidden');
+      }
 
-// Ocultar suavemente
-setTimeout(() => {
-  mensajeDiv.classList.add("opacity-0");
-  setTimeout(() => {
-    mensajeDiv.classList.add("hidden");
-    mensajeDiv.classList.remove("opacity-0");
-  }, 500);
-}, 4000);
+      setTimeout(() => {
+        mensajeDiv.classList.add("opacity-0");
+        setTimeout(() => {
+          mensajeDiv.classList.add("hidden");
+          mensajeDiv.classList.remove("opacity-0");
+        }, 500);
+      }, 4000);
     });
   }
 
-  // Escaneo automático con la cámara
   const html5QrCode = new Html5Qrcode("reader");
   const qrConfig = { fps: 10, qrbox: 250 };
 
@@ -141,7 +131,7 @@ setTimeout(() => {
     { facingMode: "environment" },
     qrConfig,
     (decodedText) => {
-      html5QrCode.stop();  // Detiene la cámara al detectar
+      html5QrCode.stop();
       registrarAsistencia(decodedText.trim());
     },
     (errorMessage) => {
@@ -151,11 +141,17 @@ setTimeout(() => {
     console.error("No se pudo iniciar la cámara:", err);
   });
 
-  // Envío de código manual
   document.getElementById("btn-enviar-codigo").addEventListener("click", function (e) {
     e.preventDefault();
     const codigo = document.getElementById("codigo-manual").value.trim();
     registrarAsistencia(codigo);
+  });
+</script>
+
+<script>
+  // Este parche evita que el form haga submit normal y mande GET
+  document.getElementById("formRegistrar").addEventListener("submit", function(e) {
+    e.preventDefault();
   });
 </script>
 {% endblock %}
