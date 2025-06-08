@@ -50,88 +50,79 @@ Sistema desarrollado con Django que permite registrar la asistencia de aprendice
 
 1. **Clonar el repositorio**
 
-   Terminal Git bash:
-   git clone https://github.com/Nicomb96/OnTime.git
-   cd ontime
+   - git clone https://github.com/Nicomb96/OnTime.git
 
 2. **Crear y activar entorno virtual**
 
-   Terminal:
-   python -m venv .venv
-   .venv\Scripts\activate     # Windows
+   - python -m venv .venv
+   - .venv\Scripts\activate     # Windows
    
-3. **Instalar dependencias**
+4. **Instalar dependencias**
 
-   Terminal:
-   pip install -r requirements.txt
+   - pip install -r requirements.txt
    
-4. **Configurar la base de datos PostgreSQL**
+5. **Configurar la base de datos PostgreSQL**
 
-   . Crear base de datos y usuario PostgreSQL:
-     . Base de datos: postgres
-     . Usuario: postgres
-     . Contraseña: nicolasmb321
+   - Crear base de datos y usuario PostgreSQL:
+     - Base de datos: postgres
+     - Usuario: postgres
+     - Contraseña: nicolasmb321
 
-   . Ajustar configuración en settings.py si se cambia datos:
+   - Ajustar configuración en settings.py si se cambia datos:
    
-     DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',  # Motor de base de datos PostgreSQL
-        'NAME': 'postgres',                         # Nombre de la base de datos
-        'USER': 'postgres',                         # Usuario de la base de datos
-        'PASSWORD': 'nicolasmb321',                 # Contraseña del usuario de la base de datos
-        'HOST': 'localhost',                        # Host (local)
-        'PORT': '5432',                             # Puerto por defecto de PostgreSQL
-    }
-}
+     - DATABASES:
+        - ENGINE: django.db.backends.postgresql
+        - NAME: postgres                       
+        - USER: postgres                        
+        - PASSWORD: nicolasmb321                 
+        - HOST: localhost                        
+        - PORT: 5432
 
-5. **Aplicar migraciones**
+6. **Aplicar migraciones**
 
-   Terminal:
-   python manage.py migrate
+   - python manage.py migrate
 
-   Nota: Inicialmente se consideró usar un archivo `.sql` para definir las tablas de la base de datos, no obstante se optó por utilizar el enfoque nativo de Django mediante `models.py` y migraciones. Ya que permite una mejor integración con el framework, facilita la gestión de cambios en el modelo de datos y reduce errores al evitar definiciones manuales de SQL.
+     Nota: Inicialmente se consideró usar un archivo `.sql` para definir las tablas de la base de datos, no obstante se optó por utilizar el enfoque nativo de Django mediante `models.py` y migraciones. Ya que permite una mejor integración con el framework, facilita la gestión de cambios en el modelo de datos y reduce errores al evitar definiciones manuales de SQL.
 
-6. **Crear superusuario administrador**
+7. **Crear superusuario administrador**
 
    El proyecto ya cuenta con el siguiente superusuario principal para pruebas:
-    . Email: Ontimeproyecto1290@gmail.com
-    . Contraseña: ontime654321
+    - Email: Ontimeproyecto1290@gmail.com
+    - Contraseña: ontime654321
 
-7. **Ejecutar el servidor de desarrollo**
+8. **Ejecutar el servidor de desarrollo**
 
-   Terminal:
-   python manage.py runserver
+   - python manage.py runserver
 
-8. **Abrir en el navegador**
+9. **Abrir en el navegador**
 
-   Accede a http://127.0.0.1:8000 y comienza a usarlo.
+   - Accede a http://127.0.0.1:8000 y comienza a usarlo.
 
 **Uso básico**
 
-  . Inicia sesión con el usuario administrador para gestionar el sistema.
-  . Los instructores pueden generar códigos QR desde su panel.
-  . Los aprendices registran asistencia escaneando el QR con su cámara o ingresando manualmente el código.
-  . La app mostrará mensajes de éxito o error al registrar asistencia.
-  . Puedes consultar el historial y filtrar por fechas en la sección correspondiente.
+   - Inicia sesión con el usuario administrador para gestionar el sistema.
+   - Los instructores pueden generar códigos QR desde su panel.
+   - Los aprendices registran asistencia escaneando el QR con su cámara o ingresando manualmente el código.
+   - La app mostrará mensajes de éxito o error al registrar asistencia.
+   - Puedes consultar el historial y filtrar por fechas en la sección correspondiente.
 
 **Estructura del proyecto**
 
-  . ontime_app/ → Código principal de la app Django.
-  . templates/ → Archivos HTML con Django Templates.
-  . static/ → Archivos estáticos (CSS, JS, imágenes).
-  . requirements.txt → Dependencias del proyecto.
-  . manage.py → Script principal para gestión Django.
+   - ontime_app/ → Código principal de la app Django.
+   - templates/ → Archivos HTML con Django Templates.
+   - static/ → Archivos estáticos (CSS, JS, imágenes).
+   - requirements.txt → Dependencias del proyecto.
+   - manage.py → Script principal para gestión Django.
 
 **Dependencias importantes**
 
-  . Django
-  . psycopg2-binary (para PostgreSQL)
-  . html5-qrcode (librería JS cargada desde CDN)
-  . Tailwind CSS (integrado para estilos)
+   - Django
+   - psycopg2-binary (para PostgreSQL)
+   - html5-qrcode (librería JS cargada desde CDN)
+   - Tailwind CSS (integrado para estilos)
 
 **Contacto**
 
    Para dudas o soporte, contacta al grupo desarrollador:
-   . GitHub: https://github.com/Nicomb96
-   . Email: Ontimeproyecto1290@gmail.com
+   - GitHub: https://github.com/Nicomb96
+   - Email: Ontimeproyecto1290@gmail.com
