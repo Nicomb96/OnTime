@@ -1,25 +1,30 @@
 {% extends 'ontime_app/base.html' %}
-{% load static %}
+{% load static %} 
 
 {% block title %}Historial - OnTime{% endblock %}
 
 {% block content %}
 <div class="mt-6 text-center">
+  {# Enlace para volver al panel de administrador, con icono y estilos de transición #}
   <a href="{% url 'inicio_admin' %}" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
-    <i class="fas fa-arrow-left mr-2"></i> Volver al Panel
+    <i class="fas fa-arrow-left mr-2"></i> Volver al Panel {# Icono de flecha izquierda de Font Awesome #}
   </a>
 </div>
 
+{# Contenedor principal de la página de historial, con estilos Tailwind CSS #}
 <div class="container mx-auto px-4 lg:px-8 mt-8">
   <div class="bg-gray-50 rounded-3xl shadow-lg p-6 md:p-10">
-    <h2 class="text-2xl font-bold text-gray-500 mb-6 text-center animate-pulse">🕒 Historial del Sistema</h2>
+    <h2 class="text-2xl font-bold text-gray-500 mb-6 text-center animate-pulse">🕒 Historial del Sistema</h2> {# Título con icono y animación #}
 
-    <!-- Filtros -->
+    {# Contenedor para los campos de filtrado del historial #}
     <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+      {# Campo de entrada para filtrar por nombre de usuario #}
       <input id="filtro-usuario" type="text" placeholder="Filtrar por usuario..." class="w-full md:w-1/3 px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+      {# Campo de entrada para filtrar por fecha #}
       <input id="filtro-fecha" type="date" class="w-full md:w-1/3 px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-500">
+      {# Selector (dropdown) para filtrar por tipo de acción #}
       <select id="filtro-accion" class="w-full md:w-1/3 px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-500">
-        <option value="">Filtrar por acción</option>
+        <option value="">Filtrar por acción</option> {# Opción por defecto #}
         <option value="Edición de perfil">Edición de perfil</option>
         <option value="Registro de asistencia">Registro de asistencia</option>
         <option value="Carga masiva">Carga masiva</option>
@@ -31,34 +36,39 @@
       </select>
     </div>
 
+    {# Contenedor para la tabla con desplazamiento horizontal y vertical #}
     <div class="overflow-x-auto" style="max-height: 400px; overflow-y: auto;">
+      {# Tabla de historial con estilos y cabecera pegajosa #}
       <table id="tabla-excel" class="min-w-full bg-white border border-gray-300 rounded-xl shadow-md">
-        <thead class="bg-green-100 text-green-800 text-left text-sm sticky top-0 z-10">
+        <thead class="bg-green-100 text-green-800 text-left text-sm sticky top-0 z-10"> {# Cabecera de la tabla, se mantiene visible al hacer scroll #}
           <tr>
-            <th class="py-3 px-4">Fecha</th>
-            <th class="py-3 px-4">Usuario</th>
-            <th class="py-3 px-4">Acción</th>
-            <th class="py-3 px-4">Detalle</th>
+            <th class="py-3 px-4">Fecha</th> {# Columna para la fecha #}
+            <th class="py-3 px-4">Usuario</th> {# Columna para el usuario #}
+            <th class="py-3 px-4">Acción</th> {# Columna para la acción #}
+            <th class="py-3 px-4">Detalle</th> {# Columna para el detalle de la acción #}
           </tr>
         </thead>
         <tbody id="tabla-historial" class="text-sm text-gray-700">
-          <!-- Se carga por JS -->
-        </tbody>
+          </tbody>
       </table>
     </div>
 
+    {# Contenedor para los botones de acción (Ver más, Exportar a Excel) #}
     <div class="text-center mt-6 space-x-4">
+      {# Botón para cargar más registros del historial #}
       <button id="btn-ver-mas" class="bg-green-600 text-white px-6 py-2 rounded-xl shadow hover:bg-green-700 transition duration-300">
-        <i class="fas fa-angle-down mr-2"></i> Ver más
+        <i class="fas fa-angle-down mr-2"></i> Ver más {# Icono de flecha hacia abajo #}
       </button>
+      {# Botón para exportar los datos de la tabla a un archivo Excel #}
       <button onclick="exportarExcel()" class="bg-green-600 text-white px-6 py-2 rounded-xl shadow hover:bg-blue-700 transition duration-300">
-        <i class="fas fa-file-excel mr-2"></i> Exportar a Excel
+        <i class="fas fa-file-excel mr-2"></i> Exportar a Excel {# Icono de archivo Excel #}
       </button>
     </div>
   </div>
 </div>
 
 <script>
+  // Array de datos simulados para el historial. En una aplicación real, esto provendría del backend.
   const historial = [
     {fecha: "2025-04-22 10:15", usuario: "admin01", accion: "Edición de perfil", detalle: "Cambió la foto de perfil."},
     {fecha: "2025-04-22 09:45", usuario: "instructor22", accion: "Registro de asistencia", detalle: "Registró asistencia de ficha 2654321."},
@@ -75,16 +85,18 @@
     {fecha: "2025-04-13 12:20", usuario: "instructor22", accion: "Registro de asistencia", detalle: "Marcó asistencia de ficha 987654."},
   ];
 
-  let indice = 0;
-  const cantidadPorCarga = 5;
-  const tabla = document.getElementById('tabla-historial');
-  const btnVerMas = document.getElementById('btn-ver-mas');
+  let indice = 0; // Índice para saber desde dónde cargar el historial
+  const cantidadPorCarga = 5; // Número de elementos a cargar por cada clic en "Ver más"
+  const tabla = document.getElementById('tabla-historial'); // Referencia al tbody de la tabla
+  const btnVerMas = document.getElementById('btn-ver-mas'); // Referencia al botón "Ver más"
 
+  // Función para cargar los elementos del historial en la tabla
   function cargarHistorial() {
     let cargados = 0;
+    // Itera desde el índice actual hasta el final del historial o hasta la cantidad a cargar
     for (let i = indice; i < historial.length && cargados < cantidadPorCarga; i++) {
       const item = historial[i];
-      if (pasaFiltros(item)) {
+      if (pasaFiltros(item)) { // Comprueba si el item actual pasa los filtros aplicados
         const row = `
           <tr class="border-t">
             <td class="py-3 px-4">${item.fecha}</td>
@@ -92,33 +104,40 @@
             <td class="py-3 px-4">${item.accion}</td>
             <td class="py-3 px-4">${item.detalle}</td>
           </tr>`;
-        tabla.insertAdjacentHTML('beforeend', row);
+        tabla.insertAdjacentHTML('beforeend', row); // Agrega la fila a la tabla
         cargados++;
       }
-      indice++;
+      indice++; // Incrementa el índice para la próxima carga
     }
+    // Oculta el botón "Ver más" si ya se cargaron todos los elementos
     if (indice >= historial.length) {
       btnVerMas.classList.add('hidden');
     }
   }
 
+  // Función para verificar si un item del historial cumple con los filtros actuales
   function pasaFiltros(item) {
-    const usuario = document.getElementById('filtro-usuario').value.toLowerCase();
-    const fecha = document.getElementById('filtro-fecha').value;
-    const accion = document.getElementById('filtro-accion').value;
+    const usuario = document.getElementById('filtro-usuario').value.toLowerCase(); // Valor del filtro de usuario en minúsculas
+    const fecha = document.getElementById('filtro-fecha').value; // Valor del filtro de fecha
+    const accion = document.getElementById('filtro-accion').value; // Valor del filtro de acción
+    
+    // Retorna true si el item coincide con todos los filtros o si el filtro está vacío
     return (!usuario || item.usuario.toLowerCase().includes(usuario)) &&
            (!fecha || item.fecha.includes(fecha)) &&
            (!accion || item.accion === accion);
   }
 
+  // Agrega event listeners a los campos de filtro para llamar a la función 'filtrar' cuando cambien
   document.getElementById('filtro-usuario').addEventListener('input', filtrar);
   document.getElementById('filtro-fecha').addEventListener('change', filtrar);
   document.getElementById('filtro-accion').addEventListener('change', filtrar);
 
+  // Función para aplicar los filtros, vaciar la tabla y recargar el historial
   function filtrar() {
-    tabla.innerHTML = '';
-    indice = 0;
-    cargarHistorial();
+    tabla.innerHTML = ''; // Vacía la tabla
+    indice = 0; // Reinicia el índice de carga
+    cargarHistorial(); // Vuelve a cargar el historial con los filtros aplicados
+    // Muestra u oculta el botón "Ver más" según si hay más elementos para cargar después del filtrado
     if (indice >= historial.length) {
       btnVerMas.classList.add('hidden');
     } else {
@@ -126,15 +145,21 @@
     }
   }
 
+  // Agrega event listener al botón "Ver más" para cargar más historial al hacer clic
   btnVerMas.addEventListener('click', cargarHistorial);
 
+  // Función para exportar la tabla a un archivo Excel
   function exportarExcel() {
-    let tabla = document.getElementById("tabla-excel");
+    let tabla = document.getElementById("tabla-excel"); // Referencia a la tabla completa
+    // Crea un libro de Excel a partir de la tabla HTML
     let wb = XLSX.utils.table_to_book(tabla, {sheet: "Historial"});
+    // Guarda el libro de Excel como un archivo
     XLSX.writeFile(wb, "historial.xlsx");
   }
 
+  // Carga el historial inicial cuando el DOM esté completamente cargado
   window.addEventListener('DOMContentLoaded', cargarHistorial);
 </script>
+{# Script de la librería SheetJS para la exportación a Excel, cargado desde un CDN #}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 {% endblock %}

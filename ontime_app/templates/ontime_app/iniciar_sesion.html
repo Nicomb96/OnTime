@@ -1,169 +1,170 @@
-{% extends 'ontime_app/base.html' %}
-{% load static %}
+{% extends 'ontime_app/base.html' %} 
+{% load static %} 
 
 {% block title %}Iniciar Sesión - OnTime{% endblock %}
 
 {% block content %}
-<!-- Botón de retroceder -->
 <div class="mt-6 text-center">
-  <a href="javascript:history.back()" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
-    <i class="fas fa-arrow-left mr-2"></i>
-    Regresar
-  </a>
+    {# Enlace que utiliza JavaScript para volver a la página anterior en el historial del navegador #}
+    <a href="javascript:history.back()" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
+        <i class="fas fa-arrow-left mr-2"></i> {# Icono de flecha izquierda de Font Awesome #}
+        Regresar
+    </a>
 </div>
 
+{# Contenedor principal del formulario de inicio de sesión, con estilos Tailwind CSS y animación #}
 <div class="bg-gray-100 shadow-xl rounded-3xl p-10 w-full max-w-lg mx-auto mt-18 animate__animated animate__fadeIn animate__faster">
 
-  <h2 class="text-4xl font-extrabold text-gray-800 animate-pulse text-center mb-6">Iniciar Sesión</h2>
-  <p class="text-center text-gray-600 mb-8">Bienvenido, por favor ingresa tus datos para continuar.</p>
+    <h2 class="text-4xl font-extrabold text-gray-800 animate-pulse text-center mb-6">Iniciar Sesión</h2> {# Título principal #}
+    <p class="text-center text-gray-600 mb-8">Bienvenido, por favor ingresa tus datos para continuar.</p> {# Subtítulo de bienvenida #}
 
-  <!-- Mensajes de Django -->
-  {% if messages %}
-    <div class="mb-4">
-      {% for message in messages %}
-        <div class="p-3 rounded-lg text-center font-semibold 
-                    {% if message.tags == 'success' %}
-                      bg-green-100 text-green-800
-                    {% elif message.tags == 'error' %}
-                      bg-red-100 text-red-800
-                    {% else %}
-                      bg-gray-100 text-gray-800
-                    {% endif %}">
-          {{ message }}
-        </div>
-      {% endfor %}
-    </div>
-  {% endif %}
-
-  <!-- Errores específicos de validación backend -->
-  {% if errores %}
-    <div class="text-red-600 text-sm mt-4">
-      {% for field, error_list in errores.items %}
-        {% for error in error_list %}
-          <p>{{ error }}</p>
+    {% if messages %} {# Comprueba si hay mensajes de Django para mostrar #}
+      <div class="mb-4">
+        {% for message in messages %} {# Itera sobre cada mensaje #}
+          {# Contenedor del mensaje con estilos condicionales basados en las 'tags' del mensaje #}
+          <div class="p-3 rounded-lg text-center font-semibold 
+                       {% if message.tags == 'success' %}
+                         bg-green-100 text-green-800 {# Estilo para mensajes de éxito #}
+                       {% elif message.tags == 'error' %}
+                         bg-red-100 text-red-800 {# Estilo para mensajes de error #}
+                       {% else %}
+                         bg-gray-100 text-gray-800 {# Estilo por defecto para otros mensajes #}
+                       {% endif %}">
+            {{ message }} {# Muestra el contenido del mensaje #}
+          </div>
         {% endfor %}
-      {% endfor %}
-    </div>
-  {% endif %}
-
-  <form method="POST" onsubmit="return validarFormulario()">
-    {% csrf_token %}
-
-    <!-- Correo -->
-    <div class="mb-6">
-      <label for="correo" class="block text-sm font-medium text-gray-800 mb-1">Correo</label>
-      <input 
-        type="text" 
-        id="correo" 
-        name="correo" 
-        required
-        autocomplete="username"
-        placeholder="Ingresa tu correo"
-        value="{{ correo|default:'' }}"
-        class="mt-1 block w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 text-gray-800"
-      />
-      <p id="errorCorreo" class="text-red-600 text-sm mt-1 hidden">
-        El correo es obligatorio.
-      </p>
-    </div>
-
-    <!-- Contraseña -->
-    <div class="mb-6 relative">
-      <label for="contrasena" class="block text-sm font-medium text-gray-800 mb-1">Contraseña</label>
-      <div class="relative">
-        <input 
-          type="password" 
-          id="contrasena" 
-          name="contrasena" 
-          required
-          autocomplete="current-password"
-          placeholder="Contraseña"
-          class="mt-1 block w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 pr-12 transition-all duration-300 text-gray-800" 
-        >
-        <div class="absolute inset-y-0 right-3 flex items-center cursor-pointer" onclick="togglePassword()">
-          <svg 
-            id="iconoOjo" 
-            xmlns="http://www.w3.org/2000/svg" 
-            class="h-6 w-6 text-gray-600"
-            fill="none" 
-            viewBox="0 0 24 24" 
-            stroke="currentColor"
-          >
-            <path id="iconoLinea1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            <path id="iconoLinea2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-          </svg>
-        </div>
       </div>
-      <p id="errorContrasena" class="text-red-600 text-sm mt-1 hidden">
-        La contraseña debe tener al menos 8 caracteres.
-      </p>
-    </div>
+    {% endif %}
 
-    <!-- Recordarme -->
-    <div class="flex items-center mb-6">
-      <input type="checkbox" id="recordarme" name="recordarme" class="mr-2 text-green-600">
-      <label for="recordarme" class="text-sm text-gray-800">Recordarme</label>
-    </div>
+    {% if errores %} {# Comprueba si hay errores de validación específicos del backend #}
+      <div class="text-red-600 text-sm mt-4">
+        {% for field, error_list in errores.items %} {# Itera sobre los errores por campo #}
+          {% for error in error_list %} {# Itera sobre la lista de errores para cada campo #}
+            <p>{{ error }}</p> {# Muestra cada error #}
+          {% endfor %}
+        {% endfor %}
+      </div>
+    {% endif %}
 
-    <!-- Botón de inicio de sesión -->
-    <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition duration-300 shadow-md focus:ring-4 focus:ring-green-500 focus:outline-none">
-      Iniciar sesión
-    </button>
+    <form method="POST" onsubmit="return validarFormulario()"> {# Formulario de inicio de sesión, con validación JS en el envío #}
+      {% csrf_token %} {# Token de seguridad CSRF de Django #}
 
-    <!-- Enlaces adicionales -->
-    <div class="flex justify-between items-center text-sm mt-6">
-      <a href="{% url 'recuperar_contraseña' %}" class="text-green-600 underline">¿Contraseña olvidada? Recuperar</a>
-    </div>
-  </form>
+      <div class="mb-6">
+        <label for="correo" class="block text-sm font-medium text-gray-800 mb-1">Correo</label> {# Etiqueta del campo de correo #}
+        <input 
+          type="text" 
+          id="correo" 
+          name="correo" 
+          required {# Campo requerido #}
+          autocomplete="username" {# Sugerencia de autocompletado para navegadores #}
+          placeholder="Ingresa tu correo" {# Texto de marcador de posición #}
+          value="{{ correo|default:'' }}" {# Mantiene el valor del correo si se vuelve a cargar la página con datos #}
+          class="mt-1 block w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 text-gray-800" {# Estilos Tailwind #}
+        />
+        <p id="errorCorreo" class="text-red-600 text-sm mt-1 hidden"> {# Mensaje de error de validación JS, oculto por defecto #}
+          El correo es obligatorio.
+        </p>
+      </div>
+
+      <div class="mb-6 relative">
+        <label for="contrasena" class="block text-sm font-medium text-gray-800 mb-1">Contraseña</label> {# Etiqueta del campo de contraseña #}
+        <div class="relative">
+          <input 
+            type="password" 
+            id="contrasena" 
+            name="contrasena" 
+            required {# Campo requerido #}
+            autocomplete="current-password" {# Sugerencia de autocompletado para navegadores #}
+            placeholder="Contraseña" {# Texto de marcador de posición #}
+            class="mt-1 block w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 pr-12 transition-all duration-300 text-gray-800" {# Estilos Tailwind #}
+          >
+          {# Icono para mostrar/ocultar contraseña, con evento onclick para la función JS #}
+          <div class="absolute inset-y-0 right-3 flex items-center cursor-pointer" onclick="togglePassword()">
+            <svg 
+              id="iconoOjo" 
+              xmlns="http://www.w3.org/2000/svg" 
+              class="h-6 w-6 text-gray-600"
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              {# Paths SVG para el icono de ojo (visible por defecto) #}
+              <path id="iconoLinea1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path id="iconoLinea2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+          </div>
+        </div>
+        <p id="errorContrasena" class="text-red-600 text-sm mt-1 hidden"> {# Mensaje de error de validación JS, oculto por defecto #}
+          La contraseña debe tener al menos 8 caracteres.
+        </p>
+      </div>
+
+      <div class="flex items-center mb-6">
+        <input type="checkbox" id="recordarme" name="recordarme" class="mr-2 text-green-600"> {# Checkbox "Recordarme" #}
+        <label for="recordarme" class="text-sm text-gray-800">Recordarme</label> {# Etiqueta del checkbox #}
+      </div>
+
+      <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition duration-300 shadow-md focus:ring-4 focus:ring-green-500 focus:outline-none">
+        Iniciar sesión {# Botón de envío del formulario #}
+      </button>
+
+      <div class="flex justify-between items-center text-sm mt-6">
+        <a href="{% url 'recuperar_contraseña' %}" class="text-green-600 underline">¿Contraseña olvidada? Recuperar</a> {# Enlace para recuperar contraseña #}
+      </div>
+    </form>
 </div>
 
-<!-- JS para validaciones -->
 <script>
-  function togglePassword() {
-    const input = document.getElementById("contrasena");
-    const icono = document.getElementById("iconoOjo");
+    {# Función para alternar la visibilidad de la contraseña #}
+    function togglePassword() {
+        const input = document.getElementById("contrasena");
+        const icono = document.getElementById("iconoOjo");
 
-    if (input.type === "password") {
-      input.type = "text";
-      icono.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-4.477-10-10 0-1.217.217-2.382.625-3.469M21.375 21.375l-18.75-18.75" />`;
-    } else {
-      input.type = "password";
-      icono.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />`;
+        if (input.type === "password") {
+            input.type = "text"; // Cambia a tipo texto para mostrar la contraseña
+            icono.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-4.477-10-10 0-1.217.217-2.382.625-3.469M21.375 21.375l-18.75-18.75" />`; // Icono de ojo tachado
+        } else {
+            input.type = "password"; // Cambia a tipo password para ocultar la contraseña
+            icono.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />`; // Icono de ojo normal
+        }
     }
-  }
 
-  function validarCorreo() {
-    const correo = document.getElementById("correo").value;
-    const errorCorreo = document.getElementById("errorCorreo");
+    {# Función para validar el campo de correo #}
+    function validarCorreo() {
+        const correo = document.getElementById("correo").value;
+        const errorCorreo = document.getElementById("errorCorreo");
 
-    if (!correo.trim()) {
-      errorCorreo.classList.remove("hidden");
-    } else {
-      errorCorreo.classList.add("hidden");
+        if (!correo.trim()) { // Si el correo está vacío o solo tiene espacios
+            errorCorreo.classList.remove("hidden"); // Muestra el mensaje de error
+        } else {
+            errorCorreo.classList.add("hidden"); // Oculta el mensaje de error
+        }
     }
-  }
 
-  function validarContrasena() {
-    const contrasena = document.getElementById("contrasena").value;
-    const errorContrasena = document.getElementById("errorContrasena");
+    {# Función para validar el campo de contraseña #}
+    function validarContrasena() {
+        const contrasena = document.getElementById("contrasena").value;
+        const errorContrasena = document.getElementById("errorContrasena");
 
-    if (contrasena.length < 8) {
-      errorContrasena.classList.remove("hidden");
-    } else {
-      errorContrasena.classList.add("hidden");
+        if (contrasena.length < 8) { // Si la contraseña tiene menos de 8 caracteres
+            errorContrasena.classList.remove("hidden"); // Muestra el mensaje de error
+        } else {
+            errorContrasena.classList.add("hidden"); // Oculta el mensaje de error
+        }
     }
-  }
 
-  function validarFormulario() {
-    validarCorreo();
-    validarContrasena();
+    {# Función principal para validar el formulario antes del envío #}
+    function validarFormulario() {
+        validarCorreo(); // Llama a la validación del correo
+        validarContrasena(); // Llama a la validación de la contraseña
 
-    const correo = document.getElementById("correo").value.trim();
-    const contrasena = document.getElementById("contrasena").value;
+        const correo = document.getElementById("correo").value.trim();
+        const contrasena = document.getElementById("contrasena").value;
 
-    return correo !== '' && contrasena.length >= 8;
-  }
+        // Retorna true si ambos campos son válidos, false en caso contrario
+        return correo !== '' && contrasena.length >= 8;
+    }
 </script>
 {% endblock %}

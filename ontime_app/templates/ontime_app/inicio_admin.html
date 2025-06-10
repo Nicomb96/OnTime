@@ -5,85 +5,98 @@
 
 {% block content %}
 <div class="mt-6 text-center">
+    {# Enlace que utiliza JavaScript para volver a la página anterior en el historial del navegador #}
     <a href="javascript:history.back()" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
-        <i class="fas fa-arrow-left mr-2"></i> Regresar
+        <i class="fas fa-arrow-left mr-2"></i> Regresar {# Icono de flecha izquierda de Font Awesome #}
     </a>
 </div>
 
+{# Contenedor principal del panel de administración, con estilos Tailwind CSS para centrado, sombreado y diseño responsivo #}
 <div class="container mx-auto px-4 lg:px-8 mt-12">
     <div id="admin-panel" class="bg-gray-100 rounded-3xl shadow-lg p-6 md:p-10 max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 transition duration-500">
 
-        <!-- Perfil a la izquierda -->
+        {# Panel lateral izquierdo que muestra la información del administrador y botones de navegación #}
         <div class="w-full lg:w-1/3 bg-white rounded-3xl p-6 shadow-md flex flex-col items-center">
+            {# Imagen de perfil del administrador #}
             <img src="{% static 'images/foto_p2.jpeg' %}" alt="Foto de perfil" class="h-36 w-36 rounded-full border-4 border-green-600 shadow-md object-cover mb-4">
-            <h2 class="text-2xl font-bold text-green-800">Admin</h2>
-            <p class="text-sm text-gray-500 mb-4">admin@ontime.com</p>
+            <h2 class="text-2xl font-bold text-green-800">Admin</h2> {# Nombre del administrador #}
+            <p class="text-sm text-gray-500 mb-4">admin@ontime.com</p> {# Correo del administrador #}
 
-            <!-- Hora actual -->
+            {# Contenedor para mostrar la hora actual, actualizada por JavaScript #}
             <div id="hora" class="text-lg font-semibold text-green-700 mb-6"></div>
 
-            <!-- Botones -->
             <div class="flex flex-col gap-3 w-full text-center">
+                {# Enlace para la gestión de usuarios #}
                 <a href={% url "gestion_usuarios" %} class="bg-green-600 text-white py-2 rounded-xl shadow hover:bg-green-700 transition duration-300">
-                    <i class="fas fa-users mr-2"></i> Gestión de Usuarios
+                    <i class="fas fa-users mr-2"></i> Gestión de Usuarios {# Icono de usuarios #}
                 </a>
+                {# Enlace para ver asistencias #}
                 <a href={% url "ver_asistencias" %} class="bg-green-600 text-white py-2 rounded-xl shadow hover:bg-green-700 transition duration-300">
-                    <i class="fas fa-clipboard-list mr-2"></i> Ver Asistencias
+                    <i class="fas fa-clipboard-list mr-2"></i> Ver Asistencias {# Icono de lista de portapapeles #}
                 </a>
+                {# Enlace para la gestión de alertas #}
                 <a href={% url "gestion_alertas" %} class="bg-green-600 text-white py-2 rounded-xl shadow hover:bg-green-700 transition duration-300">
-                    <i class="fas fa-bell mr-2"></i> Gestión de Alertas
+                    <i class="fas fa-bell mr-2"></i> Gestión de Alertas {# Icono de campana #}
                 </a>
+                {# Enlace para los reportes #}
                 <a href={% url "reportes" %} class="bg-green-600 text-white py-2 rounded-xl shadow hover:bg-green-700 transition duration-300">
-                    <i class="fas fa-chart-bar mr-2"></i> Reportes
+                    <i class="fas fa-chart-bar mr-2"></i> Reportes {# Icono de gráfico de barras #}
                 </a>
+                {# Enlace para editar el perfil del administrador #}
                 <a href={% url "editar_perfil_adm" %} class="bg-yellow-500 text-white py-2 rounded-xl shadow hover:bg-yellow-600 transition duration-300">
-                    <i class="fas fa-user-edit mr-2"></i> Editar Perfil
+                    <i class="fas fa-user-edit mr-2"></i> Editar Perfil {# Icono de edición de usuario #}
                 </a>
+                {# Enlace para cerrar sesión #}
                 <a id="logout-link" href="{% url 'cerrar_sesion' %}" class="text-red-600 hover:underline flex items-center gap-2">
-                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión {# Icono de salida #}
                 </a>
-                <!-- Modo oscuro -->
+                {# Botón para activar/desactivar el modo oscuro #}
                 <button id="modo-oscuro" class="bg-gray-800 text-white py-2 rounded-xl shadow hover:bg-gray-900 transition duration-300 mt-4">
-                    <i class="fas fa-moon mr-2"></i> Modo Oscuro
+                    <i class="fas fa-moon mr-2"></i> Modo Oscuro {# Icono de luna #}
                 </button>
             </div>
         </div>
 
-        <!-- Contenido principal a la derecha -->
+        {# Panel derecho que contiene la bienvenida, tareas y estadísticas #}
         <div class="w-full lg:w-2/3 space-y-8">
 
-            <!-- Bienvenida -->
+            {# Mensaje de bienvenida animado para el administrador #}
             <div class="text-2xl font-semibold text-green-700 animate-fade-in animate-pulse">
                 ¡Hola Admin, que tengas un gran día! 😎
             </div>
 
-            <!-- Tareas Pendientes -->
+            {# Sección para listar tareas pendientes del administrador #}
             <div class="bg-white rounded-3xl shadow-md p-6 animate-slide-up">
-                <h3 class="text-xl font-semibold text-green-800 mb-4">📋 Tareas Pendientes</h3>
+                <h3 class="text-xl font-semibold text-green-800 mb-4">📋 Tareas Pendientes</h3> {# Icono de portapapeles #}
                 <ul class="space-y-4">
+                    {# Ejemplo de tarea: Revisar reportes #}
                     <li class="flex items-start gap-3 text-gray-500">
-                        <i class="fas fa-check-circle text-green-600 mt-1"></i>
+                        <i class="fas fa-check-circle text-green-600 mt-1"></i> {# Icono de check #}
                         <span>Revisar reportes enviados por instructores</span>
                     </li>
+                    {# Ejemplo de tarea: Asignar roles #}
                     <li class="flex items-start gap-3 text-gray-500">
-                        <i class="fas fa-user-cog text-green-600 mt-1"></i>
+                        <i class="fas fa-user-cog text-green-600 mt-1"></i> {# Icono de usuario con engranaje #}
                         <span>Asignar nuevos roles a usuarios registrados</span>
                     </li>
+                    {# Ejemplo de tarea: Actualizar alertas #}
                     <li class="flex items-start gap-3 text-gray-500">
-                        <i class="fas fa-bell text-green-600 mt-1"></i>
+                        <i class="fas fa-bell text-green-600 mt-1"></i> {# Icono de campana #}
                         <span>Actualizar alertas de asistencia</span>
                     </li>
                 </ul>
             </div>
 
-            <!-- Estadísticas -->
+            {# Sección para mostrar estadísticas rápidas del sistema #}
             <div class="bg-white rounded-3xl shadow-md p-6 animate-slide-up">
-                <h3 class="text-xl font-semibold text-green-800 mb-4">📈 Estadísticas Rápidas</h3>
+                <h3 class="text-xl font-semibold text-green-800 mb-4">📈 Estadísticas Rápidas</h3> {# Icono de gráfico #}
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {# Estadística de aprendices registrados #}
                     <div class="bg-green-100 p-4 rounded-xl shadow text-center">
                         <h4 class="text-lg font-bold text-green-700">Aprendices Registrados</h4>
                         <p class="text-3xl font-bold text-green-800">184</p>
                     </div>
+                    {# Estadística de instructores activos #}
                     <div class="bg-green-100 p-4 rounded-xl shadow text-center">
                         <h4 class="text-lg font-bold text-green-700">Instructores Activos</h4>
                         <p class="text-3xl font-bold text-green-800">25</p>
@@ -91,11 +104,11 @@
                 </div>
             </div>
 
-            <!-- Herramientas Adicionales -->
+            {# Sección para herramientas administrativas adicionales #}
             <div class="bg-white rounded-3xl shadow-md p-6 animate-slide-up">
-                <h3 class="text-xl font-semibold text-green-800 mb-4">🛠 Herramientas Adicionales</h3>
+                <h3 class="text-xl font-semibold text-green-800 mb-4">🛠 Herramientas Adicionales</h3> {# Icono de herramientas #}
 
-                <!-- Mensajes -->
+                {# Bucle para mostrar mensajes del backend (ej. de éxito o error) #}
                 {% if messages %}
                   {% for message in messages %}
                     <div class="bg-green-100 text-green-800 p-4 rounded-lg shadow mb-4">
@@ -105,30 +118,34 @@
                 {% endif %}
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {# Tarjeta de acceso rápido para "Gestión de Horarios" #}
                     <div class="bg-white rounded-xl shadow-md p-4 text-center hover:shadow-lg transition transform hover:-translate-y-1">
                         <a href={% url "gestion_horarios" %} class="text-green-600 font-semibold block">
-                            <i class="fas fa-clock text-2xl mb-2"></i><br> Gestión de Horarios
+                            <i class="fas fa-clock text-2xl mb-2"></i><br> Gestión de Horarios {# Icono de reloj #}
                         </a>
                         <p class="text-xs text-gray-500 mt-1">Gestiona los horarios de clases y actividades</p>
                     </div>
 
+                    {# Tarjeta de acceso rápido para "Control de Asistencia" #}
                     <div class="bg-white rounded-xl shadow-md p-4 text-center hover:shadow-lg transition transform hover:-translate-y-1">
                         <a href={% url "control_asistencia" %} class="text-green-600 font-semibold block">
-                            <i class="fas fa-calendar-check text-2xl mb-2"></i><br> Control de Asistencia
+                            <i class="fas fa-calendar-check text-2xl mb-2"></i><br> Control de Asistencia {# Icono de calendario con check #}
                         </a>
                         <p class="text-xs text-gray-500 mt-1">Consulta la asistencia por fechas específicas</p>
                     </div>
 
+                    {# Tarjeta de acceso rápido para "Carga Masiva" #}
                     <div class="bg-white rounded-xl shadow-md p-4 text-center hover:shadow-lg transition transform hover:-translate-y-1">
                         <a href={% url "carga_masiva" %} class="text-green-600 font-semibold block">
-                            <i class="fas fa-upload text-2xl mb-2"></i><br> Carga Masiva
+                            <i class="fas fa-upload text-2xl mb-2"></i><br> Carga Masiva {# Icono de subida #}
                         </a>
                         <p class="text-xs text-gray-500 mt-1">Sube masivamente los datos de los aprendices</p>
                     </div>
 
+                    {# Tarjeta de acceso rápido para "Historial" (del sistema) #}
                     <div class="bg-white rounded-xl shadow-md p-4 text-center hover:shadow-lg transition transform hover:-translate-y-1">
                         <a href={% url "historial" %} class="text-green-600 font-semibold block">
-                            <i class="fas fa-history text-2xl mb-2"></i><br> Historial
+                            <i class="fas fa-history text-2xl mb-2"></i><br> Historial {# Icono de historial #}
                         </a>
                         <p class="text-xs text-gray-500 mt-1">Consulta las acciones realizadas en el sistema</p>
                     </div>
@@ -138,29 +155,32 @@
     </div>
 </div>
 
-<!-- Scripts -->
 <script>
+    {# Función para actualizar la hora actual en el elemento con id 'hora' #}
     function actualizarHora() {
         const ahora = new Date();
-        const hora = ahora.toLocaleTimeString('es-CO');
+        const hora = ahora.toLocaleTimeString('es-CO'); // Formato de hora localizado para Colombia
         document.getElementById('hora').textContent = 'Hora actual: ' + hora;
     }
-    setInterval(actualizarHora, 1000);
-    actualizarHora();
+    setInterval(actualizarHora, 1000); // Actualiza la hora cada segundo
+    actualizarHora(); // Llama a la función una vez al cargar para mostrar la hora inmediatamente
 
+    {# Event listener para el botón de modo oscuro #}
     document.getElementById('modo-oscuro').addEventListener('click', function () {
+        // Alterna las clases de fondo y texto para cambiar entre modo claro y oscuro
         document.getElementById('admin-panel').classList.toggle('bg-gray-800');
         document.getElementById('admin-panel').classList.toggle('text-white');
+        // NOTA: Para un modo oscuro completo, necesitarías alternar clases en más elementos o usar una clase en el body/html y estilos CSS más complejos.
     });
 </script>
 
-<!-- Spinner de carga -->
+{# Spinner de carga oculto por defecto, que puede ser mostrado con JavaScript durante operaciones de carga #}
 <div id="loading-spinner" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
     <div class="w-16 h-16 border-4 border-t-4 border-green-600 border-solid rounded-full animate-spin"></div>
 </div>
 
-<!-- Estilos -->
 <style>
+    {# Estilo para la barra de progreso animada (aunque no se usa directamente en este template) #}
     .progress-bar {
         width: 0%;
         animation: progress 2s forwards;
