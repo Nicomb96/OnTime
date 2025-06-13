@@ -17,7 +17,7 @@ from django.contrib.auth.views import PasswordResetView
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.http import JsonResponse
-from .models import Asistencia, Notificacion
+from .models import Asistencia, Notificacion, Clase
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import json
@@ -28,6 +28,8 @@ from django.utils.timezone import make_aware
 from django.utils.timezone import now
 from django.utils.timezone import localtime
 from .models import Asistencia, Notificacion
+from .forms import JustificativoForm
+from ontime_app.models import Asistencia
 
 # --- Vistas de Autenticación y Perfil ---
 
@@ -116,7 +118,77 @@ def eliminar_foto_perfil(request):
         usuario.foto_perfil = None
         usuario.save()
 
-    return redirect('editar_perfil_2')
+    return redirect('editar_perfil')
+
+# --- Vistas de Edición de Perfil ---
+
+@never_cache
+@login_required(login_url='iniciar_sesion')
+def editar_perfil(request):
+    usuario = request.user
+    rol = usuario.rol
+
+    if request.method == 'POST':
+        form = EditarPerfilForm(request.POST, request.FILES, instance=usuario)
+        if form.is_valid():
+            nueva_contra = form.cleaned_data.get('password')
+            if nueva_contra:
+                usuario.set_password(nueva_contra)
+            form.save()
+            messages.success(request, 'Perfil actualizado correctamente.')
+            if rol == 'aprendiz':
+                return redirect('inicio_aprendiz')
+            elif rol == 'instructor':
+                return redirect('inicio_instructor')
+            else:
+                return redirect('inicio')
+    else:
+        form = EditarPerfilForm(instance=usuario)
+
+    return render(request, 'ontime_app/editar_perfil.html', {
+        'form': form,
+        'usuario': usuario,
+        'rol': rol,
+    })
+
+# --- Vista para Editar Perfil Único ---
+
+@never_cache
+@login_required(login_url='iniciar_sesion')
+def editar_perfil_unico(request):
+    usuario = request.user
+
+    if request.method == 'POST':
+        form = EditarPerfilForm(request.POST, request.FILES, instance=usuario)
+        if form.is_valid():
+            user = form.save(commit=False)
+
+            # Si se quiere cambiar la contraseña
+            nueva_contraseña = form.cleaned_data.get('password')
+            if nueva_contraseña:
+                user.set_password(nueva_contraseña)
+
+            user.save()
+
+            messages.success(request, '¡Perfil actualizado correctamente!')
+
+            # Redirige según el rol
+            if usuario.rol == 'aprendiz':
+                return redirect('inicio_aprendiz')
+            elif usuario.rol == 'instructor':
+                return redirect('inicio_instructor')
+            elif usuario.rol == 'admin':
+                return redirect('inicio_admin')
+            else:
+                return redirect('inicio')
+    else:
+        form = EditarPerfilForm(instance=usuario)
+
+    return render(request, 'ontime_app/editar_perfil.html', {
+        'form': form,
+        'usuario': usuario,
+        'rol': usuario.rol
+    })
 
 # --- Vistas de Recuperación y Cambio de Contraseña ---
 
@@ -295,16 +367,6 @@ def justificativos_1(request):
         return redirect('inicio')
     return render(request, 'ontime_app/justificativos_1.html')
 
-@never_cache
-@login_required(login_url='iniciar_sesion')
-def editar_perfil_1(request):
-    """
-    Vista para editar el perfil del aprendiz (primera versión).
-    """
-    if request.user.rol != 'aprendiz':
-        return redirect('inicio')
-    return render(request, 'ontime_app/editar_perfil_1.html')
-
 # --- Vistas por Rol: Instructor ---
 
 @never_cache
@@ -383,28 +445,6 @@ def acerca_de(request):
     Vista para la página "Acerca de".
     """
     return render(request, 'ontime_app/acerca_de.html')
-
-@never_cache
-@login_required(login_url='iniciar_sesion')
-def editar_perfil_2(request):
-    """
-    Vista para editar el perfil del usuario (versión mejorada).
-    Permite actualizar datos y cambiar la contraseña.
-    """
-    usuario = request.user
-
-    if request.method == 'POST':
-        form = EditarPerfilForm(request.POST, request.FILES, instance=usuario)
-        if form.is_valid():
-            # Si se proporcionó una nueva contraseña, la establece
-            if form.cleaned_data['password']:
-                usuario.set_password(form.cleaned_data['password'])
-            form.save()
-            return redirect('inicio_aprendiz')
-    else:
-        form = EditarPerfilForm(instance=usuario)
-
-    return render(request, 'ontime_app/editar_perfil_2.html', {'form': form, 'usuario': usuario})
 
 # --- Vistas de Documentación y Diseño ---
 
@@ -497,16 +537,6 @@ def reportes(request):
     if request.user.rol != 'admin':
         return redirect('inicio')
     return render(request, 'ontime_app/reportes.html')
-
-@never_cache
-@login_required(login_url='iniciar_sesion')
-def editar_perfil_adm(request):
-    """
-    Vista para que el administrador edite su perfil.
-    """
-    if request.user.rol != 'admin':
-        return redirect('inicio')
-    return render(request, 'ontime_app/editar_perfil_adm.html')
 
 @never_cache
 @login_required(login_url='iniciar_sesion')
@@ -690,9 +720,6 @@ def cargar_mas_notificaciones(request):
     return JsonResponse({'html': html, 'hay_mas': hay_mas})
 
 
-
-
-
 def historial_api(request):
     fecha_inicio = request.GET.get('fecha_inicio')
     fecha_fin = request.GET.get('fecha_fin')
@@ -715,8 +742,6 @@ def historial_api(request):
     return JsonResponse(datos, safe=False)
 
 
-
-
 @login_required
 def historial_asistencia(request):
     asistencias = Asistencia.objects.filter(aprendiz=request.user).order_by('-fecha')
@@ -731,6 +756,8 @@ def historial_asistencia(request):
             'estado': 'Asistido' if a.validada else 'No asistió',
             'detalles': f'Código: {a.codigo}, validado: {a.validada}'
         })
+
+    print(json.dumps(datos, indent=2))
 
     return render(request, 'ontime_app/historial_1.html', {
         'datos_asistencia': json.dumps(datos)
@@ -760,3 +787,41 @@ def filtrar_asistencia(request):
         })
 
     return JsonResponse({'datos': datos})
+
+
+@login_required
+def subir_justificativo(request):
+    if request.method == 'POST':
+        form = JustificativoForm(request.POST, request.FILES)
+        if form.is_valid():
+            justificativo = form.save(commit=False)
+            justificativo.usuario = request.user
+            justificativo.save()
+            return render(request, 'ontime_app/subir_justificativo.html', {
+                'form': JustificativoForm(),  # formulario limpio
+                'mensaje_exito': True,
+            })
+    else:
+        form = JustificativoForm()
+
+    print("DEBUG FORM:", form)
+    print("DEBUG FIELDS:", dir(form))
+
+    return render(request, 'ontime_app/subir_justificativo.html', {
+        'form': form
+    })
+
+
+@login_required
+def progreso_asistencia(request):
+    user = request.user
+
+    total_clases = Clase.objects.count()
+    asistencias = Asistencia.objects.filter(aprendiz=user).count()
+
+    if total_clases > 0:
+        porcentaje = round((asistencias / total_clases) * 100)
+    else:
+        porcentaje = 0
+
+    return JsonResponse({'porcentaje': porcentaje})

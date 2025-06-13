@@ -4,25 +4,23 @@
 {% block title %}Bienvenido - OnTime{% endblock %}
 
 {% block content %}
-  {# Contenedor principal de la página de bienvenida, con estilos Tailwind CSS para centrado, sombreado y animación #}
-  <div class="bg-gray-100 shadow-xl rounded-3xl p-10 w-full max-w-lg mx-auto mt-23 animate__animated animate__fadeIn animate__faster">
+  <div class="bg-gray-200 shadow-xl rounded-3xl p-10 w-full max-w-lg mx-auto mt-23 animate__animated animate__fadeIn animate__faster">
     
     <div class="text-center mb-8">
-      {# Título de bienvenida con estilos que incluyen tamaño de fuente grande y animación de pulso #}
       <h2 class="text-6xl font-extrabold text-gray-800 mb-4 tracking-tight animate-pulse">
         ¡Bienvenido a OnTime!
       </h2>
-      {# Subtítulo que describe la funcionalidad de la aplicación #}
-      <p class="text-gray-600 text-xl opacity-90">La forma más rápida y eficiente de manejar tu asistencia. Inicia sesión para empezar.</p>
+      <p class="text-gray-600 text-xl opacity-90">
+        La forma más rápida y eficiente de manejar tu asistencia. Inicia sesión para empezar.
+      </p>
     </div>
 
-    {# Contenedor para los botones de navegación, con un diseño flexible y espaciado #}
     <div class="flex flex-col gap-6 mt-10">
-      
-      {# Enlace que actúa como botón para ir a la página de inicio de sesión #}
       <a href="{% url 'iniciar_sesion' %}" class="w-full text-center bg-green-600 text-white py-4 rounded-lg shadow-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105 focus:ring-4 focus:ring-green-500 focus:outline-none">
         Iniciar sesión
       </a>
     </div>
-  </div> {# Cierra el div principal #}
+    
+  </div>
 {% endblock %}
+

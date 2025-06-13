@@ -4,13 +4,7 @@
 {% block title %}Diagrama de clases - OnTime{% endblock %}
 
 {% block content %}
-<!-- Botón de flecha para retroceder -->
-<div class="mt-6 text-center">
-    <a href="javascript:history.back()" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
-        <i class="fas fa-arrow-left mr-2"></i>
-        Regresar
-    </a>
-  </div>
+
 <div class="text-center mb-10">
     <h1 class="text-3xl md:text-4xl font-bold text-primary mb-4 flex items-center justify-center gap-2 animate-pulse">
         <i class="fas fa-project-diagram text-green-400 text-4xl"></i> Diagrama de clases
@@ -38,5 +32,14 @@
        <i class="fas fa-cloud-download-alt mr-2"></i> Descargar Diagrama
     </a>
 </div>
+
+{% block back_button %}
+<div class="mt-8 text-center">
+  <a href="javascript:history.back()" class="back-button back-button-emerald">
+    <i class="fas fa-arrow-left mr-2"></i> Sentencias DDL y DML
+  </a>
+</div>
+{% endblock back_button %}
+
 {% endblock %}
 

@@ -1,127 +1,93 @@
 {% extends 'ontime_app/base.html' %}
 {% load static %}
 
-{% block title %}Perfil - OnTime{% endblock %}
+{% block title %}Perfil del Instructor - OnTime{% endblock %}
 
 {% block content %}
 
-<div class="mt-6 text-center">
-    {# Enlace que utiliza JavaScript para volver a la página anterior en el historial del navegador #}
-    <a href="javascript:history.back()" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
-        <i class="fas fa-arrow-left mr-2"></i> {# Icono de flecha izquierda de Font Awesome #}
-        Regresar
-    </a>
+<div class="max-w-7xl mx-auto px-6 py-12">
+    <!-- Encabezado con fondo cool -->
+    <div class="relative bg-gradient-to-br from-green-600 to-emerald-500 text-white rounded-3xl p-10 shadow-xl mb-12 overflow-hidden">
+        <div class="absolute -bottom-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
+
+        <!-- Botón de cerrar sesión arriba a la derecha -->
+        <div class="absolute top-6 right-6 z-20">
+            <a 
+                href="{% url 'cerrar_sesion' %}"
+                class="inline-flex items-center gap-2 bg-gray-100 text-red-600 font-semibold px-3 py-1 rounded-xl shadow-md hover:bg-gray-200 transition duration-300"
+            >
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </a>
+        </div>
+
+        <div class="flex flex-col md:flex-row items-center gap-8 z-10 relative">
+            <div class="shrink-0">
+                <img src="{% static 'images/foto_p.png' %}"
+                     alt="Foto de perfil"
+                     class="h-36 w-36 md:h-40 md:w-40 rounded-full border-4 border-white shadow-lg object-cover transition hover:scale-105 duration-300">
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold mb-1">¡Hola, Instructor 👨‍🏫!</h1>
+                <p class="text-lg font-medium">Rol: <span class="font-bold">Instructor</span></p>
+                <p class="text-sm text-white/80">Correo: instructor@gmail.com</p>
+                <a href="{% url 'editar_perfil' %}" class="mt-4 inline-block bg-gray-100 text-green-600 font-semibold px-5 py-2 rounded-xl shadow hover:bg-gray-200 transition">
+                    <i class="fas fa-user-edit mr-2"></i> Editar Perfil
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Atajos del perfil -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+        <a href="{% url 'generar_qr' %}" class="bg-gradient-to-tr from-green-200 to-green-100 hover:from-green-300 transition rounded-2xl p-6 shadow text-center">
+            <i class="fas fa-qrcode text-4xl text-green-600 mb-3"></i>
+            <h3 class="font-bold text-green-800">Generar QR</h3>
+            <p class="text-sm text-green-700">Crea códigos para asistencia</p>
+        </a>
+        <a href="{% url 'consultar_asistencias' %}" class="bg-gradient-to-tr from-emerald-200 to-emerald-100 hover:from-emerald-300 transition rounded-2xl p-6 shadow text-center">
+            <i class="fas fa-clipboard-list text-4xl text-emerald-600 mb-3"></i>
+            <h3 class="font-bold text-emerald-800">Consultar Asistencias</h3>
+            <p class="text-sm text-emerald-700">Revisa la asistencia por ficha</p>
+        </a>
+        <a href="{% url 'alertas' %}" class="bg-gradient-to-tr from-yellow-200 to-yellow-100 hover:from-yellow-300 transition rounded-2xl p-6 shadow text-center">
+            <i class="fas fa-bell text-4xl text-yellow-600 mb-3"></i>
+            <h3 class="font-bold text-yellow-800">Gestión de Alertas</h3>
+            <p class="text-sm text-yellow-700">Configura avisos de asistencia</p>
+        </a>
+        <a href="{% url 'gestion_reportes' %}" class="bg-gradient-to-tr from-teal-200 to-teal-100 hover:from-teal-300 transition rounded-2xl p-6 shadow text-center">
+            <i class="fas fa-chart-bar text-4xl text-teal-600 mb-3"></i>
+            <h3 class="font-bold text-teal-800">Ver Reportes</h3>
+            <p class="text-sm text-teal-700">Genera reportes detallados</p>
+        </a>
+    </div>
+
+    <!-- Agenda del instructor -->
+    <div class="mt-12">
+        <h3 class="text-2xl font-bold text-green-800 mb-6">🗓️ Agenda del Instructor</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="bg-gray-100 p-5 rounded-2xl shadow-md hover:shadow-xl transition transform hover:-translate-y-1">
+                <h4 class="text-xl font-semibold text-green-700 mb-2">Lunes - 8:00 AM</h4>
+                <p class="text-gray-600">Competencia: Desarrollo Web</p>
+                <p class="text-gray-500 text-sm">Ficha: 2456789</p>
+            </div>
+            <div class="bg-gray-100 p-5 rounded-2xl shadow-md hover:shadow-xl transition transform hover:-translate-y-1">
+                <h4 class="text-xl font-semibold text-green-700 mb-2">Martes - 10:00 AM</h4>
+                <p class="text-gray-600">Competencia: Bases de Datos</p>
+                <p class="text-gray-500 text-sm">Ficha: 2467890</p>
+            </div>
+            <div class="bg-gray-100 p-5 rounded-2xl shadow-md hover:shadow-xl transition transform hover:-translate-y-1">
+                <h4 class="text-xl font-semibold text-green-700 mb-2">Miércoles - 2:00 PM</h4>
+                <p class="text-gray-600">Competencia: POO</p>
+                <p class="text-gray-500 text-sm">Ficha: 2478912</p>
+            </div>
+        </div>
+    </div>
 </div>
 
-{# Contenedor principal del perfil, con estilos Tailwind CSS para centrado, sombreado y tamaño #}
-<div class="container mx-auto px-4 lg:px-8 mt-12">
-    <div class="bg-gray-100 rounded-3xl shadow-lg p-10 max-w-7xl mx-auto">
-        {# Tarjeta de bienvenida que muestra la información del usuario, con efectos visuales #}
-        <div class="relative bg-white/70 backdrop-blur-md shadow-xl rounded-3xl p-6 md:p-10 flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10 mb-12 border border-gray-300 transition-all duration-500 transform hover:scale-105">
-            <div class="relative transition-all duration-500 transform hover:scale-110">
-                {# Imagen de perfil del instructor #}
-                <img src="{% static 'images/foto_p1.jpeg' %}" alt="Foto de perfil" class="h-36 w-36 md:h-40 md:w-40 rounded-full border-4 border-green-600 shadow-md object-cover">
-                {# Etiqueta "Inst.." para indicar el rol de instructor #}
-                <div class="absolute -bottom-2 -right-2 bg-green-600 text-white text-xs font-bold rounded-full px-3 py-1 shadow-md">
-                    Inst..
-                </div>
-            </div>
-
-            <div class="flex-1 text-center md:text-left">
-                {# Mensaje de bienvenida al instructor con animación de pulso #}
-                <h2 class="text-3xl font-extrabold text-green-800 mb-2 animate-pulse">¡Hola, Instructor 👨‍🏫!</h2>
-                <p class="text-base text-gray-600 mb-1">Bienvenido a tu panel en <span class="font-semibold text-green-700">OnTime</span></p>
-                <p class="text-sm text-gray-500">Correo: instructor@gmail.com</p>
-
-                <div class="mt-4">
-                    {# Enlace al formulario de edición de perfil #}
-                    <a href="{% url 'editar_perfil_1' %}" class="inline-block bg-green-600 text-white px-5 py-2 rounded-xl shadow hover:bg-green-700 transition duration-300">
-                        <i class="fas fa-user-edit mr-2"></i> Editar Perfil {# Icono de edición de usuario #}
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        {# Cuadrícula de accesos rápidos para funciones clave del instructor #}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {# Tarjeta de acceso rápido para "Generar QR" #}
-            <div class="bg-white rounded-2xl shadow-md p-6 text-center hover:shadow-xl transition transform hover:-translate-y-1">
-                <a href={% url "generar_qr" %} class="text-green-600 text-xl font-semibold">
-                    <i class="fas fa-qrcode text-4xl mb-3"></i><br> Generar QR {# Icono de código QR #}
-                </a>
-                <p class="text-sm text-gray-500 mt-2">Genera códigos QR para registrar asistencia de los aprendices</p>
-            </div>
-            {# Tarjeta de acceso rápido para "Consultar Asistencias" #}
-            <div class="bg-white rounded-2xl shadow-md p-6 text-center hover:shadow-xl transition transform hover:-translate-y-1">
-                <a href={% url "consultar_asistencias" %} class="text-green-600 text-xl font-semibold">
-                    <i class="fas fa-clipboard-list text-4xl mb-3"></i><br> Consultar Asistencias {# Icono de lista/portapapeles #}
-                </a>
-                <p class="text-sm text-gray-500 mt-2">Consulta la asistencia de los aprendices por competencia</p>
-            </div>
-            {# Tarjeta de acceso rápido para "Gestión de alertas" #}
-            <div class="bg-white rounded-2xl shadow-md p-6 text-center hover:shadow-xl transition transform hover:-translate-y-1">
-                <a href={% url "alertas" %} class="text-green-600 text-xl font-semibold">
-                    <i class="fas fa-bell text-4xl mb-3"></i><br> Gestión de alertas {# Icono de campana #}
-                </a>
-                <p class="text-sm text-gray-500 mt-2">Configura, visualiza y maneja las alertas de asistencia</p>
-            </div>
-            {# Tarjeta de acceso rápido para "Ver Reportes" #}
-            <div class="bg-white rounded-2xl shadow-md p-6 text-center hover:shadow-xl transition transform hover:-translate-y-1">
-                <a href={% url "gestion_reportes" %} class="text-green-600 text-xl font-semibold">
-                    <i class="fas fa-chart-bar text-4xl mb-3"></i><br> Ver Reportes {# Icono de gráfico de barras #}
-                </a>
-                <p class="text-sm text-gray-500 mt-2">Genera y visualiza reportes detallados de asistencia</p>
-            </div>
-        </div>
-
-        {# Sección que muestra una agenda de ejemplo para el instructor #}
-        <div class="mt-12">
-            <h3 class="text-2xl font-bold text-green-800 mb-6">🗓️ Agenda del Instructor</h3> {# Icono de calendario #}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {# Tarjeta de ejemplo de evento en la agenda #}
-                <div class="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl transition transform hover:-translate-y-1 animate-fade-in">
-                    <h4 class="text-xl font-semibold text-green-700 mb-2">Lunes - 8:00 AM</h4>
-                    <p class="text-gray-600">Competencia: Desarrollo Web</p>
-                    <p class="text-gray-500 text-sm">Ficha: 2456789</p>
-                </div>
-                {# Otra tarjeta de ejemplo de evento en la agenda #}
-                <div class="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl transition transform hover:-translate-y-1 animate-fade-in">
-                    <h4 class="text-xl font-semibold text-green-700 mb-2">Martes - 10:00 AM</h4>
-                    <p class="text-gray-600">Competencia: Bases de Datos</p>
-                    <p class="text-gray-500 text-sm">Ficha: 2467890</p>
-                </div>
-                {# Otra tarjeta de ejemplo de evento en la agenda #}
-                <div class="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl transition transform hover:-translate-y-1 animate-fade-in">
-                    <h4 class="text-xl font-semibold text-green-700 mb-2">Miércoles - 2:00 PM</h4>
-                    <p class="text-gray-600">Competencia: Programación Orientada a Objetos</p>
-                    <p class="text-gray-500 text-sm">Ficha: 2478912</p>
-                </div>
-            </div>
-        </div>
-
-        <br>
-        {# Enlace para cerrar sesión #}
-        <a id="logout-link" href="{% url 'cerrar_sesion' %}" class="text-red-600 hover:underline flex items-center gap-2">
-            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión {# Icono de salida #}
-        </a>
-    </div> {# Cierra el div con bg-gray-100... #}
-</div> {# Cierra el div con container mx-auto... #}
-
-{# Spinner de carga oculto por defecto, que puede ser mostrado con JavaScript durante operaciones de carga #}
-<div id="loading-spinner" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
+<!-- Spinner de carga -->
+<div id="loading-spinner" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden z-50">
     <div class="w-16 h-16 border-4 border-t-4 border-green-600 border-solid rounded-full animate-spin"></div>
 </div>
 
-<style>
-    {# Estilo para una barra de progreso animada (aunque no se usa directamente en este HTML) #}
-    .progress-bar {
-        width: 0%;
-        animation: progress 2s forwards;
-    }
-
-    @keyframes progress {
-        0% { width: 0%; }
-        100% { width: 86%; }
-    }
-</style>
 {% endblock %}
+

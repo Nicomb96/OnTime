@@ -1,278 +1,343 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}OnTime{% endblock %}</title>
 
-    <!-- Estilos -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <script> tailwind.config = {darkMode: 'class'}</script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+    <script src="https://unpkg.com/alpinejs" defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
-    <link rel="icon" href="{% static 'images/info' %}" />
-
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(to bottom right, #2a2b2e, #1e3d28),
-                        url("#");
-            background-repeat: no-repeat;
-            background-size: cover;
-            background-blend-mode: overlay;
-            color: #e5e7eb;
+            background-color: #1f2937;
+            color: #f3f4f6;
+        }
+        .loader {
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid rgba(18, 119, 86, 0.88);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
-        .text-primary { color: #34d399; }
-        .bg-primary { background-color: #065f46; }
-
-        .header {
-            background: linear-gradient(to right, #1e3d28, #065f46);
-            padding: 20px 0;
-            animation: slideDown 1s ease-out;
+        /* Estilos para los items del dropdown con iconos */
+        .dropdown-item-with-icon {
+            display: flex;
+            align-items: center;
+            gap: 10px; /* Espacio entre el icono y el texto */
+            padding: 10px 15px; /* Ajuste de padding para items de dropdown */
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        /* Color para los iconos dentro del dropdown, ajustado para fondo CLARO */
+        .dropdown-item-with-icon i {
+            color:rgba(18, 119, 86, 0.88); /* Verde esmeralda para contraste con fondo claro */
+            min-width: 20px; /* Asegura un ancho mínimo para los iconos, para alineación */
+            text-align: center; /* Centra el icono si es más pequeño que min-width */
+        }
+        /* Hover de los ítems del dropdown, ajustado para fondo CLARO */
+        .dropdown-item-with-icon:hover {
+            background-color: #e5e7eb; /* Un gris muy claro (gray-200) para el hover */
+            color: #1f2937; /* Color de texto oscuro en hover */
         }
 
-        .footer {
-            background: #022c22;
-            color: #bbf7d0;
-            padding: 20px 0;
+        /* Ajuste para que el dropdown de Entregables no se desborde a la izquierda */
+        .dropdown-menu-entregables {
+            right: 0;
+            left: auto; /* Anula el left-0 que pueda venir por defecto */
+        }
+
+        /* Estilos para los enlaces/botones del navbar principal (Inicio, Roles, Entregables) */
+        .nav-button-style {
+            padding-top: 0.5rem; /* py-2 en Tailwind */
+            padding-bottom: 0.5rem;
+            padding-left: 1rem; /* px-4 en Tailwind */
+            padding-right: 1rem;
+            border-radius: 0.375rem; /* rounded-md en Tailwind */
+            display: flex; /* Para alinear el icono y el texto */
+            align-items: center; /* Para centrar verticalmente el icono y el texto */
+            gap: 0.5rem; /* space-x-2 en Tailwind */
+            transition: background-color 0.3s ease; /* Transición suave para el hover */
+        }
+
+        .nav-button-style:hover {
+            background-color: rgba(29, 117, 80, 0.85); /* hover:bg-emerald-700 en Tailwind (aproximado en rgba) */
+        }
+
+        /* Color para los iconos de los elementos principales del navbar */
+        .nav-button-style i {
+            color: inherit; /* Hereda el color del texto del enlace/botón */
+        }
+
+        /* Asegurar que el menú responsive muestre los iconos correctamente */
+        .mobile-nav-item-with-icon {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem; /* Espacio entre el icono y el texto */
+            padding-top: 0.25rem; /* py-1 en Tailwind */
+            padding-bottom: 0.25rem;
+        }
+        .mobile-nav-item-with-icon i {
+            color: #4ade80; /* Un verde más claro para el menú responsive */
+            min-width: 20px;
             text-align: center;
         }
 
-        .header .logo {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: white;
-            display: flex;
-            align-items: center;
-        }
-
-        .header .logo img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin-right: 10px;
-        }
-
-        .header nav a {
-            color: white;
-            font-size: 1rem;
-            padding: 8px 16px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .header nav a:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-
-        .form-container {
-            background-color: rgba(0, 0, 0, 0.6);
-            border-radius: 12px;
-            box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.5);
-            padding: 7rem;
-            max-width: 1200px;
-            margin-top: 5rem;
-            width: 100%;
-            animation: slideUp 1s ease-out;
-        }
-
-        #particles-js {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-        }
-
-        .button-primary {
-            background-color: #34d399;
-            color: white;
-            border-radius: 8px;
-            padding: 12px 24px;
-            text-transform: uppercase;
-            font-weight: 600;
-            transition: background-color 0.3s ease;
-        }
-
-        .button-primary:hover { background-color: #065f46; }
-
-        .footer a {
-            color: #bbf7d0;
-            text-decoration: underline;
-        }
-
-        @keyframes slideDown {
-            0% { opacity: 0; transform: translateY(-100px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeIn {
-            0% { opacity: 0; }
-            100% { opacity: 1; }
-        }
-
-        .header .logo,
-        .header nav a {
-            animation: fadeIn 1s ease-in-out;
-        }
-
-        @media (max-width: 768px) {
-            .header .logo {
-                font-size: 1.5rem;
-                text-align: center;
-                width: 100%;
-            }
-
-            .header .logo img {
-                margin-right: 0;
-                width: 35px;
-                height: 35px;
-            }
-
-            .footer {
-                font-size: 0.85rem;
-            }
-        }
-
-        .role-option i {
-            margin-right: 10px;
-        }
+        /* Alpine.js x-cloak directive */
+        [x-cloak] { display: none !important; }
     </style>
 
     {% block extra_head %}{% endblock %}
 </head>
 
-<body class="flex flex-col min-h-screen">
-    <div id="particles-js"></div>
+<body class="flex flex-col min-h-screen relative">
 
-    <!-- Header -->
-    <header class="header shadow-md mb-6">
-        <div class="container mx-auto px-6 flex justify-between items-center">
+    {% if messages %}
+<div 
+    x-data="{ show: true }" 
+    x-init="setTimeout(() => show = false, 3000)" 
+    x-show="show"
+    x-transition
+    class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50"
+>
+    {% for message in messages %}
+        <div class="bg-green-500 text-white px-4 py-2 rounded shadow mb-2 animate-fade-in">
+            {{ message }}
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<style>
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+</style>
+
+    <div id="particles-js" class="absolute top-0 left-0 w-full h-full -z-10"></div>
+
+    <header class="bg-gradient-to-r from-green-900 via-emerald-800 to-green-900 text-white shadow-lg" x-data="{ open: false }">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
             <a href="{% url 'inicio' %}" class="flex items-center space-x-3">
-                <img src="{% static 'images/.png' %}" class="h-10 w-10 rounded-full" alt="Logo" />
-                <span class="text-3xl font-bold text-white">OnTime</span>
+                <img src="{% static 'images/logo.png' %}" class="h-10 w-10 rounded-full" alt="Logo" />
+                <span class="text-2xl font-bold">OnTime</span>
             </a>
-            <div class="relative flex items-center space-x-4">
-                <a href="{% url 'inicio' %}" class="text-white hover:bg-white hover:bg-opacity-10 px-4 py-2 rounded-lg transition flex items-center">
-                    <i class="fas fa-home mr-2"></i>Inicio
+            <button @click="open = !open" class="md:hidden focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path x-show="!open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    <path x-show="open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+            <nav class="hidden md:flex space-x-4 items-center">
+                <a href="{% url 'inicio' %}" class="nav-button-style hover:bg-emerald-700">
+                    <i class="fas fa-home"></i>
+                    <span>Inicio</span>
                 </a>
 
-                <!-- Menú Rol -->
-                <div class="relative">
-                    <button id="toggleMenu" class="text-white hover:bg-white hover:bg-opacity-10 px-4 py-2 rounded-lg transition flex items-center">
-                        <i class="fas fa-user-circle mr-2"></i>Roles
-                        <i class="fas fa-chevron-down ml-2"></i>
+                <div class="relative" x-data="{ open: false }">
+                    <button @click="open = !open" class="nav-button-style hover:bg-emerald-700 focus:outline-none">
+                        <i class="fas fa-users"></i>
+                        <span>Roles</span>
                     </button>
-                    <div id="menuDropdown" class="hidden absolute right-0 mt-2 w-48 rounded-lg shadow-lg z-50" style="background-color: #e5e7eb;">
-                        <a href="{% url 'inicio_aprendiz' %}" class="text-gray-600 block px-4 py-3 hover:bg-green-500 hover:bg-opacity-20 text-white flex items-center role-option">
-                            <i class="fas fa-user-graduate"></i>Aprendiz
+                    <div x-show="open"
+                         x-cloak
+                         @click.away="open = false"
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 translate-y-2"
+                         x-transition:enter-end="opacity-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100 translate-y-0"
+                         x-transition:leave-end="opacity-0 translate-y-2"
+                         class="absolute left-0 mt-2 w-48 bg-gray-200 text-gray-800 rounded shadow-lg z-50"> <a href="{% url 'inicio_aprendiz' %}" class="dropdown-item-with-icon">
+                            <i class="fas fa-user-graduate"></i> Aprendiz
                         </a>
-                        <a href="{% url 'inicio_instructor' %}" class="text-gray-600 block px-4 py-3 hover:bg-green-500 hover:bg-opacity-20 text-white flex items-center role-option">
-                            <i class="fas fa-chalkboard-teacher"></i>Instructor
+                        <a href="{% url 'inicio_instructor' %}" class="dropdown-item-with-icon">
+                            <i class="fas fa-chalkboard-teacher"></i> Instructor
                         </a>
-                        <a href="{% url 'inicio_admin' %}" class="text-gray-600 block px-4 py-3 hover:bg-green-500 hover:bg-opacity-20 text-white flex items-center role-option">
-                            <i class="fas fa-user-shield"></i>Admin
+                        <a href="{% url 'inicio_admin' %}" class="dropdown-item-with-icon">
+                            <i class="fas fa-user-shield"></i> Admin
                         </a>
                     </div>
                 </div>
 
-                <!-- Menú Entregables -->
-                <div class="relative">
-                    <button id="toggleEntregables" class="text-white hover:bg-white hover:bg-opacity-10 px-4 py-2 rounded-lg transition flex items-center">
-                        <i class="fas fa-folder-open mr-2"></i>Entregables
-                        <i class="fas fa-chevron-down ml-2"></i>
+                <div class="relative" x-data="{ open: false }">
+                    <button @click="open = !open" class="nav-button-style hover:bg-emerald-700 focus:outline-none">
+                        <i class="fas fa-folder-open"></i>
+                        <span>Entregables</span>
                     </button>
-                    <div id="entregablesDropdown" class="hidden absolute right-0 mt-2 w-60 rounded-lg shadow-lg z-50" style="background-color: #e5e7eb;">
-                        <a href="{% url 'normalizacion_mr' %}" class="text-gray-700 block px-4 py-3 hover:bg-green-500 hover:bg-opacity-20 text-white">Normalización MR</a>
-                        <a href="{% url 'modelo_relacional' %}" class="text-gray-700 block px-4 py-3 hover:bg-green-500 hover:bg-opacity-20 text-white">Modelo Relacional</a>
-                        <a href="{% url 'diccionario_datos' %}" class="text-gray-700 block px-4 py-3 hover:bg-green-500 hover:bg-opacity-20 text-white">Diccionario de Datos</a>
-                        <a href="{% url 'sentencias' %}" class="text-gray-700 block px-4 py-3 hover:bg-green-500 hover:bg-opacity-20 text-white">Sentencias DDL y DML</a>
-                        <a href="{% url 'diagrama_clases' %}" class="text-gray-700 block px-4 py-3 hover:bg-green-500 hover:bg-opacity-20 text-white">Diagrama de Clases</a>
+                    <div x-show="open"
+                         x-cloak
+                         @click.away="open = false"
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 translate-y-2"
+                         x-transition:enter-end="opacity-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100 translate-y-0"
+                         x-transition:leave-end="opacity-0 translate-y-2"
+                         class="absolute mt-2 w-56 bg-gray-200 text-gray-800 rounded shadow-lg z-50 dropdown-menu-entregables"> <a href="{% url 'normalizacion_mr' %}" class="dropdown-item-with-icon">
+                            <i class="fas fa-file-alt"></i> Normalización MR
+                        </a>
+                        <a href="{% url 'modelo_relacional' %}" class="dropdown-item-with-icon">
+                            <i class="fas fa-project-diagram"></i> Modelo Relacional
+                        </a>
+                        <a href="{% url 'diccionario_datos' %}" class="dropdown-item-with-icon">
+                            <i class="fas fa-database"></i> Diccionario de Datos
+                        </a>
+                        <a href="{% url 'sentencias' %}" class="dropdown-item-with-icon">
+                            <i class="fas fa-code"></i> Sentencias DDL y DML
+                        </a>
+                        <a href="{% url 'diagrama_clases' %}" class="dropdown-item-with-icon">
+                            <i class="fas fa-sitemap"></i> Diagrama de Clases
+                        </a>
                     </div>
+                </div>
+            </nav>
+        </div>
+
+        <div class="md:hidden" x-show="open"
+             x-cloak
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 -translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 -translate-y-4">
+            <div class="px-6 pt-2 pb-4 space-y-2 bg-emerald-900">
+                <a href="{% url 'inicio' %}" class="block text-white mobile-nav-item-with-icon">
+                    <i class="fas fa-home"></i>
+                    <span>Inicio</span>
+                </a>
+                <div>
+                    <p class="text-white font-semibold mt-2 mobile-nav-item-with-icon">
+                        <i class="fas fa-users"></i>
+                        <span>Roles</span>
+                    </p>
+                    <a href="{% url 'inicio_aprendiz' %}" class="block text-gray-200 pl-4 mobile-nav-item-with-icon">
+                        <i class="fas fa-user-graduate text-emerald-300"></i> Aprendiz
+                    </a>
+                    <a href="{% url 'inicio_instructor' %}" class="block text-gray-200 pl-4 mobile-nav-item-with-icon">
+                        <i class="fas fa-chalkboard-teacher text-emerald-300"></i> Instructor
+                    </a>
+                    <a href="{% url 'inicio_admin' %}" class="block text-gray-200 pl-4 mobile-nav-item-with-icon">
+                        <i class="fas fa-user-shield text-emerald-300"></i> Admin
+                    </a>
+                </div>
+                <div>
+                    <p class="text-white font-semibold mt-2 mobile-nav-item-with-icon">
+                        <i class="fas fa-folder-open"></i>
+                        <span>Entregables</span>
+                    </p>
+                    <a href="{% url 'normalizacion_mr' %}" class="block text-gray-200 pl-4 mobile-nav-item-with-icon">
+                        <i class="fas fa-file-alt text-emerald-300"></i> Normalización MR
+                    </a>
+                    <a href="{% url 'modelo_relacional' %}" class="block text-gray-200 pl-4 mobile-nav-item-with-icon">
+                        <i class="fas fa-project-diagram text-emerald-300"></i> Modelo Relacional
+                    </a>
+                    <a href="{% url 'diccionario_datos' %}" class="block text-gray-200 pl-4 mobile-nav-item-with-icon">
+                        <i class="fas fa-database text-emerald-300"></i> Diccionario de Datos
+                    </a>
+                    <a href="{% url 'sentencias' %}" class="block text-gray-200 pl-4 mobile-nav-item-with-icon">
+                        <i class="fas fa-code text-emerald-300"></i> Sentencias DDL y DML
+                    </a>
+                    <a href="{% url 'diagrama_clases' %}" class="block text-gray-200 pl-4 mobile-nav-item-with-icon">
+                        <i class="fas fa-sitemap text-emerald-300"></i> Diagrama de Clases
+                    </a>
+                </div>
+                <div class="pt-4">
+                    <a href="{% url 'iniciar_sesion' %}" class="block bg-emerald-700 hover:bg-emerald-800 text-white text-center font-semibold py-2 rounded-xl shadow-md transition-colors duration-300">
+                        Iniciar Sesión
+                    </a>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Main -->
-    <main class="flex-grow mb-16">
-        <div class="flex justify-center px-6">
-            <div class="form-container w-full">
-                {% block content %}{% endblock %}
-            </div>
-        </div>
+    <main id="main" class="flex-grow transition-all duration-300 ease-in-out opacity-0">
+        <section class="container mx-auto px-6 py-12">
+            {% block content %}{% endblock %}
+        </section>
     </main>
 
-    <!-- Footer -->
-    <footer class="footer text-xs">
-        <p>&copy; 2025 OnTime. Todos los derechos reservados.</p>
-        <p>Ficha: 3069239 - Grupo #1 - Proyecto SENA</p>
-        <div class="mt-3">
-            <a href="{% url 'acerca_de' %}" class="hover:underline mx-2">Acerca de</a>
-            <a href="{% url 'contacto' %}" class="hover:underline mx-2">Contacto</a>
-            <a href="{% url 'ayuda' %}" class="hover:underline mx-2">Ayuda</a>
+    <footer class="bg-gray-900 text-gray-400 py-8">
+        <div class="container mx-auto text-center space-y-3">
+            <p class="text-sm">&copy; 2025 OnTime. Todos los derechos reservados.</p>
+            <p class="text-xs">Ficha: 3069239 - Grupo #1 - Proyecto SENA</p>
+            <div class="space-x-4">
+                <a href="{% url 'acerca_de' %}" class="hover:underline">Acerca de</a>
+                <a href="{% url 'contacto' %}" class="hover:underline">Contacto</a>
+                <a href="{% url 'ayuda' %}" class="hover:underline">Ayuda</a>
+            </div>
         </div>
     </footer>
 
-    <!-- Scripts -->
     <script>
         particlesJS("particles-js", {
-            "particles": {
-                "number": { "value": 60, "density": { "enable": true, "value_area": 800 }},
-                "color": { "value": "#34d399" },
-                "shape": { "type": "circle" },
-                "opacity": { "value": 0.4, "random": true },
-                "size": { "value": 4, "random": true },
-                "move": { "enable": true, "speed": 1, "direction": "none", "out_mode": "out" }
+            particles: {
+                number: { value: 60, density: { enable: true, value_area: 800 }},
+                color: { value: "#34d399" },
+                shape: { type: "circle" },
+                opacity: { value: 0.4, random: true },
+                size: { value: 4, random: true },
+                move: { enable: true, speed: 1 }
             },
-            "interactivity": {
-                "detect_on": "canvas",
-                "events": {
-                    "onhover": { "enable": false },
-                    "onclick": { "enable": false }
+            interactivity: {
+                events: {
+                    onhover: { enable: false },
+                    onclick: { enable: false }
                 }
-            },
-            "retina_detect": true
+            }
         });
 
-        document.addEventListener("DOMContentLoaded", function () {
-            const toggleMenu = document.getElementById("toggleMenu");
-            const menuDropdown = document.getElementById("menuDropdown");
-            const toggleEntregables = document.getElementById("toggleEntregables");
-            const entregablesDropdown = document.getElementById("entregablesDropdown");
+        function fadeInMain() {
+            const main = document.getElementById('main');
+            main.classList.add('opacity-0');
+            setTimeout(() => {
+                main.classList.remove('opacity-0');
+                main.classList.add('opacity-100');
+            }, 50);
+        }
 
-            if (toggleMenu && menuDropdown) {
-                toggleMenu.addEventListener("click", function (e) {
-                    e.stopPropagation();
-                    menuDropdown.classList.toggle("hidden");
-                    entregablesDropdown.classList.add("hidden");
-                });
-            }
-
-            if (toggleEntregables && entregablesDropdown) {
-                toggleEntregables.addEventListener("click", function (e) {
-                    e.stopPropagation();
-                    entregablesDropdown.classList.toggle("hidden");
-                    menuDropdown.classList.add("hidden");
-                });
-            }
-
-            document.addEventListener("click", function (e) {
-                if (!menuDropdown.contains(e.target) && !toggleMenu.contains(e.target)) {
-                    menuDropdown.classList.add("hidden");
-                }
-                if (!entregablesDropdown.contains(e.target) && !toggleEntregables.contains(e.target)) {
-                    entregablesDropdown.classList.add("hidden");
+        function interceptLinks() {
+            const main = document.getElementById('main');
+            document.querySelectorAll('a[href]').forEach(link => {
+                const url = link.getAttribute('href');
+                if (url && !url.startsWith('#') && link.target !== '_blank') {
+                    link.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        main.classList.remove('opacity-100');
+                        main.classList.add('opacity-0');
+                        setTimeout(() => {
+                            window.location.href = url;
+                        }, 200);
+                    });
                 }
             });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            fadeInMain();
+            interceptLinks();
+        });
+
+        window.addEventListener('pageshow', () => {
+            fadeInMain();
         });
     </script>
 </body>
-
 </html>

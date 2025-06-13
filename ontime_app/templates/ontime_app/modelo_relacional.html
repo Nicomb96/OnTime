@@ -4,13 +4,6 @@
 {% block title %}Modelo Relacional - OnTime{% endblock %}
 
 {% block content %}
-<div class="mt-6 text-center">
-    {# Enlace que utiliza JavaScript para regresar a la página anterior en el historial del navegador #}
-    <a href="javascript:history.back()" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
-        <i class="fas fa-arrow-left mr-2"></i> {# Icono de flecha izquierda de Font Awesome #}
-        Regresar
-    </a>
-</div>
 
 <div class="text-center mb-10">
     {# Título principal de la sección, con estilos Tailwind CSS para centrado, tamaño, color y animación #}
@@ -43,5 +36,13 @@
        <i class="fas fa-cloud-download-alt mr-2"></i> Descargar Modelo Relacional {# Icono de descarga en la nube #}
     </a>
 </div>
+
+{% block back_button %}
+<div class="mt-8 text-center">
+  <a href="javascript:history.back()" class="back-button back-button-emerald">
+    <i class="fas fa-arrow-left mr-2"></i> Normalización MR
+  </a>
+</div>
+{% endblock back_button %}
 
 {% endblock %}

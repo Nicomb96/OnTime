@@ -1,132 +1,113 @@
-{% extends 'ontime_app/base.html' %} 
-{% load static %} 
-{% block title %}Perfil - OnTime{% endblock %}
+{% extends 'ontime_app/base.html' %}
+{% load static %}
+{% block title %}Perfil del Aprendiz - OnTime{% endblock %}
 
 {% block content %}
 
-<div class="mt-6 text-center">
-    {# Enlace que utiliza JavaScript para volver a la página anterior en el historial del navegador #}
-    <a href="javascript:history.back()" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
-        <i class="fas fa-arrow-left mr-2"></i> {# Icono de flecha izquierda de Font Awesome #}
-        Regresar
-    </a>
-</div>
+<div class="max-w-7xl mx-auto px-6 py-12">
+    <!-- Encabezado con fondo cool -->
+    <div class="relative bg-gradient-to-br from-green-600 to-emerald-500 text-white rounded-3xl p-10 shadow-xl mb-12 overflow-hidden">
+        
+        <!-- Fondo difuso -->
+        <div class="absolute -bottom-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
 
-{# Contenedor principal del perfil, con estilos Tailwind CSS para centrado, sombreado y tamaño #}
-<div class="container mx-auto px-4 lg:px-8 mt-12">
-
-    <div class="bg-gray-100 rounded-3xl shadow-lg p-10 max-w-7xl mx-auto">
-
-        {# Tarjeta de bienvenida que muestra la información del usuario, con efectos visuales y adaptabilidad #}
-        <div class="relative bg-white/70 backdrop-blur-md shadow-xl rounded-3xl p-6 md:p-10 flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10 mb-12 border border-gray-300 transition-all duration-500 transform hover:scale-105">
-            
-            <div class="relative transition-all duration-500 transform hover:scale-110">
-                {# Muestra la foto de perfil del usuario si existe; de lo contrario, usa una imagen por defecto #}
-                <img src="{% if usuario.foto_perfil %}{{ usuario.foto_perfil.url }}{% else %}{% static 'images/foto_p.png' %}{% endif %}" alt="Foto de perfil" class="h-36 w-36 md:h-40 md:w-40 rounded-full border-4 border-green-600 shadow-md object-cover">
-                {# Muestra las primeras 8 letras del rol del usuario (ej. "Aprendiz", "Instruct") #}
-                <div class="absolute -bottom-2 -right-2 bg-green-600 text-white text-xs font-bold rounded-full px-3 py-1 shadow-md">
-                    {{ usuario.get_rol_display|slice:":8" }}
-                </div>
-            </div>
-
-            <div class="flex-1 text-center md:text-left">
-                {# Mensaje de bienvenida personalizado con el nombre y apellido del usuario, y animación de pulso #}
-                <h2 class="text-3xl font-extrabold text-green-800 mb-2 animate-pulse">¡Hola, {{ usuario.first_name }} {{ usuario.last_name }} 👋!</h2>
-                <p class="text-base text-gray-600 mb-1">Bienvenido a tu espacio personal en <span class="font-semibold text-green-700">OnTime</span></p>
-                <p class="text-sm text-gray-500">Correo: {{ usuario.email }}</p>
-
-                <div class="mt-4">
-                    {# Enlace al formulario de edición de perfil #}
-                    <a href="{% url 'editar_perfil_2' %}" class="inline-block bg-green-600 text-white px-5 py-2 rounded-xl shadow hover:bg-green-700 transition duration-300">
-                        <i class="fas fa-user-edit mr-2"></i> Editar Perfil {# Icono de edición de usuario #}
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        {# Sección que muestra el progreso de asistencia del usuario con una barra y una medalla #}
-        <div class="bg-green-50 rounded-2xl p-6 mb-10 shadow-inner border border-green-200 animate-fade-in">
-            <div class="flex flex-col md:flex-row items-center justify-between gap-6">
-
-                <div class="w-full md:w-2/3">
-                    <h4 class="text-lg font-semibold text-green-800 mb-2">Tu Progreso de Asistencia</h4>
-                    <div class="w-full bg-gray-300 rounded-full h-5 overflow-hidden">
-                        {# Barra de progreso con animación CSS para simular el llenado #}
-                        <div class="bg-green-600 h-5 rounded-full progress-bar"></div>
-                    </div>
-                    <p class="mt-2 text-sm text-gray-600">Has asistido al <strong>86%</strong> de tus clases. ¡Sigue así! 💪</p>
-                </div>
-
-                <div class="flex flex-col items-center text-green-700">
-                    {# Icono de medalla animado para el nivel de constancia #}
-                    <i class="fas fa-medal text-6xl mb-2 text-yellow-500 drop-shadow-md animate-pulse"></i>
-                    <p class="font-bold text-md">Nivel: Constante</p>
-                </div>
-            </div>
-
-            <div class="mt-6 text-center">
-                <p class="text-md italic text-gray-700">"La constancia es la clave del éxito. ¡No aflojes!"</p>
-            </div>
-        </div>
-
-        {# Cuadrícula de accesos rápidos para funciones clave del usuario #}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {# Tarjeta de acceso rápido para "Registrar Asistencia" #}
-            <div class="bg-white rounded-2xl shadow-md p-6 text-center hover:shadow-xl transition transform hover:-translate-y-1">
-                <a href={% url "registrar_asistencia" %} class="text-green-600 text-xl font-semibold">
-                    <i class="fas fa-check-circle text-4xl mb-3"></i><br> Registrar Asistencia {# Icono de check #}
-                </a>
-                <p class="text-sm text-gray-500 mt-2">Marca tu asistencia de manera rápida y fácil</p>
-            </div>
-            {# Tarjeta de acceso rápido para "Notificaciones" #}
-            <div class="bg-white rounded-2xl shadow-md p-6 text-center hover:shadow-xl transition transform hover:-translate-y-1">
-                <a href={% url "notificaciones_1" %} class="text-green-600 text-xl font-semibold">
-                    <i class="fas fa-bell text-4xl mb-3"></i><br> Notificaciones {# Icono de campana #}
-                </a>
-                <p class="text-sm text-gray-500 mt-2">Consulta tus alertas y recordatorios de asistencia</p>
-            </div>
-            {# Tarjeta de acceso rápido para "Historial" #}
-            <div class="bg-white rounded-2xl shadow-md p-6 text-center hover:shadow-xl transition transform hover:-translate-y-1">
-                <a href={% url "historial_asistencia" %} class="text-green-600 text-xl font-semibold">
-                    <i class="fas fa-history text-4xl mb-3"></i><br> Historial {# Icono de historial #}
-                </a>
-                <p class="text-sm text-gray-500 mt-2">Consulta tu historial completo de asistencia</p>
-            </div>
-            {# Tarjeta de acceso rápido para "Subir Justificativos" #}
-            <div class="bg-white rounded-2xl shadow-md p-6 text-center hover:shadow-xl transition transform hover:-translate-y-1">
-                <a href={% url "justificativos_1" %} class="text-green-600 text-xl font-semibold">
-                    <i class="fas fa-file-upload text-4xl mb-3"></i><br> Subir Justificativos {# Icono de subida de archivo #}
-                </a>
-                <p class="text-sm text-gray-500 mt-2">Envía tu soporte para justificar ausencias</p>
-            </div>
-        </div>
-
-        <br>
-            {# Enlace para cerrar sesión #}
-            <a id="logout-link" href="{% url 'cerrar_sesion' %}" class="text-red-600 hover:underline flex items-center gap-2">
-                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión {# Icono de salida #}
+        <!-- Botón de cerrar sesión arriba a la derecha -->
+        <div class="absolute top-6 right-6 z-20">
+            <a 
+                href="{% url 'cerrar_sesion' %}"
+                class="inline-flex items-center gap-2 bg-gray-100 text-red-600 font-semibold px-3 py-1 rounded-xl shadow-md hover:bg-gray-200 transition duration-300"
+            >
+                <i class="fas fa-sign-out-alt"></i> Salir
             </a>
         </div>
 
+        <div class="flex flex-col md:flex-row items-center gap-8 z-10 relative">
+            <div class="shrink-0">
+                <img src="{% if usuario.foto_perfil %}{{ usuario.foto_perfil.url }}{% else %}{% static 'images/foto_p.png' %}{% endif %}"
+                     alt="Foto de perfil"
+                     class="h-36 w-36 md:h-40 md:w-40 rounded-full border-4 border-white shadow-lg object-cover transition hover:scale-105 duration-300">
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold mb-1">Hola, {{ usuario.first_name }} {{ usuario.last_name }} 👋</h1>
+                <p class="text-lg font-medium">Rol: <span class="font-bold">{{ usuario.get_rol_display }}</span></p>
+                <p class="text-sm text-white/80">Correo: {{ usuario.email }}</p>
+                <a href="{% url 'editar_perfil' %}" class="mt-4 inline-block bg-gray-100 text-green-600 font-semibold px-5 py-2 rounded-xl shadow hover:bg-gray-200 transition">
+                    <i class="fas fa-user-edit mr-2"></i> Editar Perfil
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progreso -->
+    <div class="bg-gray-200 rounded-2xl shadow-md p-8 mb-12 border border-gray-200">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">Tu Progreso de Asistencia</h2>
+        <div class="w-full bg-gray-100 rounded-full h-5 mb-3 overflow-hidden">
+            <div class="bg-green-600 h-5 rounded-full transition-all duration-500" id="barra-progreso" style="width: 0%;"></div>
+        </div>
+        <p class="text-sm text-gray-700 mb-2" id="mensaje-progreso">Calculando asistencia...</p>
+        <p class="text-sm text-green-800 font-semibold" id="nivel-progreso">Nivel: ---</p>
+    </div>
+
+    <!-- Atajos del perfil -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+        <a href="{% url 'registrar_asistencia' %}" class="bg-gradient-to-tr from-green-200 to-green-100 hover:from-green-300 transition rounded-2xl p-6 shadow text-center">
+            <i class="fas fa-check-circle text-4xl text-green-600 mb-3"></i>
+            <h3 class="font-bold text-green-800">Registrar Asistencia</h3>
+            <p class="text-sm text-green-700">Marca tu ingreso fácilmente</p>
+        </a>
+        <a href="{% url 'notificaciones_1' %}" class="bg-gradient-to-tr from-yellow-200 to-yellow-100 hover:from-yellow-300 transition rounded-2xl p-6 shadow text-center">
+            <i class="fas fa-bell text-4xl text-yellow-600 mb-3"></i>
+            <h3 class="font-bold text-yellow-800">Notificaciones</h3>
+            <p class="text-sm text-yellow-700">Mira tus alertas y avisos</p>
+        </a>
+        <a href="{% url 'historial_asistencia' %}" class="bg-gradient-to-tr from-blue-200 to-blue-100 hover:from-blue-300 transition rounded-2xl p-6 shadow text-center">
+            <i class="fas fa-history text-4xl text-blue-600 mb-3"></i>
+            <h3 class="font-bold text-blue-800">Historial</h3>
+            <p class="text-sm text-blue-700">Consulta tus registros</p>
+        </a>
+        <a href="{% url 'subir_justificativo' %}" class="bg-gradient-to-tr from-purple-200 to-purple-100 hover:from-purple-300 transition rounded-2xl p-6 shadow text-center">
+            <i class="fas fa-file-upload text-4xl text-purple-600 mb-3"></i>
+            <h3 class="font-bold text-purple-800">Justificativos</h3>
+            <p class="text-sm text-purple-700">Envía tus soportes</p>
+        </a>
     </div>
 </div>
 
-{# Spinner de carga oculto por defecto, que puede ser mostrado con JavaScript durante operaciones de carga #}
-<div id="loading-spinner" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
+<!-- Spinner de carga -->
+<div id="loading-spinner" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden z-50">
     <div class="w-16 h-16 border-4 border-t-4 border-green-600 border-solid rounded-full animate-spin"></div>
 </div>
 
-<style>
-    {# Estilo para la barra de progreso animada #}
-    .progress-bar {
-        width: 0%;
-        animation: progress 2s forwards;
-    }
+<script>
+function obtenerNivel(porcentaje) {
+    if (porcentaje >= 90) return "Excelente";
+    if (porcentaje >= 75) return "Constante";
+    if (porcentaje >= 50) return "Irregular";
+    return "Bajo";
+}
 
-    @keyframes progress {
-        0% { width: 0%; }
-        100% { width: 86%; } /* El 86% debe ser dinámico según el progreso real del usuario */
-    }
-</style>
+function cargarProgreso() {
+    fetch("{% url 'progreso_asistencia' %}")
+        .then(response => response.json())
+        .then(data => {
+            const barra = document.getElementById("barra-progreso");
+            const mensaje = document.getElementById("mensaje-progreso");
+            const nivel = document.getElementById("nivel-progreso");
+
+            const porcentaje = data.porcentaje;
+            barra.style.width = porcentaje + "%";
+            mensaje.textContent = `Has asistido al ${porcentaje}% de tus clases. ¡Sigue así! 💪`;
+            nivel.textContent = "Nivel: " + obtenerNivel(porcentaje);
+        })
+        .catch(error => {
+            console.error("Error cargando progreso:", error);
+        });
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    cargarProgreso();
+    setInterval(cargarProgreso, 30000);
+});
+</script>
 
 {% endblock %}

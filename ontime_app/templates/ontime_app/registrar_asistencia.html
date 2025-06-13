@@ -4,12 +4,6 @@
 {% block title %}Registrar Asistencia - OnTime{% endblock %}
 
 {% block content %}
-<div class="mt-6 text-center">
-  <a href="javascript:history.back()" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
-      <i class="fas fa-arrow-left mr-2"></i> 
-      Regresar
-  </a>
-</div>
 
 <div class="bg-gray-100 shadow-xl rounded-3xl p-10 w-full max-w-lg mx-auto mt-18 animate__animated animate__fadeIn animate__faster">
   <h2 class="text-4xl font-extrabold text-gray-800 animate-pulse text-center mb-6">Registrar Asistencia</h2>
@@ -58,6 +52,14 @@
 <div id="irNotificaciones" class="hidden mt-4 text-center">
   <a href="{% url 'notificaciones_1' %}" class="text-green-600 hover:text-green-800 underline">Ver notificaciones</a>
 </div>
+
+{% block back_button %}
+<div class="mt-8 text-center">
+  <a href="javascript:history.back()" class="back-button back-button-emerald">
+    <i class="fas fa-arrow-left mr-2"></i> Volver al panel
+  </a>
+</div>
+{% endblock back_button %}
 
 <script src="https://unpkg.com/html5-qrcode@2.3.7/html5-qrcode.min.js"></script>
 

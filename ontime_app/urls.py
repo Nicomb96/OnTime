@@ -3,7 +3,6 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 from .views import historial_api
 
-
 urlpatterns = [
 
     # --- Rutas Generales ---
@@ -23,9 +22,8 @@ urlpatterns = [
 
     # --- Rutas de Perfil de Usuario ---
 
-    path("editar_perfil_1/", views.editar_perfil_1, name="editar_perfil_1"),
-    path("editar_perfil_2/", views.editar_perfil_2, name="editar_perfil_2"),
-    path("editar_perfil_adm/", views.editar_perfil_adm, name="editar_perfil_adm"),
+    path('editar-perfil/', views.editar_perfil, name='editar_perfil'),
+    path('perfil/editar/', views.editar_perfil_unico, name='editar_perfil'),
     path('eliminar-foto/', views.eliminar_foto_perfil, name='eliminar_foto_perfil'),
 
     # --- Rutas Específicas del Rol: Aprendiz ---
@@ -36,7 +34,8 @@ urlpatterns = [
     path('api/historial/', historial_api, name='historial_api'),
     path('historial-asistencia/', views.historial_asistencia, name='historial_asistencia'),
     path('filtrar-asistencia/', views.filtrar_asistencia, name='filtrar_asistencia'),
-    path("justificativos_1/", views.justificativos_1, name="justificativos_1"),
+    path('subir-justificativo/', views.subir_justificativo, name='subir_justificativo'),
+    path('progreso-asistencia/', views.progreso_asistencia, name='progreso_asistencia'),
 
     # Ruta para marcar una notificación como leída (usada con AJAX)
     path('notificaciones_1/leida/<int:id>/', views.marcar_notificacion_leida, name='marcar_notificacion_leida'),

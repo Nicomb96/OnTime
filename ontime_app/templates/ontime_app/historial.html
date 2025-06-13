@@ -4,12 +4,6 @@
 {% block title %}Historial - OnTime{% endblock %}
 
 {% block content %}
-<div class="mt-6 text-center">
-  {# Enlace para volver al panel de administrador, con icono y estilos de transición #}
-  <a href="{% url 'inicio_admin' %}" class="flex items-center text-gray-600 hover:text-green-800 transition-all duration-300">
-    <i class="fas fa-arrow-left mr-2"></i> Volver al Panel {# Icono de flecha izquierda de Font Awesome #}
-  </a>
-</div>
 
 {# Contenedor principal de la página de historial, con estilos Tailwind CSS #}
 <div class="container mx-auto px-4 lg:px-8 mt-8">
@@ -66,6 +60,14 @@
     </div>
   </div>
 </div>
+
+{% block back_button %}
+<div class="mt-8 text-center">
+  <a href="javascript:history.back()" class="back-button back-button-emerald">
+    <i class="fas fa-arrow-left mr-2"></i> Volver al panel
+  </a>
+</div>
+{% endblock back_button %}
 
 <script>
   // Array de datos simulados para el historial. En una aplicación real, esto provendría del backend.

@@ -2,6 +2,9 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, SetPasswordForm
 from django.forms.widgets import FileInput
 from .models import UsuarioPersonalizado
+from .models import Justificativo
+from django.contrib.auth import get_user_model
+from django.forms import FileInput
 
 # --- Formulario para el Registro de Usuarios ---
 
@@ -44,44 +47,44 @@ class RegistroForm(UserCreationForm):
 
 class EditarPerfilForm(forms.ModelForm):
     """
-    Formulario para permitir a los usuarios (ej. aprendices) editar su perfil.
-    Incluye campos para cambiar contraseña y subir foto de perfil.
+    Formulario para permitir a los usuarios editar su perfil.
+    Incluye validaciones para contraseña, foto, etc.
     """
-    # Campo opcional para cambiar la contraseña
     password = forms.CharField(widget=forms.PasswordInput(), required=False, label='Nueva Contraseña')
-    # Campo opcional para confirmar la nueva contraseña
     confirmar_password = forms.CharField(widget=forms.PasswordInput(), required=False, label='Confirmar Contraseña')
-    # Campo para subir la foto de perfil, con un widget personalizado para estilizado
+
     foto_perfil = forms.ImageField(
         required=False,
         label='Foto de Perfil',
         widget=FileInput(attrs={
-            # Clases CSS para estilizar el input de archivo
             'class': 'block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100'
         })
     )
 
     class Meta:
-        """
-        Clase Meta para configurar el formulario.
-        """
-        model = UsuarioPersonalizado  # Asocia el formulario con el modelo UsuarioPersonalizado
-        # Define los campos del modelo que se incluirán en el formulario
+        model = UsuarioPersonalizado
         fields = ['first_name', 'last_name', 'email', 'foto_perfil']
 
     def clean(self):
-        """
-        Método para validar los datos del formulario, especialmente las contraseñas.
-        """
-        # Llama al método clean del padre para obtener los datos validados
         cleaned_data = super().clean()
-        password = cleaned_data.get('password')  # Obtiene la nueva contraseña
-        confirmar = cleaned_data.get('confirmar_password')  # Obtiene la confirmación de la contraseña
+        password = cleaned_data.get('password')
+        confirmar = cleaned_data.get('confirmar_password')
 
-        # Si se ingresó una nueva contraseña y no coincide con la confirmación, lanza un error
         if password and password != confirmar:
             raise forms.ValidationError("Las contraseñas no coinciden.")
+
         return cleaned_data
+
+    def clean_foto_perfil(self):
+        foto = self.cleaned_data.get('foto_perfil')
+        if foto:
+            if foto.size > 2 * 1024 * 1024:
+                raise forms.ValidationError("La imagen no debe superar los 2MB.")
+            
+            if not foto.content_type in ['image/jpeg', 'image/png']:
+                raise forms.ValidationError("Formato de imagen no válido. Solo se permiten JPG o PNG.")
+        
+        return foto
 
 # --- Formulario para el Cambio de Contraseña (desde recuperación) ---
 
@@ -117,3 +120,26 @@ class MiFormularioCambioContrasena(SetPasswordForm):
         if commit:
             self.user.save()
         return self.user
+    
+# --- Formulario para Justificativos ---
+
+class JustificativoForm(forms.ModelForm):
+    class Meta:
+        model = Justificativo
+        fields = ['tipo', 'fecha_ausencia', 'descripcion', 'archivo']
+        widgets = {
+            'tipo': forms.Select(attrs={
+                'class': 'w-full p-3 mt-1 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 hover:bg-gray-50 text-gray-600'
+            }),
+            'fecha_ausencia': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'w-full p-3 mt-1 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 hover:bg-gray-50 text-gray-600'
+            }),
+            'descripcion': forms.Textarea(attrs={
+                'rows': 4,
+                'class': 'w-full p-3 mt-1 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 hover:bg-gray-50 text-gray-600'
+            }),
+            'archivo': forms.ClearableFileInput(attrs={
+                'class': 'w-full p-3 mt-1 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 hover:bg-gray-50 text-gray-600'
+            }),
+        }

@@ -85,22 +85,13 @@ def eliminar_foto_anterior(sender, instance, **kwargs):
 # --- Modelo de Asistencia ---
 
 class Asistencia(models.Model):
-    """
-    Modelo para registrar la asistencia de los aprendices.
-    """
-    # Clave foránea al modelo de usuario, se elimina la asistencia si se elimina el aprendiz
     aprendiz = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    # Código usado para registrar la asistencia
     codigo = models.CharField(max_length=100)
-    # Fecha y hora de la asistencia, por defecto es la hora actual
     fecha = models.DateTimeField(default=datetime.now)
-    # Indica si la asistencia ha sido validada
     validada = models.BooleanField(default=False)
+    clase = models.ForeignKey('Clase', on_delete=models.CASCADE, default=1)
 
     def __str__(self):
-        """
-        Representación en cadena del objeto Asistencia.
-        """
         return f"Asistencia de {self.aprendiz.username} - {self.codigo}"
 
 # --- Modelo de Notificación ---
@@ -134,3 +125,32 @@ class Notificacion(models.Model):
         Representación en cadena del objeto Notificacion.
         """
         return f"{self.titulo} - {self.usuario.username}"
+
+# --- Modelo de Justificativo ---
+
+class Justificativo(models.Model):
+    TIPO_CHOICES = [
+        ('medico', 'Médico'),
+        ('personal', 'Personal'),
+        ('familia', 'Familiar'),
+        ('otro', 'Otro'),
+    ]
+
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES)
+    fecha_ausencia = models.DateField()
+    descripcion = models.TextField()
+    archivo = models.FileField(upload_to='justificativos/')
+    fecha_envio = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.usuario.username} - {self.tipo} ({self.fecha_ausencia})"
+
+# --- Modelo de Clase ---
+
+class Clase(models.Model):
+    nombre = models.CharField(max_length=100)
+    fecha = models.DateField()
+
+    def __str__(self):
+        return f"{self.nombre} - {self.fecha}"

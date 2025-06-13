@@ -2,6 +2,7 @@ import os
 from django.db.models.signals import post_delete, pre_save
 from django.dispatch import receiver
 from .models import UsuarioPersonalizado
+from .models import Justificativo
 
 # Conecta esta función a la señal post_delete (después de borrar) del modelo UsuarioPersonalizado
 @receiver(post_delete, sender=UsuarioPersonalizado)
@@ -47,3 +48,8 @@ def borrar_foto_vieja_al_actualizar(sender, instance, **kwargs):
         if os.path.isfile(old_foto.path):
             # Elimina el archivo físico de la foto antigua
             os.remove(old_foto.path)
+
+@receiver(post_delete, sender=Justificativo)
+def borrar_archivo_justificativo(sender, instance, **kwargs):
+    if instance.archivo:
+        instance.archivo.delete(False)
