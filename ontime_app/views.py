@@ -1,5 +1,5 @@
 import os
-from .forms import RegistroForm, EditarPerfilForm, MiFormularioCambioContrasena
+from .forms import RegistroForm, EditarPerfilForm, MiFormularioCambioContrasena, UsuarioGestionForm
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 from django.contrib import messages
@@ -30,6 +30,12 @@ from django.utils.timezone import localtime
 from .models import Asistencia, Notificacion
 from .forms import JustificativoForm
 from ontime_app.models import Asistencia
+from .models import UsuarioPersonalizado
+from django.contrib import messages
+import openpyxl
+from django.http import HttpResponse
+from django.shortcuts import redirect
+
 
 # --- Vistas de Autenticación y Perfil ---
 
@@ -71,7 +77,7 @@ def iniciar_sesion(request):
 
     return render(request, 'ontime_app/iniciar_sesion.html', {'correo': correo})
 
-def registrarse(request): 
+def registrarse(request):
     """
     Vista para el registro de nuevos usuarios.
     Crea un nuevo usuario si el formulario es válido.
@@ -89,7 +95,7 @@ def registrarse(request):
             messages.error(request, 'Corrige los errores del formulario.')
     else:
         form = RegistroForm()
-    
+
     return render(request, 'ontime_app/registrarse.html', {'form': form})
 
 @never_cache
@@ -570,13 +576,44 @@ def carga_masiva(request):
 
 @never_cache
 @login_required(login_url='iniciar_sesion')
-def historial(request):
-    """
-    Vista del historial para usuarios con rol 'admin'.
-    """
-    if request.user.rol != 'admin':
-        return redirect('inicio')
-    return render(request, 'ontime_app/historial.html')
+@user_passes_test(lambda u: u.rol == 'admin')
+def editar_usuario(request, id):
+    usuario = get_object_or_404(UsuarioPersonalizado, id=id)
+
+    if request.method == 'POST':
+        form = EditarPerfilForm(request.POST, request.FILES, instance=usuario)
+        if form.is_valid():
+            nueva_contra = form.cleaned_data.get('password')
+            if nueva_contra:
+                usuario.set_password(nueva_contra)
+            form.save()
+            messages.success(request, "Usuario actualizado correctamente.")
+            return redirect('gestion_usuarios')
+    else:
+        form = EditarPerfilForm(instance=usuario)
+
+    return render(request, 'ontime_app/editar_usuario.html', {
+        'form': form,
+        'usuario': usuario
+    })
+
+
+
+@never_cache
+@login_required(login_url='iniciar_sesion')
+@user_passes_test(lambda u: u.rol == 'admin')
+def eliminar_usuario(request, id):
+    usuario = get_object_or_404(UsuarioPersonalizado, id=id)
+    
+    # Mensaje de seguridad opcional
+    if usuario.email == 'admin@sitio.com':
+        messages.error(request, "No puedes eliminar este usuario principal.")
+        return redirect('gestion_usuarios')
+
+    usuario.delete()
+    messages.success(request, "Usuario eliminado correctamente.")
+    return redirect('gestion_usuarios')
+
 
 @login_required
 @user_passes_test(es_admin)
@@ -594,7 +631,7 @@ def crear_usuario(request):
             messages.error(request, "Algo está mal con los datos, revisa bien.")
     else:
         form = RegistroForm()
-    
+
     return render(request, 'ontime_app/crear_usuario.html', {'form': form})
 
 # --- Vistas para el registro de asistencia (AJAX) ---
@@ -620,7 +657,7 @@ def registrar_asistencia(request):
 
         if existe:
             return JsonResponse({'status': 'fail', 'msg': 'Ya registraste asistencia hoy.'})
-        
+
         # Crear nueva asistencia
         nueva_asistencia = Asistencia.objects.create(
             aprendiz=user,
@@ -833,3 +870,49 @@ def progreso_asistencia(request):
         porcentaje = 0
 
     return JsonResponse({'porcentaje': porcentaje})
+@login_required(login_url='iniciar_sesion')
+@user_passes_test(es_admin)
+def crear_usuario(request):
+    """
+    Vista para que el administrador cree nuevos usuarios.
+    """
+    if request.method == 'POST':
+        form = RegistroForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Usuario creado exitosamente.")
+            return redirect('gestion_usuarios')
+        else:
+            messages.error(request, "Revisa los errores del formulario.")
+    else:
+        form = RegistroForm()
+
+    return render(request, 'ontime_app/crear_usuario.html', {'form': form})
+@never_cache
+@login_required(login_url='iniciar_sesion')
+@user_passes_test(lambda u: u.rol == 'admin')
+def exportar_usuarios_excel(request):
+    usuarios = UsuarioPersonalizado.objects.all()
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Usuarios"
+
+    # Cabeceras
+    ws.append(["Nombre", "Correo", "Rol", "Estado"])
+
+    # Datos
+    for u in usuarios:
+        nombre = f"{u.first_name} {u.last_name}"
+        correo = u.email
+        rol = u.get_rol_display()
+        estado = "Activo"  # Puedes cambiarlo si tienes ese campo
+        ws.append([nombre, correo, rol, estado])
+
+    # Preparar respuesta
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename=usuarios.xlsx'
+    wb.save(response)
+    return response

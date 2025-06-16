@@ -20,10 +20,16 @@
                 <option value="Administrador">Administrador</option>
             </select>
 
-            <button class="bg-green-600 text-white px-6 py-2 rounded-xl shadow hover:bg-green-700 transition duration-300">
-                <i class="fas fa-plus mr-2"></i> Nuevo Usuario
-            </button>
-        </div>
+            <a href="{% url 'crear_usuario' %}" class="bg-green-600 text-white px-6 py-2 rounded-xl shadow hover:bg-green-700 transition duration-300">
+                <div class="flex flex-wrap justify-start gap-4 items-center mb-6">
+                    <a href="{% url 'crear_usuario' %}" class="bg-green-600 text-white px-6 py-2 rounded-xl shadow hover:bg-green-700 transition duration-300">
+                        <i class="fas fa-plus mr-2"></i> Nuevo Usuario
+                    </a>
+                    <a href="{% url 'exportar_usuarios_excel' %}" class="bg-emerald-700 text-white px-6 py-2 rounded-xl shadow hover:bg-emerald-800 transition duration-300">
+                        <i class="fas fa-file-excel mr-2"></i> Exportar a Excel
+                    </a>
+                </div>
+
 
         <!-- Tabla de usuarios -->
         <div class="overflow-x-auto" style="max-height: 400px; overflow-y: auto;" id="tabla-container">
@@ -38,8 +44,49 @@
                     </tr>
                 </thead>
                 <tbody id="tabla-usuarios" class="text-sm text-gray-700">
-                    <!-- Fila base para JS -->
+                    {% for user in usuarios %}
+                    <tr class="border-t">
+                        <td class="py-3 px-4">{{ user.first_name }} {{ user.last_name }}</td>
+                        <td class="py-3 px-4">{{ user.email }}</td>
+                        <td class="py-3 px-4">{{ user.get_rol_display }}</td>
+                        <td class="py-3 px-4">
+                            <span class="px-2 py-1 rounded-full bg-green-200 text-green-800">Activo</span>
+                        </td>
+                        <tbody id="tabla-usuarios" class="text-sm text-gray-700">
+                            {% for user in usuarios %}
+                            <tr class="border-t">
+                                <td class="py-3 px-4">{{ user.first_name }} {{ user.last_name }}</td>
+                                <td class="py-3 px-4">{{ user.email }}</td>
+                                <td class="py-3 px-4">{{ user.get_rol_display }}</td>
+                                <td class="py-3 px-4">
+                                    <span class="px-2 py-1 rounded-full bg-green-200 text-green-800">Activo</span>
+                                </td>
+                                <td class="py-3 px-4 space-x-2">
+                                    <a href="{% url 'editar_usuario' user.id %}" class="text-blue-600 hover:underline">
+                                        <i class="fas fa-edit"></i> Editar
+                                    </a>
+                                    <a href="{% url 'eliminar_usuario' user.id %}" onclick="return confirm('¿Estás seguro de eliminar este usuario?');" class="text-red-600 hover:underline">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </a>
+                                </td>
+                                
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-gray-400">No hay usuarios registrados.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-gray-400">No hay usuarios registrados.</td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
+                
             </table>
         </div>
 
@@ -107,63 +154,35 @@
   </a>
 </div>
 {% endblock back_button %}
-
 <script>
-    const usuarios = [
-        {id: 1, nombre: "Juan Pérez", correo: "juan@example.com", rol: "Aprendiz", estado: "Activo"},
-        {id: 2, nombre: "Luisa Torres", correo: "luisa@example.com", rol: "Instructor", estado: "Inactivo"},
-        {id: 3, nombre: "Carlos Gómez", correo: "carlos@example.com", rol: "Administrador", estado: "Activo"},
-        {id: 4, nombre: "Sofía Rojas", correo: "sofia@example.com", rol: "Aprendiz", estado: "Activo"},
-        {id: 5, nombre: "Andrés Muñoz", correo: "andres@example.com", rol: "Instructor", estado: "Inactivo"},
-        {id: 6, nombre: "María Díaz", correo: "maria@example.com", rol: "Aprendiz", estado: "Activo"},
-        {id: 7, nombre: "Daniel Herrera", correo: "daniel@example.com", rol: "Instructor", estado: "Activo"},
-        {id: 8, nombre: "Laura Medina", correo: "laura@example.com", rol: "Administrador", estado: "Activo"},
-        {id: 9, nombre: "Felipe Ramírez", correo: "felipe@example.com", rol: "Aprendiz", estado: "Activo"},
-        {id: 10, nombre: "Ana Morales", correo: "ana@example.com", rol: "Instructor", estado: "Activo"},
-        {id: 11, nombre: "Camila Suárez", correo: "camila@example.com", rol: "Aprendiz", estado: "Activo"},
-        {id: 12, nombre: "Oscar Rivera", correo: "oscar@example.com", rol: "Instructor", estado: "Activo"},
-        {id: 13, nombre: "Juliana Castro", correo: "juliana@example.com", rol: "Administrador", estado: "Activo"},
-        {id: 14, nombre: "Santiago León", correo: "santi@example.com", rol: "Aprendiz", estado: "Activo"},
-        {id: 15, nombre: "Diana Castaño", correo: "diana@example.com", rol: "Instructor", estado: "Activo"}
-    ];
+    const buscador = document.getElementById('buscador');
+    const filtroRol = document.getElementById('filtro-rol');
+    const filas = document.querySelectorAll('#tabla-usuarios tr');
 
-    let indice = 0;
-    const cantidadPorCarga = 5;
-    const tabla = document.getElementById('tabla-usuarios');
-    const btnVerMas = document.getElementById('btn-ver-mas');
+    function filtrarTabla() {
+        const texto = buscador.value.toLowerCase();
+        const rolSeleccionado = filtroRol.value;
 
-    function cargarUsuarios() {
-        const total = usuarios.length;
-        for (let i = indice; i < indice + cantidadPorCarga && i < total; i++) {
-            const user = usuarios[i];
-            const row = `
-                <tr class="border-t">
-                    <td class="py-3 px-4">${user.nombre}</td>
-                    <td class="py-3 px-4">${user.correo}</td>
-                    <td class="py-3 px-4">${user.rol}</td>
-                    <td class="py-3 px-4">
-                        <span class="px-2 py-1 rounded-full ${user.estado === 'Activo' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}">${user.estado}</span>
-                    </td>
-                    <td class="py-3 px-4 space-x-2">
-                        <a href="#" class="text-blue-600 hover:underline"><i class="fas fa-edit"></i> Editar</a>
-                        <button class="text-red-600 hover:underline" onclick="eliminarUsuario(this)"><i class="fas fa-trash"></i> Eliminar</button>
-                    </td>
-                </tr>`;
-            tabla.insertAdjacentHTML('beforeend', row);
-        }
-        indice += cantidadPorCarga;
-        if (indice >= usuarios.length) {
-            btnVerMas.classList.add('hidden');
-        }
+        filas.forEach(fila => {
+            const columnas = fila.querySelectorAll('td');
+            if (columnas.length === 0) return; // evita errores si es una fila vacía
+
+            const nombre = columnas[0].textContent.toLowerCase();
+            const correo = columnas[1].textContent.toLowerCase();
+            const rol = columnas[2].textContent;
+
+            const coincideTexto = nombre.includes(texto) || correo.includes(texto) || rol.toLowerCase().includes(texto);
+            const coincideRol = !rolSeleccionado || rol === rolSeleccionado;
+
+            fila.style.display = (coincideTexto && coincideRol) ? '' : 'none';
+        });
     }
 
-    function eliminarUsuario(btn) {
-        const fila = btn.closest("tr");
-        fila.remove();
-    }
-
-    btnVerMas.addEventListener('click', cargarUsuarios);
-    window.addEventListener('DOMContentLoaded', cargarUsuarios);
+    buscador.addEventListener('input', filtrarTabla);
+    filtroRol.addEventListener('change', filtrarTabla);
 </script>
-{% endblock %}
 
+<!-- Script eliminado: los usuarios ahora se cargan dinámicamente desde la base de datos -->
+
+
+{% endblock %}

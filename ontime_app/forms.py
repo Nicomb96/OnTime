@@ -143,3 +143,50 @@ class JustificativoForm(forms.ModelForm):
                 'class': 'w-full p-3 mt-1 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 hover:bg-gray-50 text-gray-600'
             }),
         }
+# --- Formulario para la Gestión de Usuarios (Creación/Edición por Admin) ---
+
+class UsuarioGestionForm(forms.ModelForm):
+    """
+    Formulario para crear o editar usuarios desde el panel de administración
+    o la interfaz de gestión de usuarios.
+    Permite ajustar los campos visibles y el rol.
+    """
+    # Puedes añadir un campo de contraseña aquí si el administrador puede establecerla
+    # directamente al crear o si hay una opción para restablecerla.
+    # Por ahora, nos centraremos en los campos ya existentes del modelo.
+
+    class Meta:
+        model = UsuarioPersonalizado
+        # Incluye todos los campos que un administrador debería poder gestionar
+        # Asegúrate de que 'rol' y 'foto_perfil' estén bien definidos en tu UsuarioPersonalizado
+        fields = [
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'rol',        # Campo personalizado del rol
+            'is_active',  # Para activar/desactivar el usuario
+            'is_staff',   # Si es usuario del panel de administración
+            'is_superuser', # Si es superusuario
+            'foto_perfil' # Si manejas fotos de perfil
+        ]
+        # Puedes añadir widgets personalizados si quieres aplicar estilos específicos
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'rol': forms.Select(attrs={'class': 'form-select'}), # Asegúrate de que 'rol' es un ChoiceField o similar
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'is_staff': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'is_superuser': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'foto_perfil': FileInput(attrs={
+                'class': 'block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100'
+            })
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Puedes personalizar el queryset del campo 'rol' si es un ForeignKey a un modelo Rol
+        # if 'rol' in self.fields and hasattr(self.fields['rol'], 'queryset'):
+        #     self.fields['rol'].queryset = Rol.objects.all() # Asegúrate de que 'Rol' esté importado si lo usas 

@@ -1,0 +1,32 @@
+{% extends 'ontime_app/base.html' %}
+
+{% block content %}
+<div class="bg-white rounded-lg p-8 shadow max-w-md mx-auto">
+    <h2 class="text-center text-2xl font-semibold mb-4">Crear Nuevo Usuario</h2>
+
+    <style>
+      form * {
+        color: #000000;
+      }
+
+      input, select, textarea {
+        color: #000000 !important;
+      }
+
+      label {
+        font-weight: 600;
+        color: #000000 !important;
+      }
+
+      .helptext {
+        color: #000000 !important;
+      }
+    </style>
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="bg-green-600 text-white px-4 py-2 mt-4 rounded hover:bg-green-700">Crear Usuario</button>
+    </form>
+</div>
+{% endblock %}

@@ -2,6 +2,7 @@ from . import views
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from .views import historial_api
+from django.urls import path, include
 
 urlpatterns = [
 
@@ -9,8 +10,9 @@ urlpatterns = [
 
     path('', views.inicio, name="inicio"),
     path("contacto/", views.contacto, name="contacto"),
+    path("usuarios/exportar_excel/", views.exportar_usuarios_excel, name="exportar_usuarios_excel"),
     path("ayuda/", views.ayuda, name="ayuda"),
-    path("acerca_de/", views.acerca_de, name="acerca_de"),
+    path("acerca_de/", views.acerca_de, name="acerca_de"),  # Así enlazas las rutas de la app
 
     # --- Autenticación y Perfil ---
 
@@ -68,8 +70,12 @@ urlpatterns = [
     path("gestion_horarios/", views.gestion_horarios, name="gestion_horarios"),
     path("control_asistencia/", views.control_asistencia, name="control_asistencia"),
     path("carga_masiva/", views.carga_masiva, name="carga_masiva"),
-    path("historial/", views.historial, name="historial"),
+    path("historial/", views.historial_1, name="historial"),
     path("crear_usuario/", views.crear_usuario, name="crear_usuario"),
+    path("usuarios/editar/<int:id>/", views.editar_usuario, name="editar_usuario"),
+    path("usuarios/eliminar/<int:id>/", views.eliminar_usuario, name="eliminar_usuario"),
+
+
 
     # --- Pantallas Extra de Documentación y Diseño ---
 
