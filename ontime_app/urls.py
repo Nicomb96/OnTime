@@ -31,6 +31,7 @@ urlpatterns = [
     path("inicio_aprendiz/", views.inicio_aprendiz, name="inicio_aprendiz"),
     path("registrar_asistencia/", views.registrar_asistencia, name="registrar_asistencia"),
     path("notificaciones_1/", views.notificaciones_1, name="notificaciones_1"),
+    path('historial-asistencia/cargar/', views.cargar_mas_historial, name='cargar_mas_historial'),
     path('api/historial/', historial_api, name='historial_api'),
     path('historial-asistencia/', views.historial_asistencia, name='historial_asistencia'),
     path('filtrar-asistencia/', views.filtrar_asistencia, name='filtrar_asistencia'),

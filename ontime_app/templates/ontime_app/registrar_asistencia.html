@@ -4,21 +4,22 @@
 {% block title %}Registrar Asistencia - OnTime{% endblock %}
 
 {% block content %}
-
-<div class="bg-gray-100 shadow-xl rounded-3xl p-10 w-full max-w-lg mx-auto mt-18 animate__animated animate__fadeIn animate__faster">
-  <h2 class="text-4xl font-extrabold text-gray-800 animate-pulse text-center mb-6">Registrar Asistencia</h2>
-  <p class="text-center text-gray-600 mb-8">Escanea el código QR generado por tu instructor para registrar tu asistencia.</p>
+<div class="bg-gray-200 shadow-2xl rounded-3xl p-10 md:p-14 w-full max-w-7xl mx-auto mt-5 animate__animated animate__fadeIn animate__faster">
+  <h2 class="text-4xl font-extrabold text-green-600 animate-pulse text-center mb-4 flex items-center justify-center gap-2">
+    <i class="fas fa-clipboard-check animate-bounce"></i>Registrar Asistencia
+  </h2>
+  <p class="text-center text-gray-600 mb-10">Escanea el código QR generado por tu instructor o ingresa el código manualmente para registrar tu asistencia.</p>
 
   <form id="formRegistrar" method="POST" onsubmit="return false;">
     {% csrf_token %}
 
-    <div class="mb-6 flex justify-center">
-      <div class="w-full max-w-xs border-4 border-dashed border-green-500 rounded-xl p-4 bg-white shadow-xl">
-        <div id="reader" class="w-full h-56 rounded-xl"></div>
-      </div>
+    <!-- Escáner QR -->
+    <div class="mx-auto w-full max-w-md bg-gray-50 border-4 border-dashed border-green-500 rounded-2xl shadow-inner px-4 pt-4 pb-2">
+      <div id="reader" class="w-full aspect-square rounded-lg"></div>
     </div>
 
-    <div id="loader" class="hidden text-center mb-6">
+    <!-- Loader -->
+    <div id="loader" class="hidden text-center mb-10">
       <svg class="mx-auto h-10 w-10 text-green-500 animate-spin" fill="none" viewBox="0 0 24 24">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
@@ -26,43 +27,47 @@
       <p class="mt-2 text-green-600 font-medium">Procesando escaneo...</p>
     </div>
 
-    <div class="text-center mb-6 hidden">
-      <button id="btn-simular-escaneo" type="button" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition shadow-md">
-        <i class="fas fa-qrcode mr-2"></i>Iniciar Escaneo
-      </button>
-    </div>
-
-    <div class="max-w-md mx-auto mb-4 bg-gray-100 p-4 rounded-xl shadow-md">
-      <h3 class="text-lg font-semibold text-center text-green-700 mb-2">¿No puedes escanear? Ingresa el código aquí:</h3>
-      <div id="codigo-form" class="flex flex-col sm:flex-row gap-2">
+    <!-- Entrada manual de código -->
+    <div class="max-w-xl mx-auto bg-gray-50 p-8 rounded-2xl shadow-md border border-green-200 mt-11">
+      <h3 class="text-lg font-semibold text-center text-gray-600 mb-4 flex items-center justify-center gap-2">
+        <i class="fas fa-keyboard"></i>¿No puedes escanear? Ingresa el código:
+      </h3>
+      <div class="flex flex-col sm:flex-row gap-4">
         <input type="text" id="codigo-manual" name="codigo" placeholder="Ej: ABC123" class="flex-1 px-4 py-2 rounded-md border border-green-400 focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 bg-white" required>
-        <button id="btn-enviar-codigo" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition">Enviar</button>
+        <button id="btn-enviar-codigo" class="bg-green-600 text-white px-5 py-2 rounded-md hover:bg-green-700 transition shadow">
+          <i class="fas fa-paper-plane mr-1"></i>Enviar
+        </button>
       </div>
-      <p id="codigo-msg" class="text-sm text-center text-gray-500 mt-2"></p>
+      <p id="codigo-msg" class="text-sm text-center text-gray-500 mt-3"></p>
     </div>
 
-    <div class="text-center mt-6">
+    <div class="text-center mt-10">
       <p class="text-sm text-gray-500">¿Problemas con el escaneo? Contacta al instructor o intenta desde otro dispositivo.</p>
     </div>
   </form>
 </div>
 
+<!-- Mensaje flotante -->
 <div id="mensajeAsistencia" class="hidden fixed top-6 left-1/2 transform -translate-x-1/2 bg-white border border-green-500 text-green-700 px-4 py-2 rounded-xl shadow-lg text-sm z-50 transition-opacity duration-500"></div>
 
-<div id="irNotificaciones" class="hidden mt-4 text-center">
-  <a href="{% url 'notificaciones_1' %}" class="text-green-600 hover:text-green-800 underline">Ver notificaciones</a>
+<!-- Ir a notificaciones -->
+<div id="irNotificaciones" class="hidden mt-6 text-center">
+  <a href="{% url 'notificaciones_1' %}" class="text-green-600 hover:text-green-800 underline font-medium">
+    <i class="fas fa-bell mr-1"></i>Ver notificaciones
+  </a>
 </div>
 
+<!-- Botón Volver -->
 {% block back_button %}
-<div class="mt-8 text-center">
-  <a href="javascript:history.back()" class="back-button back-button-emerald">
+<div class="mt-10 text-center animate__animated animate__fadeInUp">
+  <a href="javascript:history.back()" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition shadow">
     <i class="fas fa-arrow-left mr-2"></i> Volver al panel
   </a>
 </div>
 {% endblock back_button %}
 
+<!-- Scripts -->
 <script src="https://unpkg.com/html5-qrcode@2.3.7/html5-qrcode.min.js"></script>
-
 <script>
   const msg = document.getElementById("codigo-msg");
   const loader = document.getElementById("loader");
@@ -98,12 +103,11 @@
     .then(response => response.json())
     .then(data => {
       loader.classList.add("hidden");
-
       mensajeDiv.textContent = data.msg;
       mensajeDiv.classList.remove("hidden");
 
       if (data.status === "ok") {
-        msg.textContent = "Asistencia registrada con éxito.";
+        msg.textContent = "✅ " + data.msg;
         msg.className = "text-green-600 text-sm text-center mt-2";
         mensajeDiv.classList.remove("border-red-500", "text-red-700");
         mensajeDiv.classList.add("border-green-500", "text-green-700");
@@ -148,10 +152,7 @@
     const codigo = document.getElementById("codigo-manual").value.trim();
     registrarAsistencia(codigo);
   });
-</script>
 
-<script>
-  // Este parche evita que el form haga submit normal y mande GET
   document.getElementById("formRegistrar").addEventListener("submit", function(e) {
     e.preventDefault();
   });

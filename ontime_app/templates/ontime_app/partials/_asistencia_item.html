@@ -1,0 +1,14 @@
+{% if historial %}
+  {% for item in historial %}
+    <tr>
+      <td class="px-6 py-4">{{ item.fecha }}</td>
+      <td class="px-6 py-4">{{ item.curso }}</td>
+      <td class="px-6 py-4">{{ item.estado }}</td>
+      <td class="px-6 py-4">Ver</td>
+    </tr>
+  {% endfor %}
+{% else %}
+  <p class="text-center text-gray-500 text-base font-normal mt-4">
+  No hay registros de asistencia para mostrar.
+  </p>
+{% endif %}

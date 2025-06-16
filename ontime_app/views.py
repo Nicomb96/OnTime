@@ -744,25 +744,33 @@ def historial_api(request):
 
 @login_required
 def historial_asistencia(request):
-    asistencias = Asistencia.objects.filter(aprendiz=request.user).order_by('-fecha')
+    return render(request, 'ontime_app/historial_1.html')
 
-    datos = []
-    for a in asistencias:
-        fecha_local = localtime(a.fecha) # Convierte a hora local
-        datos.append({
-            'id': a.id,
-            'fecha': fecha_local.strftime('%Y-%m-%d %H:%M'), # Usa la fecha local
-            'curso': 'Programación de software',  # Nombre fijo o dinámico
-            'estado': 'Asistido' if a.validada else 'No asistió',
-            'detalles': f'Código: {a.codigo}, validado: {a.validada}'
-        })
+@login_required
+def cargar_mas_historial(request):
+    try:
+        pagina = int(request.GET.get('pagina', 1))
+        fecha_inicio = request.GET.get('fecha_inicio')
+        fecha_fin = request.GET.get('fecha_fin')
 
-    print(json.dumps(datos, indent=2))
+        historial = Asistencia.objects.filter(aprendiz=request.user).order_by('-fecha')
 
-    return render(request, 'ontime_app/historial_1.html', {
-        'datos_asistencia': json.dumps(datos)
-    })
+        if fecha_inicio:
+            historial = historial.filter(fecha__gte=fecha_inicio)
+        if fecha_fin:
+            historial = historial.filter(fecha__lte=fecha_fin)
 
+        paginator = Paginator(historial, 5)
+        page_obj = paginator.get_page(pagina)
+
+        if not page_obj.object_list.exists():
+            return JsonResponse({'html': '', 'hay_mas': False, 'vacio': True})
+
+        html = render_to_string('ontime_app/partials/_asistencia_item.html', {'historial': page_obj})
+        return JsonResponse({'html': html, 'hay_mas': page_obj.has_next(), 'vacio': False})
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 @login_required
 def filtrar_asistencia(request):

@@ -33,7 +33,7 @@
 }
 </style>
 
-<div class="max-w-4xl mx-auto px-6 py-10">
+<div class="bg-gray-200 shadow-2xl rounded-3xl p-10 md:p-14 w-full max-w-7xl mx-auto mt-5 animate__animated animate__fadeIn animate__faster">
     <div class="bg-gray-200 rounded-3xl shadow-xl border border-gray-200 p-8 md:p-12">
         <h2 class="text-3xl font-bold text-gray-800 text-center mb-10 animate-pulse">
             <i class="fas fa-user-edit text-green-600 mr-2"></i>Editar Perfil
@@ -101,14 +101,6 @@
     </div>
 </div>
 
-{% block back_button %}
-<div class="mt-2 text-center">
-    <a href="javascript:history.back()" class="inline-flex items-center text-base font-semibold text-gray-300 hover:text-green-200 transition duration-300 px-4 py-2 rounded-md">
-        <i class="fas fa-arrow-left mr-2 text-lg"></i> Volver al panel
-    </a>
-</div>
-{% endblock back_button %}
-
 <script>
     document.getElementById("foto_perfil").addEventListener("change", function (e) {
         const file = e.target.files[0];
@@ -121,5 +113,11 @@
         }
     });
 </script>
+
+<div class="mt-10 text-center animate__animated animate__fadeInUp">
+  <a href="javascript:history.back()" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition shadow">
+    <i class="fas fa-arrow-left mr-2"></i> Volver al panel
+  </a>
+</div>
 
 {% endblock %}

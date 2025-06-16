@@ -4,153 +4,123 @@
 {% block title %}Historial de Asistencia - OnTime{% endblock %}
 
 {% block content %}
+<div id="contenedor-blanco" class="bg-gray-200 shadow-2xl rounded-3xl p-8 md:p-12 w-full max-w-7xl mx-auto mt-5 animate__animated animate__fadeIn animate__faster">
+  <h2 class="text-4xl font-extrabold text-green-600 text-center mb-2 animate-pulse flex items-center justify-center gap-2">
+    <i class="fas fa-calendar-alt animate-bounce"></i>
+    Historial de Asistencia
+  </h2>
+  <p class="text-center text-gray-500 mb-8">Consulta todos tus registros de asistencia detalladamente.</p>
 
-<div class="bg-gray-100 shadow-xl rounded-3xl p-6 md:p-10 w-full max-w-4xl mx-auto mt-18 animate__animated animate__fadeIn animate__faster">
-  <h2 class="text-4xl font-extrabold text-gray-800 text-center mb-6 animate-pulse">Consulta tu Historial de Asistencia</h2>
-  <p class="text-center text-gray-600 mb-8">Aquí podrás ver el registro completo de tus asistencias.</p>
-
-  <div class="flex flex-wrap gap-4 justify-center mb-6">
-    <div class="w-full md:w-1/3 text-gray-600">
-      <label for="fecha_inicio" class="block text-sm font-medium text-gray-700">Fecha de inicio</label>
-      <input type="date" id="fecha_inicio" class="w-full p-2 mt-1 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500" />
+  <!-- Filtros -->
+  <div class="flex flex-wrap justify-center gap-4 mb-10 text-gray-600">
+    <div class="flex flex-col">
+      <label for="fecha_inicio" class="text-sm font-medium text-gray-700">Desde</label>
+      <input type="date" id="fecha_inicio" class="rounded-lg border border-gray-300 py-2 px-4 mt-1 focus:outline-none focus:ring-2 focus:ring-green-500">
     </div>
 
-    <div class="w-full md:w-1/3 text-gray-600">
-      <label for="fecha_fin" class="block text-sm font-medium text-gray-700">Fecha de fin</label>
-      <input type="date" id="fecha_fin" class="w-full p-2 mt-1 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500" />
+    <div class="flex flex-col">
+      <label for="fecha_fin" class="text-sm font-medium text-gray-700">Hasta</label>
+      <input type="date" id="fecha_fin" class="rounded-lg border border-gray-300 py-2 px-4 mt-1 focus:outline-none focus:ring-2 focus:ring-green-500">
     </div>
 
-    <div class="w-full md:w-auto flex items-end">
-      <button class="bg-green-600 text-white py-2 px-6 rounded-lg hover:bg-green-700 transition duration-300 shadow-md focus:ring-4 focus:ring-green-500 focus:outline-none" id="btn-filtrar">
+    <div class="flex items-end">
+      <button id="btn-filtrar" class="bg-green-600 hover:bg-green-700 text-white py-2 px-6 rounded-lg shadow transition-all focus:ring-4 focus:ring-green-500">
         Filtrar
       </button>
     </div>
   </div>
 
-  <div class="overflow-x-auto bg-white shadow-md rounded-lg p-6 max-h-96 overflow-y-auto">
-    <table class="min-w-full table-auto">
-      <thead class="bg-gray-200">
+  <!-- Tabla y contenido dinámico -->
+  <div class="overflow-x-auto bg-gray-50 shadow-inner rounded-xl p-6 max-h-[500px] overflow-y-auto">
+    <table class="w-full table-auto text-sm text-left text-gray-700">
+      <thead class="bg-green-100 text-green-800 uppercase text-xs tracking-wide">
         <tr>
-          <th class="px-6 py-3 text-left text-sm font-medium text-gray-800">Fecha</th>
-          <th class="px-6 py-3 text-left text-sm font-medium text-gray-800">Curso/Competencia</th>
-          <th class="px-6 py-3 text-left text-sm font-medium text-gray-800">Estado</th>
-          <th class="px-6 py-3 text-left text-sm font-medium text-gray-800">Acción</th>
+          <th class="px-6 py-3">Fecha</th>
+          <th class="px-6 py-3">Curso / Competencia</th>
+          <th class="px-6 py-3">Estado</th>
+          <th class="px-6 py-3">Acción</th>
         </tr>
       </thead>
-      <tbody class="text-sm font-normal text-gray-600" id="tabla-historial">
+      <tbody id="tabla-historial" class="divide-y divide-gray-200">
+        <!-- Carga dinámica -->
       </tbody>
     </table>
-  </div>
 
-  <div class="flex justify-center mt-8">
-    <button class="bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition duration-300 shadow-md focus:ring-4 focus:ring-green-500 focus:outline-none" id="btn-ver-mas">
-      Ver más
-    </button>
+    <!-- Mensaje -->
+    <p id="mensaje-vacio" class="text-center text-gray-500 text-base font-normal mt-12 hidden">
+      No hay registros de asistencia para mostrar.
+    </p>
+
+    <!-- Botón Ver Más -->
+    <div class="flex justify-center mt-8 hidden" id="verMasContainer">
+      <button id="btn-ver-mas" class="bg-green-600 hover:bg-green-700 text-white py-2 px-6 rounded-lg shadow transition-all focus:ring-4 focus:ring-green-500">
+        Ver más
+      </button>
+    </div>
   </div>
 </div>
 
-{% block back_button %}
-<div class="mt-8 text-center">
-  <a href="javascript:history.back()" class="back-button back-button-emerald">
+<!-- Botón Volver al Panel FUERA DEL CONTENEDOR -->
+<div class="mt-10 text-center animate__animated animate__fadeInUp">
+  <a href="javascript:history.back()" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition shadow">
     <i class="fas fa-arrow-left mr-2"></i> Volver al panel
   </a>
 </div>
-{% endblock back_button %}
-
-<script id="datos-asistencia" type="application/json">{{ datos_asistencia|safe }}</script>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    let datosAsistencia = JSON.parse(document.getElementById('datos-asistencia').textContent);
-    const filasPorPagina = 3;
-    let paginaActual = 0;
+  let pagina = 1;
+  let fecha_inicio = '';
+  let fecha_fin = '';
 
-    function mostrarHistorial() {
-      const tabla = document.getElementById('tabla-historial');
-
-      if (paginaActual === 0) {
-        tabla.innerHTML = '';
-      }
-
-      const inicio = paginaActual * filasPorPagina;
-      const fin = inicio + filasPorPagina;
-      const historialVisible = datosAsistencia.slice(inicio, fin);
-
-      historialVisible.forEach(item => {
-        const row = document.createElement('tr');
-        row.classList.add('hover:bg-gray-50');
-        const idDetalle = 'detalle-' + item.id;
-
-        row.innerHTML = `
-          <td class="px-6 py-4">${item.fecha}</td>
-          <td class="px-6 py-4">${item.curso}</td>
-          <td class="px-6 py-4 text-${item.estado === 'Asistido' ? 'green' : 'red'}-600">${item.estado}</td>
-          <td class="px-6 py-4">
-            <button id="btn-${idDetalle}" class="flex items-center text-green-600 hover:text-green-700 underline" onclick="toggleDetalle('${idDetalle}')">
-              <span>Ver detalles</span>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-            </button>
-          </td>
-        `;
-        tabla.appendChild(row);
-
-        const filaDetalles = document.createElement('tr');
-        filaDetalles.id = idDetalle;
-        filaDetalles.classList.add('hidden');
-        filaDetalles.innerHTML = `
-          <td colspan="4" class="px-6 py-4 text-gray-500">
-            <p>${item.detalles}</p>
-          </td>
-        `;
-        tabla.appendChild(filaDetalles);
-      });
+  function cargarHistorial(reset = false) {
+    if (reset) {
+      pagina = 1;
+      document.getElementById('tabla-historial').innerHTML = '';
+      document.getElementById('mensaje-vacio').classList.add('hidden');
     }
 
-    document.getElementById('btn-ver-mas').addEventListener('click', function () {
-      paginaActual++;
-      mostrarHistorial();
-    });
+    const url = new URL('/historial-asistencia/cargar/', window.location.origin);
+    url.searchParams.append('pagina', pagina);
+    if (fecha_inicio) url.searchParams.append('fecha_inicio', fecha_inicio);
+    if (fecha_fin) url.searchParams.append('fecha_fin', fecha_fin);
 
-    document.getElementById('btn-filtrar').addEventListener('click', function () {
-      const fechaInicio = document.getElementById('fecha_inicio').value;
-      const fechaFin = document.getElementById('fecha_fin').value;
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        const tabla = document.getElementById('tabla-historial');
+        const mensajeVacio = document.getElementById('mensaje-vacio');
+        const verMas = document.getElementById('verMasContainer');
 
-      fetch(`/filtrar-asistencia/?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`)
-        .then(response => response.json())
-        .then(data => {
-          datosAsistencia = data.datos;
-          paginaActual = 0;
-
-          const tabla = document.getElementById('tabla-historial');
+        if (data.vacio && pagina === 1) {
           tabla.innerHTML = '';
+          mensajeVacio.classList.remove('hidden');
+          verMas.classList.add('hidden');
+          return;
+        }
 
-          if (datosAsistencia.length === 0) {
-            tabla.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500">No hay registros para esas fechas.</td></tr>`;
-            return;
-          }
+        if (data.html && data.html.trim() !== '') {
+          tabla.insertAdjacentHTML('beforeend', data.html);
+          pagina++;
+          mensajeVacio.classList.add('hidden');
+          verMas.classList.toggle('hidden', !data.hay_mas);
+        } else {
+          verMas.classList.add('hidden');
+        }
+      })
+      .catch(err => {
+        console.error('Error al cargar historial:', err);
+      });
+  }
 
-          mostrarHistorial();
-        })
-        .catch(err => {
-          console.error('Error al filtrar:', err);
-          alert('Algo falló al filtrar, intenta de nuevo.');
-        });
-    });
-
-    window.toggleDetalle = function(id) {
-      const fila = document.getElementById(id);
-      const boton = document.getElementById('btn-' + id);
-
-      if (fila.classList.contains('hidden')) {
-        fila.classList.remove('hidden');
-        boton.innerHTML = 'Ocultar detalles ⯅';
-      } else {
-        fila.classList.add('hidden');
-        boton.innerHTML = 'Ver detalles ⯆';
-      }
-    };
-
-    mostrarHistorial();
+  document.getElementById('btn-filtrar').addEventListener('click', () => {
+    fecha_inicio = document.getElementById('fecha_inicio').value;
+    fecha_fin = document.getElementById('fecha_fin').value;
+    cargarHistorial(true);
   });
+
+  document.getElementById('btn-ver-mas').addEventListener('click', () => cargarHistorial());
+
+  document.addEventListener('DOMContentLoaded', () => cargarHistorial());
 </script>
+
 {% endblock %}
