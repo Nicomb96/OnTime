@@ -2,13 +2,14 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.urls import path, include
 
 # --- Rutas Principales del Proyecto ---
 
 urlpatterns = [
 
     path('admin/', admin.site.urls),
-    path('', include('ontime_app.urls')),
+path('', include('ontime_app.urls')),  # ✅ Esta sí va aquí
 ]
 
 # --- Servir Archivos Media en Modo Desarrollo ---

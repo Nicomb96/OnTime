@@ -1,8 +1,8 @@
 {% extends 'ontime_app/base.html' %}
 
 {% block content %}
-<div class="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-lg mt-10">
-  <h2 class="text-2xl font-bold text-center mb-6 text-green-700">Crear Nuevo Usuario</h2>
+<div class="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-lg mt-10 text-black">
+  <h2 class="text-2xl font-bold text-center mb-6 text-black">Crear Nuevo Usuario</h2>
 
   {% if messages %}
     {% for message in messages %}
@@ -12,51 +12,76 @@
     {% endfor %}
   {% endif %}
 
-  <form method="POST">
+  <style>
+    input, select, textarea {
+      background-color: #f9fafb;
+      border: 1px solid #d1d5db;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      color: #000000;
+      width: 100%;
+      margin-bottom: 1rem;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #22c55e;
+      box-shadow: 0 0 0 2px #bbf7d0;
+    }
+  </style>
+
+  <form method="POST" class="text-black">
     {% csrf_token %}
     {{ form.as_p }}
+
+    <!-- ✅ Reglas de contraseña en tiempo real -->
+    <ul id="password-rules" class="text-sm text-left space-y-1 mt-2 mb-4">
+      <li id="rule-length" class="text-red-600">❌ Mínimo 8 caracteres</li>
+      <li id="rule-personal" class="text-red-600">❌ No similar a nombre de usuario</li>
+      <li id="rule-common" class="text-red-600">❌ No común o débil</li>
+      <li id="rule-numeric" class="text-red-600">❌ No solo numérica</li>
+    </ul>
+
     <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700">
       Crear Usuario
     </button>
   </form>
 </div>
 
-<!-- Gestión de Roles y Permisos (dejamos igual, no lo tocamos) -->
-<div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg mt-12">
-  <h3 class="text-xl font-bold text-center text-green-700 mb-6">🔐 Gestión de Roles y Permisos</h3>
+<!-- Gestión de Roles y Permisos -->
+<div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg mt-12 text-black">
+  <h3 class="text-xl font-bold text-center mb-6 text-black">🔐 Gestión de Roles y Permisos</h3>
 
   <div class="grid md:grid-cols-2 gap-6">
-    <!-- Crear Rol -->
     <div>
-      <h4 class="font-semibold text-gray-600 mb-2">➕ Crear Rol</h4>
+      <h4 class="font-semibold text-black mb-2">➕ Crear Rol</h4>
       <div class="flex space-x-2">
-        <input type="text" placeholder="Nombre del rol" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+        <input type="text" placeholder="Nombre del rol" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-black">
         <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
           Crear
         </button>
       </div>
     </div>
 
-    <!-- Asignar Permisos -->
     <div>
-      <h4 class="font-semibold text-gray-600 mb-2">🛡️ Asignar Permisos</h4>
+      <h4 class="font-semibold text-black mb-2">🛡️ Asignar Permisos</h4>
       <div class="space-y-2">
-        <select class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-500">
+        <select class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-black">
           <option value="">Seleccionar Rol</option>
           <option value="usuario">Usuario</option>
           <option value="admin">Administrador</option>
         </select>
         <div class="grid grid-cols-2 gap-2">
-          <label class="flex items-center space-x-2">
+          <label class="flex items-center space-x-2 text-black">
             <input type="checkbox" class="rounded text-green-600"> <span>Crear</span>
           </label>
-          <label class="flex items-center space-x-2">
+          <label class="flex items-center space-x-2 text-black">
             <input type="checkbox" class="rounded text-green-600"> <span>Editar</span>
           </label>
-          <label class="flex items-center space-x-2">
+          <label class="flex items-center space-x-2 text-black">
             <input type="checkbox" class="rounded text-green-600"> <span>Eliminar</span>
           </label>
-          <label class="flex items-center space-x-2">
+          <label class="flex items-center space-x-2 text-black">
             <input type="checkbox" class="rounded text-green-600"> <span>Ver</span>
           </label>
         </div>
@@ -67,4 +92,60 @@
     </div>
   </div>
 </div>
+
+<!-- ✅ Script validación en tiempo real -->
+<script>
+  const passwordInput = document.getElementById("id_password1");
+  const usernameInput = document.getElementById("id_username");
+
+  const ruleLength = document.getElementById("rule-length");
+  const rulePersonal = document.getElementById("rule-personal");
+  const ruleCommon = document.getElementById("rule-common");
+  const ruleNumeric = document.getElementById("rule-numeric");
+
+  const commonPasswords = ['12345678', 'password', 'admin', 'qwerty', '123456789'];
+
+  if (passwordInput) {
+    passwordInput.addEventListener("input", () => {
+      const value = passwordInput.value;
+      const username = usernameInput ? usernameInput.value.toLowerCase() : "";
+
+      // Longitud
+      if (value.length >= 8) {
+        ruleLength.textContent = "✅ Mínimo 8 caracteres";
+        ruleLength.className = "text-green-600";
+      } else {
+        ruleLength.textContent = "❌ Mínimo 8 caracteres";
+        ruleLength.className = "text-red-600";
+      }
+
+      // Similaridad con nombre
+      if (username && value.toLowerCase().includes(username)) {
+        rulePersonal.textContent = "❌ No similar a nombre de usuario";
+        rulePersonal.className = "text-red-600";
+      } else {
+        rulePersonal.textContent = "✅ No similar a nombre de usuario";
+        rulePersonal.className = "text-green-600";
+      }
+
+      // Común
+      if (commonPasswords.includes(value)) {
+        ruleCommon.textContent = "❌ No común o débil";
+        ruleCommon.className = "text-red-600";
+      } else {
+        ruleCommon.textContent = "✅ No común o débil";
+        ruleCommon.className = "text-green-600";
+      }
+
+      // Numérica
+      if (/^\d+$/.test(value)) {
+        ruleNumeric.textContent = "❌ No solo numérica";
+        ruleNumeric.className = "text-red-600";
+      } else {
+        ruleNumeric.textContent = "✅ No solo numérica";
+        ruleNumeric.className = "text-green-600";
+      }
+    });
+  }
+</script>
 {% endblock %}

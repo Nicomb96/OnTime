@@ -35,7 +35,8 @@ from django.contrib import messages
 import openpyxl
 from django.http import HttpResponse
 from django.shortcuts import redirect
-
+from .forms import RegistroForm
+from django.db.models import Q
 
 # --- Vistas de Autenticación y Perfil ---
 
@@ -507,12 +508,28 @@ def inicio_admin(request):
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def gestion_usuarios(request):
-    """
-    Vista para que el administrador gestione usuarios.
-    """
-    if request.user.rol != 'admin':
-        return redirect('inicio')
-    return render(request, 'ontime_app/gestion_usuarios.html')
+    nombre = request.GET.get('q', '')
+    rol = request.GET.get('rol', '')
+    estado = request.GET.get('estado', '')
+
+    usuarios = UsuarioPersonalizado.objects.all()
+
+    # ✅ Esta línea es clave: usamos el campo correcto para el nombre
+    if nombre:
+        usuarios = usuarios.filter(nombres__icontains=nombre)
+
+    if rol:
+        usuarios = usuarios.filter(rol=rol)
+
+    if estado:
+        usuarios = usuarios.filter(estado=estado)
+
+    return render(request, 'ontime_app/gestion_usuarios.html', {
+        'usuarios': usuarios,
+        'nombre': nombre,
+        'rol': rol,
+        'estado': estado
+    })
 
 @never_cache
 @login_required(login_url='iniciar_sesion')
@@ -618,21 +635,24 @@ def eliminar_usuario(request, id):
 @login_required
 @user_passes_test(es_admin)
 def crear_usuario(request):
-    """
-    Vista para que el administrador cree nuevos usuarios.
-    """
     if request.method == 'POST':
         form = RegistroForm(request.POST)
-        if form.is_valid():
+        email = request.POST.get('email')
+
+        # Verifica si ya hay un usuario con ese correo
+        if UsuarioPersonalizado.objects.filter(email=email).exists():
+            messages.warning(request, "⚠️ Ya existe un usuario registrado con este correo.")
+        elif form.is_valid():
             form.save()
-            messages.success(request, "Usuario creado con éxito.")
-            return redirect('nombre_de_la_ruta_a_donde_quieras_llevar_al_usuario')
+            messages.success(request, "✅ Usuario creado exitosamente.")
+            return redirect('gestion_usuarios')
         else:
-            messages.error(request, "Algo está mal con los datos, revisa bien.")
+            messages.error(request, "❌ Revisa los errores del formulario.")
     else:
         form = RegistroForm()
 
     return render(request, 'ontime_app/crear_usuario.html', {'form': form})
+
 
 # --- Vistas para el registro de asistencia (AJAX) ---
 
@@ -916,3 +936,48 @@ def exportar_usuarios_excel(request):
     response['Content-Disposition'] = 'attachment; filename=usuarios.xlsx'
     wb.save(response)
     return response
+def filtrar_usuarios_ajax(request):
+    nombre = request.GET.get('q', '')
+    rol = request.GET.get('rol', '')
+    estado = request.GET.get('estado', '')
+
+    usuarios = UsuarioPersonalizado.objects.all()
+
+    if nombre:
+        usuarios = usuarios.filter(
+            Q(first_name__icontains=nombre) | Q(last_name__icontains=nombre)
+        )
+
+    if rol:
+        usuarios = usuarios.filter(rol=rol)
+
+    if estado:
+        usuarios = usuarios.filter(estado=estado)
+
+    html = render_to_string('ontime_app/partials/tabla_usuarios.html', {'usuarios': usuarios})
+    return JsonResponse({'html': html})
+
+def gestion_usuarios(request):
+    nombre = request.GET.get('q', '')
+    rol = request.GET.get('rol', '')
+    estado = request.GET.get('estado', '')
+
+    usuarios = UsuarioPersonalizado.objects.all()
+
+    if nombre:
+        usuarios = usuarios.filter(
+            Q(first_name__icontains=nombre) | Q(last_name__icontains=nombre)
+        )
+
+    if rol:
+        usuarios = usuarios.filter(rol=rol)
+
+    if estado:
+        usuarios = usuarios.filter(estado=estado)
+
+    return render(request, 'ontime_app/gestion_usuarios.html', {
+        'usuarios': usuarios,
+        'nombre': nombre,
+        'rol': rol,
+        'estado': estado
+    })

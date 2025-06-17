@@ -125,3 +125,4 @@ LOGOUT_REDIRECT_URL = 'iniciar_sesion'
 
 # Campo por defecto para llaves primarias
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+LOGIN_URL = 'iniciar_sesion'
