@@ -17,7 +17,7 @@ from django.contrib.auth.views import PasswordResetView
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.http import JsonResponse
-from .models import Asistencia, Notificacion, Clase
+from .models import Asistencia, Notificacion, Clase, CodigoGenerado
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import json
@@ -25,33 +25,34 @@ from django.utils.dateparse import parse_date
 from django.core.serializers import serialize
 from datetime import datetime, timedelta
 from django.utils.timezone import make_aware
-from django.utils.timezone import now
-from django.utils.timezone import localtime
+from django.utils.timezone import now, localtime
 from .models import Asistencia, Notificacion
 from .forms import JustificativoForm
 from ontime_app.models import Asistencia
+import random, string
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+import qrcode
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
+import io
+import base64
+from .utils import generar_codigo_unico
 
 # --- Vistas de Autenticación y Perfil ---
 
 def iniciar_sesion(request):
-    """
-    Vista para manejar el inicio de sesión de usuarios.
-    Autentica al usuario y redirige según su rol.
-    """
     correo = None
 
     if request.method == 'POST':
-        username = request.POST.get('correo')
-        contrasena = request.POST.get('contrasena')
+        email = request.POST.get('correo', '').strip().lower()
+        contrasena = request.POST.get('contrasena', '').strip()
 
-        # Autentica al usuario con las credenciales
-        user = authenticate(request, username=username, password=contrasena)
+        user = authenticate(request, email=email, password=contrasena)
 
         if user is not None:
-            # Inicia sesión y redirige según el rol
             login(request, user)
             rol = user.rol
-
             if rol == 'aprendiz':
                 return redirect('inicio_aprendiz')
             elif rol == 'instructor':
@@ -59,17 +60,16 @@ def iniciar_sesion(request):
             elif rol == 'admin':
                 return redirect('inicio_admin')
             else:
-                # Manejo de rol desconocido
-                messages.error(request, 'Rol desconocido, contacta al admin.')
+                messages.error(request, 'Rol desconocido.')
                 logout(request)
                 return redirect('iniciar_sesion')
         else:
-            # Muestra mensaje de error si las credenciales son incorrectas
             messages.error(request, 'Correo o contraseña incorrectos.')
-            correo = request.POST.get('correo')
+            correo = email
             return render(request, 'ontime_app/iniciar_sesion.html', {'correo': correo})
 
     return render(request, 'ontime_app/iniciar_sesion.html', {'correo': correo})
+
 
 def registrarse(request): 
     """
@@ -92,7 +92,7 @@ def registrarse(request):
     
     return render(request, 'ontime_app/registrarse.html', {'form': form})
 
-@never_cache
+
 def cerrar_sesion(request):
     """
     Vista para cerrar la sesión del usuario actual.
@@ -303,7 +303,6 @@ def contraseña_actualizada(request):
 
 # --- Vistas por Rol: Aprendiz ---
 
-@never_cache
 @login_required(login_url='iniciar_sesion')
 def inicio_aprendiz(request):
     """
@@ -445,6 +444,45 @@ def acerca_de(request):
     Vista para la página "Acerca de".
     """
     return render(request, 'ontime_app/acerca_de.html')
+
+# --- Vistas de Generación de Códigos QR y Asistencia ---
+
+def generar_codigo_asistencia(request):
+    if request.method == 'POST':
+        codigo = generar_codigo_unico()
+
+        # Guardar el código en la base de datos
+        CodigoGenerado.objects.create(
+            codigo=codigo,
+            instructor=request.user,  # o el user que esté generando
+            fecha_creacion=now(),
+            activo=True
+        )
+
+        # Generar imagen QR
+        qr = qrcode.QRCode(version=1, box_size=10, border=5)
+        qr.add_data(codigo)
+        qr.make(fit=True)
+        img = qr.make_image(fill='black', back_color='white')
+
+        # Convertir imagen QR a base64
+        buffer = io.BytesIO()
+        img.save(buffer, format="PNG")
+        qr_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+        qr_data_url = f"data:image/png;base64,{qr_base64}"
+
+        # Enviar por WebSocket
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            'grupo_asistencia',
+            {
+                'type': 'enviar_codigo',
+                'codigo': codigo,
+                'qr': qr_data_url
+            }
+        )
+
+        return JsonResponse({'codigo': codigo})
 
 # --- Vistas de Documentación y Diseño ---
 
@@ -600,47 +638,45 @@ def crear_usuario(request):
 # --- Vistas para el registro de asistencia (AJAX) ---
 
 @login_required
-def registrar_asistencia(request):
+def registrar_asistencia_api(request):
+    print("Vista llamada:", request.method)
+
     if request.method == 'POST':
-        user = request.user
-        codigo = request.POST.get('codigo')
+        print("POST recibido")
+        print("Datos:", request.POST)
+
+        codigo = request.POST.get('codigo', '').strip()
+        aprendiz = request.user
 
         if not codigo:
-            return JsonResponse({'status': 'fail', 'msg': 'Código es obligatorio'})
+            return JsonResponse({'status': 'error', 'msg': 'No se recibió ningún código.'})
 
-        ahora = localtime()
+        try:
+            codigo_obj = CodigoGenerado.objects.get(codigo=codigo, activo=True)
+        except CodigoGenerado.DoesNotExist:
+            return JsonResponse({'status': 'error', 'msg': 'El código ingresado no es válido o ya expiró.'})
 
-        inicio_dia = ahora.replace(hour=0, minute=0, second=0, microsecond=0)
-        fin_dia = ahora.replace(hour=23, minute=59, second=59, microsecond=999999)
+        if Asistencia.objects.filter(aprendiz=aprendiz, codigo=codigo).exists():
+            return JsonResponse({'status': 'error', 'msg': 'Ya registraste tu asistencia con este código.'})
 
-        existe = Asistencia.objects.filter(
-            aprendiz=user,
-            fecha__range=(inicio_dia, fin_dia)
-        ).exists()
-
-        if existe:
-            return JsonResponse({'status': 'fail', 'msg': 'Ya registraste asistencia hoy.'})
-        
-        # Crear nueva asistencia
-        nueva_asistencia = Asistencia.objects.create(
-            aprendiz=user,
+        asistencia = Asistencia.objects.create(
+            aprendiz=aprendiz,
             codigo=codigo,
-            fecha=ahora,
+            clase_id=1,
+            fecha=now(),
             validada=True
         )
 
-    # Crear notificación para avisar
         Notificacion.objects.create(
-            usuario=user,
+            usuario=aprendiz,
             titulo="Registro de Asistencia",
-            descripcion=f"Has registrado tu asistencia correctamente el {ahora.strftime('%d/%m/%Y a las %H:%M')}",
+            descripcion=f"Has registrado tu asistencia correctamente el {localtime(asistencia.fecha).strftime('%d/%m/%Y a las %H:%M')}",
             tipo="asistencia"
         )
 
-        return JsonResponse({'status': 'ok', 'msg': 'Asistencia registrada.'})
+        return JsonResponse({'status': 'ok', 'msg': '¡Asistencia registrada correctamente!'})
 
-    # Si es GET, mostramos el template para escanear o ingresar código
-    return render(request, 'ontime_app/registrar_asistencia.html')
+    return JsonResponse({'status': 'error', 'msg': 'Petición inválida'})
 
 # --- Vistas para Notificaciones ---
 

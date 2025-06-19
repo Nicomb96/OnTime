@@ -6,10 +6,12 @@
 {% block content %}
 
 {# Contenedor principal del formulario de inicio de sesión, con estilos Tailwind CSS y animación #}
-<div class="bg-gray-100 shadow-xl rounded-3xl p-10 w-full max-w-lg mx-auto mt-18 animate__animated animate__fadeIn animate__faster">
+<div class="bg-gray-200 shadow-xl rounded-3xl p-10 w-full max-w-lg mx-auto mt-18 animate__animated animate__fadeIn animate__faster">
 
-    <h2 class="text-4xl font-extrabold text-gray-800 animate-pulse text-center mb-6">Iniciar Sesión</h2> {# Título principal #}
-    <p class="text-center text-gray-600 mb-8">Bienvenido, por favor ingresa tus datos para continuar.</p> {# Subtítulo de bienvenida #}
+    <h2 class="text-4xl font-extrabold text-green-600 text-center mb-2 animate-pulse flex items-center justify-center gap-2">
+    <i class="fas fa-sign-in-alt animate-bounce"></i>
+    Iniciar Sesión
+  </h2>
 
     {% if messages %} {# Comprueba si hay mensajes de Django para mostrar #}
       <div class="mb-4">
@@ -43,7 +45,7 @@
       {% csrf_token %} {# Token de seguridad CSRF de Django #}
 
       <div class="mb-6">
-        <label for="correo" class="block text-sm font-medium text-gray-800 mb-1">Correo</label> {# Etiqueta del campo de correo #}
+        <label for="correo" class="block text-sm font-medium text-gray-800 mb-1 mt-9">Correo</label> {# Etiqueta del campo de correo #}
         <input 
           type="text" 
           id="correo" 
@@ -110,8 +112,8 @@
 </div>
 
 {% block back_button %}
-<div class="mt-8 text-center">
-  <a href="javascript:history.back()" class="back-button back-button-emerald">
+<div class="mt-10 text-center animate__animated animate__fadeInUp">
+  <a href="javascript:history.back()" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition shadow">
     <i class="fas fa-arrow-left mr-2"></i> Volver a inicio
   </a>
 </div>

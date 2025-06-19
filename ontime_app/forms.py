@@ -5,6 +5,7 @@ from .models import UsuarioPersonalizado
 from .models import Justificativo
 from django.contrib.auth import get_user_model
 from django.forms import FileInput
+from django.contrib.auth import authenticate, login
 
 # --- Formulario para el Registro de Usuarios ---
 
@@ -77,13 +78,13 @@ class EditarPerfilForm(forms.ModelForm):
 
     def clean_foto_perfil(self):
         foto = self.cleaned_data.get('foto_perfil')
-        if foto:
+        # Solo si se subió una nueva imagen
+        if foto and hasattr(foto, 'content_type'):
             if foto.size > 2 * 1024 * 1024:
                 raise forms.ValidationError("La imagen no debe superar los 2MB.")
             
-            if not foto.content_type in ['image/jpeg', 'image/png']:
-                raise forms.ValidationError("Formato de imagen no válido. Solo se permiten JPG o PNG.")
-        
+            if foto.content_type not in ['image/jpeg', 'image/png', 'image/webp']:
+                raise forms.ValidationError("Formato de imagen no válido. Solo se permiten JPG, PNG o WEBP.")
         return foto
 
 # --- Formulario para el Cambio de Contraseña (desde recuperación) ---
@@ -111,15 +112,16 @@ class MiFormularioCambioContrasena(SetPasswordForm):
         return cleaned_data
 
     def save(self, commit=True):
-        """
-        Guarda la nueva contraseña para el usuario.
-        """
-        # Establece la nueva contraseña en el objeto de usuario asociado al formulario
-        self.user.set_password(self.cleaned_data["nueva_contrasena"])
-        # Si commit es True, guarda el usuario en la base de datos
+        user = super().save(commit=False)
+        user.first_name = self.cleaned_data['nombre']
+        user.last_name = self.cleaned_data['apellido']
+        user.email = self.cleaned_data['correo']
+        user.username = self.cleaned_data['correo']  # Muy importante para evitar conflictos
+        user.rol = self.cleaned_data['rol']
+        
         if commit:
-            self.user.save()
-        return self.user
+           user.save()
+        return user
     
 # --- Formulario para Justificativos ---
 

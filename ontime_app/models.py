@@ -5,6 +5,7 @@ from django.db.models.signals import post_delete, pre_save
 from django.dispatch import receiver
 from django.conf import settings
 from datetime import datetime
+from django.utils import timezone
 
 # --- Modelo de Usuario Personalizado ---
 
@@ -154,3 +155,14 @@ class Clase(models.Model):
 
     def __str__(self):
         return f"{self.nombre} - {self.fecha}"
+
+# --- Modelo de Código Generado (Instructor) ---
+
+class CodigoGenerado(models.Model):
+    codigo = models.CharField(max_length=100, unique=True)
+    instructor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    fecha_creacion = models.DateTimeField(default=timezone.now)
+    activo = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.codigo} - {self.instructor.username}"

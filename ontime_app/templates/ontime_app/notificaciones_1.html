@@ -4,22 +4,22 @@
 {% block title %}Notificaciones - OnTime{% endblock %}
 
 {% block content %}
-<div class="bg-gray-200 shadow-2xl rounded-3xl p-8 md:p-12 w-full max-w-7xl mx-auto mt-5 animate__animated animate__fadeIn animate__faster">
+<div class="bg-gray-200 shadow-2xl rounded-3xl p-8 md:p-12 w-full max-w-7xl mx-auto mt-18 animate__animated animate__fadeIn animate__faster">
   <h2 class="text-4xl font-extrabold text-green-600 text-center mb-2 animate-pulse flex items-center justify-center gap-2">
     <i class="fas fa-bell animate-bounce"></i>
     Notificaciones
   </h2>
   <p class="text-center text-gray-500 mb-8">Aquí encuentras todo lo importante: del sistema, tus instructores y registros.</p>
 
-  <!-- Filtros -->
+  <!-- Filtros con botón Filtrar -->
   <div class="flex flex-wrap justify-center gap-4 mb-10 text-gray-600">
     <div class="flex flex-col">
-      <label for="filtroFecha" class="text-sm font-medium text-gray-700">Filtrar por fecha</label>
+      <label for="filtroFecha" class="text-sm font-medium text-gray-700">Desde</label>
       <input type="date" id="filtroFecha" class="rounded-lg border border-gray-300 py-2 px-4 mt-1 focus:outline-none focus:ring-2 focus:ring-green-500">
     </div>
 
     <div class="flex flex-col">
-      <label for="filtroTipo" class="text-sm font-medium text-gray-700">Filtrar por tipo</label>
+      <label for="filtroTipo" class="text-sm font-medium text-gray-700">Tipo</label>
       <select id="filtroTipo" class="rounded-lg border border-gray-300 py-2 px-4 mt-1 focus:outline-none focus:ring-2 focus:ring-green-500">
         <option value="">-- Todos --</option>
         <option value="sistema">Del sistema</option>
@@ -27,23 +27,26 @@
         <option value="asistencia">De registro de asistencias</option>
       </select>
     </div>
+
+    <div class="flex items-end">
+      <button id="btn-filtrar-noti" class="bg-green-600 hover:bg-green-700 text-white py-2 px-6 rounded-lg shadow transition-all focus:ring-4 focus:ring-green-500">
+        Filtrar
+      </button>
+    </div>
   </div>
 
   <!-- Lista dinámica -->
   <div class="overflow-x-auto bg-gray-50 shadow-inner rounded-xl p-6 max-h-[500px] overflow-y-auto">
     <div id="notificationList" class="space-y-6"></div>
 
-    <!-- Mensaje si no hay -->
     <p id="noNotificationsMessage" class="hidden text-center text-gray-500 text-base font-normal mt-12">
       No hay notificaciones para estos filtros.
     </p>
 
-    <!-- Mensaje tras eliminar todas -->
     <div id="noNotificationsMessageAfterDelete" class="hidden text-center text-gray-500 mt-8 italic text-base">
       <p>¡Todas las notificaciones han sido eliminadas! 🎉</p>
     </div>
 
-    <!-- Botón Ver Más -->
     <div class="flex justify-center mt-8" id="verMasContainer">
       <button id="verMasBtn" class="bg-green-600 hover:bg-green-700 text-white py-2 px-6 rounded-lg shadow transition-all focus:ring-4 focus:ring-green-500">
         <i class="fas fa-chevron-down mr-2"></i>Ver más notificaciones
@@ -61,7 +64,6 @@
 
 <script src="https://kit.fontawesome.com/a076d05399.js"></script>
 
-<!-- Script original intacto -->
 <script>
   let paginaActual = 1;
   let filtroFecha = '';
@@ -94,7 +96,7 @@
           nuevosIds.forEach(id => {
             if (document.getElementById(id)) {
               const child = tempDiv.querySelector(`#${id}`);
-              if(child) child.remove();
+              if (child) child.remove();
             }
           });
 
@@ -116,8 +118,7 @@
       });
   }
 
-  document.getElementById('filtroFecha').addEventListener('change', () => loadMoreNotifications(true));
-  document.getElementById('filtroTipo').addEventListener('change', () => loadMoreNotifications(true));
+  document.getElementById('btn-filtrar-noti').addEventListener('click', () => loadMoreNotifications(true));
 
   document.addEventListener('click', function(e) {
     if (e.target.classList.contains('marcar-leida')) {

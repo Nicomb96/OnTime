@@ -3,6 +3,7 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 from .views import historial_api
 
+
 urlpatterns = [
 
     # --- Rutas Generales ---
@@ -29,7 +30,8 @@ urlpatterns = [
     # --- Rutas Específicas del Rol: Aprendiz ---
 
     path("inicio_aprendiz/", views.inicio_aprendiz, name="inicio_aprendiz"),
-    path("registrar_asistencia/", views.registrar_asistencia, name="registrar_asistencia"),
+    path('registrar-asistencia/', views.registrar_asistencia, name='registrar_asistencia'),
+    path('api/registrar-asistencia/', views.registrar_asistencia_api, name='registrar_asistencia_api'),
     path("notificaciones_1/", views.notificaciones_1, name="notificaciones_1"),
     path('historial-asistencia/cargar/', views.cargar_mas_historial, name='cargar_mas_historial'),
     path('api/historial/', historial_api, name='historial_api'),
@@ -57,6 +59,7 @@ urlpatterns = [
     path("consultar_asistencias/", views.consultar_asistencias, name="consultar_asistencias"),
     path("alertas/", views.alertas, name="alertas"),
     path("gestion_reportes/", views.gestion_reportes, name="gestion_reportes"),
+    path('generar-codigo/', views.generar_codigo_asistencia, name='generar_codigo_asistencia'),
 
     # --- Rutas Específicas del Rol: Administrador ---
 

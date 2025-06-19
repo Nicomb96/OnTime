@@ -20,7 +20,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'ontime_app.apps.OntimeAppConfig',
     'widget_tweaks',
+    'channels',
 ]
+
+# Configuración de Channels
+ASGI_APPLICATION = 'ontime.asgi.application'
 
 # Middleware
 MIDDLEWARE = [
@@ -125,3 +129,15 @@ LOGOUT_REDIRECT_URL = 'iniciar_sesion'
 
 # Campo por defecto para llaves primarias
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Configuración de Channels
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    },
+}
+
+ALLOWED_HOSTS = ['*']
+
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False

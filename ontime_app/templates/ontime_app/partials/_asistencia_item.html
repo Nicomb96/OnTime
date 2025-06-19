@@ -1,14 +1,35 @@
 {% if historial %}
   {% for item in historial %}
-    <tr>
-      <td class="px-6 py-4">{{ item.fecha }}</td>
-      <td class="px-6 py-4">{{ item.curso }}</td>
-      <td class="px-6 py-4">{{ item.estado }}</td>
-      <td class="px-6 py-4">Ver</td>
+    <tr class="hover:bg-gray-100 transition duration-300">
+      <!-- Fecha -->
+      <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-800">
+        {{ item.fecha }}
+      </td>
+
+      <!-- Curso o Competencia -->
+      <td class="px-6 py-4 whitespace-nowrap">
+        {{ item.curso.nombre|default:"Sin curso" }}
+      </td>
+
+      <!-- Estado (Presente, Ausente, etc.) -->
+      <td class="px-6 py-4 whitespace-nowrap">
+        {% if item.estado == 'P' %}
+          <span class="px-3 py-1 rounded-full bg-green-200 text-green-800 text-xs font-semibold">Presente</span>
+        {% elif item.estado == 'A' %}
+          <span class="px-3 py-1 rounded-full bg-red-200 text-red-800 text-xs font-semibold">Ausente</span>
+        {% elif item.estado == 'T' %}
+          <span class="px-3 py-1 rounded-full bg-yellow-200 text-yellow-800 text-xs font-semibold">Tarde</span>
+        {% else %}
+          <span class="px-3 py-1 rounded-full bg-gray-200 text-gray-700 text-xs font-semibold">Desconocido</span>
+        {% endif %}
+      </td>
     </tr>
   {% endfor %}
 {% else %}
-  <p class="text-center text-gray-500 text-base font-normal mt-4">
-  No hay registros de asistencia para mostrar.
-  </p>
+  <tr>
+    <td colspan="3" class="text-center text-gray-500 py-6">
+      No hay registros de asistencia para mostrar.
+    </td>
+  </tr>
 {% endif %}
+

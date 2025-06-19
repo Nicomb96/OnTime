@@ -6,10 +6,13 @@
 {% block content %}
 
 <!-- Contenedor principal -->
-<div class="bg-gray-200 shadow-xl rounded-3xl p-10 w-full max-w-lg mx-auto mt-20 animate__animated animate__fadeIn animate__faster">
+<div class="bg-gray-200 shadow-xl rounded-3xl p-10 w-full max-w-lg mx-auto mt-18 animate__animated animate__fadeIn animate__faster">
   
   <!-- Título -->
-  <h2 class="text-4xl font-extrabold text-gray-800 animate-pulse text-center mb-6">Recuperar Contraseña</h2>
+  <h2 class="text-4xl font-extrabold text-green-600 text-center mb-6 animate-pulse">
+  <i class="fas fa-unlock-alt text-3xl align-middle mr-2"></i>
+  <span class="align-middle">Recuperar Contraseña</span>
+</h2>
   <p class="text-center text-gray-600 mb-8">Ingresa el correo electrónico asociado a tu cuenta.</p>
 
   <!-- Mensaje de éxito oculto -->
@@ -55,8 +58,8 @@
 
 <!-- Botón de volver afuera del contenedor -->
 {% block back_button %}
-<div class="mt-8 text-center">
-  <a href="javascript:history.back()" class="back-button back-button-emerald">
+<div class="mt-10 text-center animate__animated animate__fadeInUp">
+  <a href="javascript:history.back()" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition shadow">
     <i class="fas fa-arrow-left mr-2"></i> Volver a iniciar sesión
   </a>
 </div>

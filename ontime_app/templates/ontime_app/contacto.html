@@ -5,15 +5,18 @@
 
 {% block content %}
 
-<div class="bg-gray-100 shadow-xl rounded-3xl p-10 w-full max-w-6xl mx-auto mt-20 animate__animated animate__fadeIn animate__faster">
+<div class="bg-gray-200 shadow-xl rounded-3xl p-10 w-full max-w-6xl mx-auto mt-18 animate__animated animate__fadeIn animate__faster">
   
-  <h2 class="text-4xl font-extrabold text-gray-800 text-center mb-2 animate-pulse">Contáctanos</h2>
-  <p class="text-center text-gray-600 mb-8">¿Tienes alguna duda o sugerencia? ¡Estamos para ayudarte!</p>
+  <h2 class="text-4xl font-extrabold text-green-600 text-center mb-2 animate-pulse flex items-center justify-center gap-2">
+  <i class="fas fa-envelope-open-text"></i>
+  Contáctanos
+</h2>
+  <p class="text-center text-gray-600 mb-8 mt-5">¿Tienes alguna duda o sugerencia? ¡Estamos para ayudarte!</p>
 
   <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
     
     <!-- Formulario de contacto -->
-    <form class="space-y-6">
+    <form class="space-y-6 mt-3">
       <div>
         <label for="nombre" class="block text-sm font-medium text-gray-700">Nombre completo</label>
         <input type="text" id="nombre" placeholder="Tu nombre" class="mt-1 w-full p-3 border-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800"/>
@@ -40,7 +43,7 @@
     </form>
 
     <!-- Mapa y datos de contacto -->
-    <div class="space-y-6 flex flex-col justify-between">
+    <div class="space-y-6 flex flex-col justify-between mt-3">
       
       <div class="space-y-4 text-gray-700">
         <div class="flex items-center gap-3">
@@ -83,8 +86,8 @@
 </div>
 
 {% block back_button %}
-<div class="mt-8 text-center">
-  <a href="javascript:history.back()" class="back-button back-button-emerald">
+<div class="mt-10 text-center animate__animated animate__fadeInUp">
+  <a href="javascript:history.back()" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition shadow">
     <i class="fas fa-arrow-left mr-2"></i> Volver a inicio
   </a>
 </div>
