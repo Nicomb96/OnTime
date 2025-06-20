@@ -38,11 +38,16 @@ from django.core.files.storage import default_storage
 import io
 import base64
 from .utils import generar_codigo_unico
+from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.timezone import localdate
 
 # --- Vistas de Autenticación y Perfil ---
 
 def iniciar_sesion(request):
     correo = None
+    next_url = request.GET.get('next', request.POST.get('next', ''))
 
     if request.method == 'POST':
         email = request.POST.get('correo', '').strip().lower()
@@ -52,12 +57,17 @@ def iniciar_sesion(request):
 
         if user is not None:
             login(request, user)
-            rol = user.rol
-            if rol == 'aprendiz':
+
+            # Si viene el parámetro next, lo redirigimos ahí
+            if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts=None):
+                return redirect(next_url)
+
+            # Si no, redirige normal por rol
+            if user.rol == 'aprendiz':
                 return redirect('inicio_aprendiz')
-            elif rol == 'instructor':
+            elif user.rol == 'instructor':
                 return redirect('inicio_instructor')
-            elif rol == 'admin':
+            elif user.rol == 'admin':
                 return redirect('inicio_admin')
             else:
                 messages.error(request, 'Rol desconocido.')
@@ -66,10 +76,11 @@ def iniciar_sesion(request):
         else:
             messages.error(request, 'Correo o contraseña incorrectos.')
             correo = email
-            return render(request, 'ontime_app/iniciar_sesion.html', {'correo': correo})
 
-    return render(request, 'ontime_app/iniciar_sesion.html', {'correo': correo})
-
+    return render(request, 'ontime_app/iniciar_sesion.html', {
+        'correo': correo,
+        'next': next_url
+    })
 
 def registrarse(request): 
     """
@@ -319,10 +330,13 @@ def inicio_aprendiz(request):
 def registrar_asistencia(request):
     """
     Vista para que el aprendiz registre su asistencia.
+    Si viene con ?codigo=XYZ, lo pasa al template.
     """
     if request.user.rol != 'aprendiz':
         return redirect('inicio')
-    return render(request, 'ontime_app/registrar_asistencia.html')
+
+    codigo_qr = request.GET.get('codigo', '')  # <- Captura el código si viene
+    return render(request, 'ontime_app/registrar_asistencia.html', {'codigo': codigo_qr})
 
 @login_required
 def notificaciones_1(request):
@@ -445,44 +459,65 @@ def acerca_de(request):
     """
     return render(request, 'ontime_app/acerca_de.html')
 
-# --- Vistas de Generación de Códigos QR y Asistencia ---
-
+@require_POST
+@login_required
 def generar_codigo_asistencia(request):
-    if request.method == 'POST':
-        codigo = generar_codigo_unico()
+    if request.user.rol != 'instructor':
+        return JsonResponse({'status': 'error', 'msg': 'Solo los instructores pueden generar códigos.'})
 
-        # Guardar el código en la base de datos
-        CodigoGenerado.objects.create(
-            codigo=codigo,
-            instructor=request.user,  # o el user que esté generando
-            fecha_creacion=now(),
-            activo=True
-        )
+    clase_id = request.POST.get('clase_id')
+    if not clase_id:
+        return JsonResponse({'status': 'error', 'msg': 'No se seleccionó ninguna clase.'})
 
-        # Generar imagen QR
-        qr = qrcode.QRCode(version=1, box_size=10, border=5)
-        qr.add_data(codigo)
-        qr.make(fit=True)
-        img = qr.make_image(fill='black', back_color='white')
+    try:
+        clase = Clase.objects.get(id=clase_id)
+    except Clase.DoesNotExist:
+        return JsonResponse({'status': 'error', 'msg': 'Clase no encontrada.'})
 
-        # Convertir imagen QR a base64
-        buffer = io.BytesIO()
-        img.save(buffer, format="PNG")
-        qr_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
-        qr_data_url = f"data:image/png;base64,{qr_base64}"
+    # Valida que el instructor pertenezca a esa clase
+    if clase not in request.user.clases.all():
+        return JsonResponse({'status': 'error', 'msg': 'No puedes generar códigos para esta clase.'})
 
-        # Enviar por WebSocket
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            'grupo_asistencia',
-            {
-                'type': 'enviar_codigo',
-                'codigo': codigo,
-                'qr': qr_data_url
-            }
-        )
+    # Generar código
+    codigo = generar_codigo_unico()
 
-        return JsonResponse({'codigo': codigo})
+    # Guardar en base de datos
+    CodigoGenerado.objects.create(
+        codigo=codigo,
+        instructor=request.user,
+        clase=clase,  # <<<< AQUI VA LA CLASE
+        fecha_creacion=now(),
+        activo=True
+    )
+
+    # Generar URL con código
+    url_con_codigo = request.build_absolute_uri(
+        reverse('registrar_asistencia') + f'?codigo={codigo}'
+    )
+
+    # Crear QR
+    qr = qrcode.QRCode(version=1, box_size=10, border=5)
+    qr.add_data(url_con_codigo)
+    qr.make(fit=True)
+    img = qr.make_image(fill='black', back_color='white')
+
+    buffer = io.BytesIO()
+    img.save(buffer, format="PNG")
+    qr_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+    qr_data_url = f"data:image/png;base64,{qr_base64}"
+
+    # WebSocket
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        'grupo_asistencia',
+        {
+            'type': 'enviar_codigo',
+            'codigo': codigo,
+            'qr': qr_data_url
+        }
+    )
+
+    return JsonResponse({'codigo': codigo, 'url': url_con_codigo, 'qr': qr_data_url})
 
 # --- Vistas de Documentación y Diseño ---
 
@@ -639,39 +674,66 @@ def crear_usuario(request):
 
 @login_required
 def registrar_asistencia_api(request):
-    print("Vista llamada:", request.method)
-
     if request.method == 'POST':
-        print("POST recibido")
-        print("Datos:", request.POST)
-
         codigo = request.POST.get('codigo', '').strip()
         aprendiz = request.user
+
+        # Verifica que el usuario sea un aprendiz
+        if request.user.rol != 'aprendiz':
+            return JsonResponse({'status': 'error', 'msg': 'Solo los aprendices pueden registrar asistencia.'})
 
         if not codigo:
             return JsonResponse({'status': 'error', 'msg': 'No se recibió ningún código.'})
 
         try:
             codigo_obj = CodigoGenerado.objects.get(codigo=codigo, activo=True)
+            # Validar que el aprendiz pertenezca a la clase del código generado
+            if not codigo_obj.clase in aprendiz.clases.all():
+                return JsonResponse({'status': 'error', 'msg': 'No perteneces a esta clase, no puedes registrar asistencia.'})
+
         except CodigoGenerado.DoesNotExist:
             return JsonResponse({'status': 'error', 'msg': 'El código ingresado no es válido o ya expiró.'})
 
         if Asistencia.objects.filter(aprendiz=aprendiz, codigo=codigo).exists():
             return JsonResponse({'status': 'error', 'msg': 'Ya registraste tu asistencia con este código.'})
+        
+        fecha_actual = localdate()
+        if Asistencia.objects.filter(aprendiz=aprendiz, clase=codigo_obj.clase, fecha__date=fecha_actual).exists():
+            return JsonResponse({'status': 'error', 'msg': 'Ya registraste asistencia hoy para esta clase.'})
 
         asistencia = Asistencia.objects.create(
             aprendiz=aprendiz,
             codigo=codigo,
-            clase_id=1,
+            clase=codigo_obj.clase,
             fecha=now(),
             validada=True
         )
 
+        # Crear notificación para el aprendiz
         Notificacion.objects.create(
             usuario=aprendiz,
             titulo="Registro de Asistencia",
             descripcion=f"Has registrado tu asistencia correctamente el {localtime(asistencia.fecha).strftime('%d/%m/%Y a las %H:%M')}",
             tipo="asistencia"
+        )
+
+        # WebSocket - Notificar al instructor en tiempo real
+        channel_layer = get_channel_layer()
+        foto_url = ''
+        if aprendiz.foto_perfil:
+            foto_url = aprendiz.foto_perfil.url
+        else:
+            foto_url = f"https://ui-avatars.com/api/?name={aprendiz.get_full_name()}&background=green&color=fff"
+
+        async_to_sync(channel_layer.group_send)(
+            f"instructor_{codigo_obj.instructor.id}",
+            {
+                "type": "enviar_asistencia",
+                "fecha": localtime(asistencia.fecha).strftime("%d/%m/%Y %H:%M"),
+                "nombre": aprendiz.get_full_name(),
+                "foto": foto_url,
+                "instructor_id": codigo_obj.instructor.id
+            }
         )
 
         return JsonResponse({'status': 'ok', 'msg': '¡Asistencia registrada correctamente!'})
@@ -869,3 +931,24 @@ def progreso_asistencia(request):
         porcentaje = 0
 
     return JsonResponse({'porcentaje': porcentaje})
+
+# --- Vistas para Expirar Códigos ---
+
+@csrf_exempt
+def expirar_codigo(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            codigo = data.get('codigo', '').strip()
+
+            codigo_obj = CodigoGenerado.objects.get(codigo=codigo)
+            codigo_obj.activo = False
+            codigo_obj.save()
+
+            return JsonResponse({'status': 'ok', 'msg': 'Código expirado correctamente'})
+        except CodigoGenerado.DoesNotExist:
+            return JsonResponse({'status': 'error', 'msg': 'Código no encontrado'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'msg': str(e)})
+
+    return JsonResponse({'status': 'error', 'msg': 'Método no permitido'})

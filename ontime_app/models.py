@@ -10,33 +10,24 @@ from django.utils import timezone
 # --- Modelo de Usuario Personalizado ---
 
 class UsuarioPersonalizado(AbstractUser):
-    """
-    Define un modelo de usuario personalizado que extiende AbstractUser.
-    Permite añadir campos adicionales como el rol y la foto de perfil.
-    """
-    # Define las opciones de roles disponibles para los usuarios
     ROLES = (
         ('aprendiz', 'Aprendiz'),
         ('instructor', 'Instructor'),
         ('admin', 'Administrador'),
     )
-    # Campo para almacenar el rol del usuario, con opciones predefinidas
-    rol = models.CharField(max_length=20, choices=ROLES)
 
-    # Campo de correo electrónico, se asegura que sea único
+    rol = models.CharField(max_length=20, choices=ROLES)
     email = models.EmailField(unique=True)
-    # Campo para la foto de perfil, se guarda en 'fotos_perfil/' y es opcional
     foto_perfil = models.ImageField(upload_to='fotos_perfil/', blank=True, null=True)
 
-    # Define 'email' como el campo usado para iniciar sesión
+    # Se separa las clases según el rol
+    clases = models.ManyToManyField('ontime_app.Clase', related_name="aprendices", blank=True)
+    clases_dictadas = models.ManyToManyField('ontime_app.Clase', related_name="instructores", blank=True)
+
     USERNAME_FIELD = 'email'
-    # Define los campos requeridos al crear un superusuario o usuario
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
     def __str__(self):
-        """
-        Representación en cadena del objeto UsuarioPersonalizado, muestra el email.
-        """
         return self.email
 
 # --- Señales para el Modelo UsuarioPersonalizado ---
@@ -147,20 +138,29 @@ class Justificativo(models.Model):
     def __str__(self):
         return f"{self.usuario.username} - {self.tipo} ({self.fecha_ausencia})"
 
-# --- Modelo de Clase ---
-
 class Clase(models.Model):
+    TIPOS_CLASE = (
+        ('tecnica', 'Técnica'),
+        ('complementaria', 'Complementaria'),
+    )
+
     nombre = models.CharField(max_length=100)
+    tipo = models.CharField(max_length=20, choices=TIPOS_CLASE)
+    grupo = models.CharField(max_length=20)  # 3069239
     fecha = models.DateField()
 
+    class Meta:
+        unique_together = ('nombre', 'grupo')  # Evita duplicados por nombre + grupo
+
     def __str__(self):
-        return f"{self.nombre} - {self.fecha}"
+        return f"{self.nombre} - Grupo {self.grupo} ({self.get_tipo_display()})"
 
 # --- Modelo de Código Generado (Instructor) ---
 
 class CodigoGenerado(models.Model):
     codigo = models.CharField(max_length=100, unique=True)
     instructor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    clase = models.ForeignKey('ontime_app.Clase', on_delete=models.CASCADE, null=True, blank=True)
     fecha_creacion = models.DateTimeField(default=timezone.now)
     activo = models.BooleanField(default=True)
 

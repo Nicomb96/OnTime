@@ -125,7 +125,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # Redirecciones de login/logout
 LOGIN_URL = 'iniciar_sesion'
-LOGOUT_REDIRECT_URL = 'iniciar_sesion'
+LOGOUT_REDIRECT_URL = 'registrar_asistencia'
 
 # Campo por defecto para llaves primarias
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
