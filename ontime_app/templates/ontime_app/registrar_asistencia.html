@@ -82,8 +82,10 @@
 </div>
 {% endblock back_button %}
 
-<!-- Scripts -->
+<!-- Scripts requeridos -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode@2.3.7/html5-qrcode.min.js"></script>
+
 <script>
   const msg = document.getElementById("codigo-msg");
   const loader = document.getElementById("loader");
@@ -173,16 +175,23 @@
     registrarAsistencia(codigo);
   });
 
-  // WebSocket: recibir código QR en tiempo real
+  // WebSocket para recibir código QR en tiempo real
   const socket = new WebSocket('ws://' + window.location.host + '/ws/codigo/');
   socket.onmessage = function(e) {
     const data = JSON.parse(e.data);
     document.getElementById("codigo-recibido").innerText = data.codigo;
 
     if (data.qr) {
-      qrImg.src = data.qr;
-      qrImg.classList.remove("hidden");
       readerDiv.classList.add("hidden");
+      qrImg.classList.remove("hidden");
+
+      QRCode.toDataURL(data.qr, { width: 200 }, function (err, url) {
+        if (err) {
+          console.error("Error generando QR:", err);
+          return;
+        }
+        qrImg.src = url;
+      });
 
       html5QrCode.stop().catch(err => {
         console.warn("No se pudo detener la cámara:", err);
@@ -190,7 +199,7 @@
     }
   };
 
-  // Registro automático si viene con ?codigo=XYZ en la URL
+  // Auto-registro si viene por URL con código
   document.addEventListener('DOMContentLoaded', () => {
     const codigoAuto = "{{ codigo|default:'' }}";
     if (codigoAuto) {

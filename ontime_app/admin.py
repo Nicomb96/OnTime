@@ -12,7 +12,6 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
     model = UsuarioPersonalizado
     form = UsuarioForm
 
-    # Usamos el método 'mostrar_clases' en vez del campo directo
     list_display = (
         'username',
         'email',
@@ -42,7 +41,7 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
     fieldsets = (
         (None, {'fields': ('username', 'email', 'password')}),
         ('Información personal', {
-            'fields': ('first_name', 'last_name', 'rol', 'clases', 'foto_perfil'),
+            'fields': ('first_name', 'last_name', 'rol', 'clases', 'clases_dictadas', 'foto_perfil'),
         }),
         ('Permisos', {
             'fields': (
@@ -56,6 +55,8 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
         ('Fechas importantes', {'fields': ('last_login', 'date_joined')}),
     )
 
+    filter_horizontal = ('clases', 'clases_dictadas')
+    
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
@@ -66,6 +67,8 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
                 'last_name',
                 'rol',
                 'clases',
+                'clases_dictadas',
+                'foto_perfil',
                 'password',
                 'is_staff',
                 'is_active',
@@ -73,11 +76,11 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
         }),
     )
 
-    # Método para mostrar las clases como texto en list_display
+    filter_horizontal = ('clases', 'clases_dictadas')  
+
     def mostrar_clases(self, obj):
         return ", ".join([clase.nombre for clase in obj.clases.all()])
     mostrar_clases.short_description = "Clases"
 
-# Registrar modelos
 admin.site.register(UsuarioPersonalizado, UsuarioPersonalizadoAdmin)
 admin.site.register(Clase)

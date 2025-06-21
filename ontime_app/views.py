@@ -401,7 +401,14 @@ def generar_qr(request):
     """
     if request.user.rol != 'instructor':
         return redirect('inicio')
-    return render(request, 'ontime_app/generar_qr.html')
+
+    clases_asignadas = request.user.clases_dictadas.all()
+
+    print("Clases asignadas al instructor:", clases_asignadas)
+
+    return render(request, 'ontime_app/generar_qr.html', {
+        'clases': clases_asignadas
+    })
 
 @never_cache
 @login_required(login_url='iniciar_sesion')
@@ -459,65 +466,65 @@ def acerca_de(request):
     """
     return render(request, 'ontime_app/acerca_de.html')
 
-@require_POST
+@csrf_exempt
 @login_required
 def generar_codigo_asistencia(request):
-    if request.user.rol != 'instructor':
-        return JsonResponse({'status': 'error', 'msg': 'Solo los instructores pueden generar códigos.'})
+    if request.method == 'POST':
+        clase_id = request.POST.get('clase_id')
+        if not clase_id:
+            return JsonResponse({'error': 'Clase no proporcionada'}, status=400)
 
-    clase_id = request.POST.get('clase_id')
-    if not clase_id:
-        return JsonResponse({'status': 'error', 'msg': 'No se seleccionó ninguna clase.'})
+        try:
+            clase = Clase.objects.get(id=clase_id)
+        except Clase.DoesNotExist:
+            return JsonResponse({'error': 'Clase inválida'}, status=400)
 
-    try:
-        clase = Clase.objects.get(id=clase_id)
-    except Clase.DoesNotExist:
-        return JsonResponse({'status': 'error', 'msg': 'Clase no encontrada.'})
+        # Generar código aleatorio
+        codigo = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
 
-    # Valida que el instructor pertenezca a esa clase
-    if clase not in request.user.clases.all():
-        return JsonResponse({'status': 'error', 'msg': 'No puedes generar códigos para esta clase.'})
+        # Guardar en base de datos
+        CodigoGenerado.objects.create(
+            codigo=codigo,
+            instructor=request.user,
+            clase=clase,
+            fecha_creacion=now(),
+            activo=True
+        )
 
-    # Generar código
-    codigo = generar_codigo_unico()
+        # Generar URL con código
+        url_con_codigo = request.build_absolute_uri(
+            reverse('registrar_asistencia') + f'?codigo={codigo}'
+        )
 
-    # Guardar en base de datos
-    CodigoGenerado.objects.create(
-        codigo=codigo,
-        instructor=request.user,
-        clase=clase,  # <<<< AQUI VA LA CLASE
-        fecha_creacion=now(),
-        activo=True
-    )
+        # Generar QR como imagen (base64, opcional)
+        qr = qrcode.QRCode(version=1, box_size=10, border=5)
+        qr.add_data(url_con_codigo)
+        qr.make(fit=True)
+        img = qr.make_image(fill='black', back_color='white')
 
-    # Generar URL con código
-    url_con_codigo = request.build_absolute_uri(
-        reverse('registrar_asistencia') + f'?codigo={codigo}'
-    )
+        buffer = io.BytesIO()
+        img.save(buffer, format="PNG")
+        qr_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+        qr_data_url = f"data:image/png;base64,{qr_base64}"
 
-    # Crear QR
-    qr = qrcode.QRCode(version=1, box_size=10, border=5)
-    qr.add_data(url_con_codigo)
-    qr.make(fit=True)
-    img = qr.make_image(fill='black', back_color='white')
+        # Enviar por WebSocket al grupo "codigo"
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            "codigo",
+            {
+                "type": "enviar_codigo",
+                "codigo": codigo,
+                "qr": url_con_codigo  # o usa qr_data_url si prefieres enviar la imagen codificada
+            }
+        )
 
-    buffer = io.BytesIO()
-    img.save(buffer, format="PNG")
-    qr_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
-    qr_data_url = f"data:image/png;base64,{qr_base64}"
-
-    # WebSocket
-    channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
-        'grupo_asistencia',
-        {
-            'type': 'enviar_codigo',
+        return JsonResponse({
             'codigo': codigo,
-            'qr': qr_data_url
-        }
-    )
+            'url': url_con_codigo,
+            'qr': qr_data_url  # si lo necesitas en el front
+        })
 
-    return JsonResponse({'codigo': codigo, 'url': url_con_codigo, 'qr': qr_data_url})
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
 
 # --- Vistas de Documentación y Diseño ---
 
