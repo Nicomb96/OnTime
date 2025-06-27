@@ -1,159 +1,150 @@
-{% extends 'ontime_app/base.html' %}
+{% extends 'ontime_app/base.html' %} 
 {% load static %}
+{% load custom_filters %}
 
 {% block title %}Consultar Asistencias - OnTime{% endblock %}
 
 {% block content %}
 
-<div class="bg-gray-50 shadow-xl rounded-3xl p-10 w-full max-w-5xl mx-auto mt-16 animate__animated animate__fadeIn">
+<div class="bg-gray-200 shadow-2xl rounded-3xl p-10 w-full max-w-[96rem] mx-auto mt-18">
+  <h2 class="text-4xl font-extrabold text-center text-green-800 mb-6 animate-pulse">
+    <i class="fas fa-user-check mr-2 animate-bounce"></i>
+    Plantilla de Asistencia
+  </h2>
+  <p class="text-center text-gray-600 mb-10 text-lg">Consulta y actualiza el control de asistencia de manera organizada y dinámica.</p>
 
-  <h2 class="text-4xl font-extrabold text-center text-gray-800 animate-pulse mb-4">Consultar Asistencias</h2>
-  <p class="text-center text-gray-600 mb-8">Consulta la asistencia de los aprendices por competencia y visualiza los detalles de cada registro.</p>
+  <div class="flex justify-center mb-6 gap-4">
+    <a href="{% url 'descargar_excel_asistencia' %}" target="_blank" class="bg-green-600 hover:bg-green-700 text-white font-medium px-6 py-3 rounded-lg shadow transition duration-300">
+  <i class="fas fa-file-excel mr-2"></i> Descargar Excel
+</a>
+  </div>
 
-  <!-- Filtros y Buscador -->
-  <div class="flex justify-between mb-8">
-    <div class="flex items-center gap-4">
-      <label for="competencia" class="font-semibold text-gray-700">Competencia:</label>
-      <select id="competencia" class="px-4 py-2 rounded-lg border border-green-400 focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-gray-600 shadow-md hover:shadow-lg transition-all">
-        <option value="competencia1">Programación de software</option>
-        <option value="competencia2">Matemáticas</option>
-        <option value="competencia3">Inglés</option>
-        <option value="competencia4">Emprendimiento</option>
-      </select>
+  <form method="POST" id="asistenciaForm">
+    {% csrf_token %}
+    <div class="overflow-x-auto mb-9">
+      <table class="w-full text-sm text-left border border-gray-300 shadow-lg rounded-lg overflow-hidden">
+        <thead class="bg-green-700 text-white text-center">
+          <tr>
+            <th class="px-4 py-2 border">#</th>
+            <th class="px-4 py-2 border">Foto</th>
+            <th class="px-4 py-2 border">Aprendiz</th>
+            {% for dia in dias_del_mes %}
+              <th class="px-2 py-1 border text-center">{{ dia }}</th>
+            {% endfor %}
+            <th class="px-4 py-2 border text-center">✔%</th>
+            <th class="px-4 py-2 border text-center">✘%</th>
+            <th class="px-4 py-2 border text-center">T%</th>
+            <th class="px-4 py-2 border text-center">J%</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for aprendiz in aprendices %}
+          <tr class="bg-white hover:bg-green-50 transition text-center text-green-700">
+            <td class="px-4 py-2 border text-gray-500">{{ forloop.counter }}</td>
+            <td class="px-2 py-2 border">
+              {% if aprendiz.foto_perfil %}
+                <img src="{{ aprendiz.foto_perfil.url }}" alt="Foto" class="w-10 h-10 rounded-full mx-auto object-cover">
+              {% else %}
+                <img src="{% static 'images/foto_p.png' %}" alt="Sin foto" class="w-10 h-10 rounded-full mx-auto object-cover">
+              {% endif %}
+            </td>
+            <td class="px-4 py-2 border text-left">
+              <span class="font-semibold text-gray-800">{{ aprendiz.get_full_name }}</span><br>
+              <small class="text-gray-500">{{ aprendiz.username }}</small>
+            </td>
+            {% for dia in dias_del_mes %}
+              {% with asistencia=asistencias|get_item:aprendiz.id|get_item:dia %}
+              <td class="px-2 py-1 border">
+                <select name="estado_{{ aprendiz.id }}_{{ dia }}" class="text-xs border rounded-lg bg-white px-1 py-0.5 focus:ring-2 focus:ring-green-500 transition-colors estado-select">
+                  <option value="" {% if not asistencia %}selected{% endif %}>--</option>
+                  <option value="Presente" {% if asistencia.estado == 'Presente' %}selected{% endif %}>✔ Presente</option>
+                  <option value="Ausente" {% if asistencia.estado == 'Ausente' %}selected{% endif %}>✘ Ausente</option>
+                  <option value="Tarde" {% if asistencia.estado == 'Tarde' %}selected{% endif %}>T Tarde</option>
+                  <option value="Justificado" {% if asistencia.estado == 'Justificado' %}selected{% endif %}>J Justificado</option>
+                </select>
+              </td>
+              {% endwith %}
+            {% endfor %}
+            <td class="px-2 py-1 border text-green-600 font-semibold">{{ porcentajes|get_item:aprendiz.id|get_item:'asistencia' }}%</td>
+            <td class="px-2 py-1 border text-red-500 font-semibold">{{ porcentajes|get_item:aprendiz.id|get_item:'ausencia' }}%</td>
+            <td class="px-2 py-1 border text-yellow-500 font-semibold">{{ porcentajes|get_item:aprendiz.id|get_item:'tarde' }}%</td>
+            <td class="px-2 py-1 border text-blue-500 font-semibold">{{ porcentajes|get_item:aprendiz.id|get_item:'justificado' }}%</td>
+          </tr>
+          {% endfor %}
+
+          {% if not aprendices %}
+          <tr>
+            <td colspan="100%" class="text-center text-gray-500 py-6">No hay aprendices registrados para mostrar.</td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
     </div>
 
-    <!-- Buscador -->
-    <div class="flex items-center">
-      <input type="text" id="search" class="px-4 py-2 rounded-lg border border-green-400 focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-gray-800 shadow-md hover:shadow-lg transition-all" placeholder="Buscar aprendiz...">
-      <button class="ml-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">Buscar</button>
+    <div class="text-center mt-10">
+      <button type="submit" class="bg-green-700 text-white px-8 py-3 rounded-lg hover:bg-green-800 transition shadow-lg text-lg">
+        <i class="fas fa-save mr-2"></i> Guardar Cambios
+      </button>
     </div>
-  </div>
-
-  <!-- Tabla de Asistencias -->
-  <div class="overflow-x-auto bg-white shadow-lg rounded-lg">
-    <table class="min-w-full text-sm text-left text-gray-500" id="attendance-table">
-      <thead class="text-xs text-gray-700 uppercase bg-green-50">
-        <tr>
-          <th class="px-6 py-3">#</th>
-          <th class="px-6 py-3">Nombre del Aprendiz</th>
-          <th class="px-6 py-3">Estado de Asistencia</th>
-          <th class="px-6 py-3">Fecha</th>
-          <th class="px-6 py-3">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr class="border-b hover:bg-green-50 transition-all">
-          <td class="px-6 py-4">1</td>
-          <td class="px-6 py-4">Juan Pérez</td>
-          <td class="px-6 py-4 text-green-600">Presente</td>
-          <td class="px-6 py-4">2025-04-18</td>
-          <td class="px-6 py-4">
-            <button class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition flex items-center gap-2" onclick="showDetails('Juan Pérez', 'Presente', '2025-04-18')">
-              <i class="fas fa-eye"></i> Ver Detalles
-            </button>
-          </td>
-        </tr>
-        <tr class="border-b hover:bg-green-50 transition-all">
-          <td class="px-6 py-4">2</td>
-          <td class="px-6 py-4">Ana González</td>
-          <td class="px-6 py-4 text-red-600">Ausente</td>
-          <td class="px-6 py-4">2025-04-18</td>
-          <td class="px-6 py-4">
-            <button class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition flex items-center gap-2" onclick="showDetails('Ana González', 'Ausente', '2025-04-18')">
-              <i class="fas fa-eye"></i> Ver Detalles
-            </button>
-          </td>
-        </tr>
-        <tr class="border-b hover:bg-green-50 transition-all">
-          <td class="px-6 py-4">3</td>
-          <td class="px-6 py-4">Carlos López</td>
-          <td class="px-6 py-4 text-yellow-500">Tarde</td>
-          <td class="px-6 py-4">2025-04-17</td>
-          <td class="px-6 py-4">
-            <button class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition flex items-center gap-2" onclick="showDetails('Carlos López', 'Tarde', '2025-04-17')">
-              <i class="fas fa-eye"></i> Ver Detalles
-            </button>
-          </td>
-        </tr>
-        <tr class="border-b hover:bg-green-50 transition-all">
-          <td class="px-6 py-4">4</td>
-          <td class="px-6 py-4">Marta Rodríguez</td>
-          <td class="px-6 py-4 text-green-600">Presente</td>
-          <td class="px-6 py-4">2025-04-16</td>
-          <td class="px-6 py-4">
-            <button class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition flex items-center gap-2" onclick="showDetails('Marta Rodríguez', 'Presente', '2025-04-16')">
-              <i class="fas fa-eye"></i> Ver Detalles
-            </button>
-          </td>
-        </tr>
-        <tr class="border-b hover:bg-green-50 transition-all">
-          <td class="px-6 py-4">5</td>
-          <td class="px-6 py-4">Luis Torres</td>
-          <td class="px-6 py-4 text-red-600">Ausente</td>
-          <td class="px-6 py-4">2025-04-14</td>
-          <td class="px-6 py-4">
-            <button class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition flex items-center gap-2" onclick="showDetails('Luis Torres', 'Ausente', '2025-04-14')">
-              <i class="fas fa-eye"></i> Ver Detalles
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Paginación -->
-  <div class="flex justify-center mt-6">
-    <nav>
-      <ul class="inline-flex -space-x-px">
-        <li>
-          <button class="px-4 py-2 mx-1 text-sm font-medium text-green-600 bg-white border border-green-500 rounded-l-lg hover:bg-green-100 transition" onclick="changePage(-1)">Anterior</button>
-        </li>
-        <li>
-          <button class="px-4 py-2 mx-1 text-sm font-medium text-green-600 bg-white border border-green-500 hover:bg-green-100 transition">1</button>
-        </li>
-        <li>
-          <button class="px-4 py-2 mx-1 text-sm font-medium text-green-600 bg-white border border-green-500 hover:bg-green-100 transition">2</button>
-        </li>
-        <li>
-          <button class="px-4 py-2 mx-1 text-sm font-medium text-green-600 bg-white border border-green-500 rounded-r-lg hover:bg-green-100 transition" onclick="changePage(1)">Siguiente</button>
-        </li>
-      </ul>
-    </nav>
-  </div>
-
-  <!-- Botón para Exportar Reporte -->
-  <div class="text-center mt-8">
-    <button class="bg-green-700 text-white px-6 py-3 rounded-lg hover:bg-green-800 transition shadow-lg">
-      <i class="fas fa-file-export mr-2"></i> Exportar Reporte
-    </button>
-  </div>
-
+  </form>
 </div>
 
-{% block back_button %}
-<div class="mt-8 text-center">
-  <a href="javascript:history.back()" class="back-button back-button-emerald">
+<div class="mt-10 text-center animate__animated animate__fadeInUp">
+  <a href="javascript:history.back()" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition shadow">
     <i class="fas fa-arrow-left mr-2"></i> Volver al panel
   </a>
 </div>
-{% endblock back_button %}
 
+<!-- Colores dinámicos para selects -->
+<style>
+  select.estado-select {
+    transition: background-color 0.3s;
+  }
+  select.estado-select:has(option:checked[value="Presente"]) {
+    background-color: #d1fae5;
+  }
+  select.estado-select:has(option:checked[value="Ausente"]) {
+    background-color: #fee2e2;
+  }
+  select.estado-select:has(option:checked[value="Tarde"]) {
+    background-color: #fef9c3;
+  }
+  select.estado-select:has(option:checked[value="Justificado"]) {
+    background-color: #dbeafe;
+  }
+</style>
+
+<!-- Script AJAX para guardar sin recargar -->
 <script>
-  function showDetails(name, status, date) {
-    alert(`Detalles del aprendiz:\nNombre: ${name}\nEstado: ${status}\nFecha: ${date}`);
-  }
+document.addEventListener('DOMContentLoaded', function () {
+  const form = document.getElementById('asistenciaForm');
 
-  let currentPage = 1;
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
 
-  function changePage(direction) {
-    currentPage += direction;
-    if (currentPage < 1) {
-      currentPage = 1;
-    }
+    const formData = new FormData(form);
 
-    // Aquí cambiarías los datos de la tabla según la página
-    alert('Página cambiada a: ' + currentPage);
-  }
+    fetch("{% url 'consultar_asistencias' %}", {
+      method: "POST",
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+        "X-CSRFToken": form.querySelector('[name=csrfmiddlewaretoken]').value,
+      },
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert("✅ Cambios guardados correctamente.");
+      } else {
+        alert("❌ Algo salió mal al guardar.");
+      }
+    })
+    .catch(error => {
+      console.error("Error al guardar:", error);
+    });
+  });
+});
 </script>
 
 {% endblock %}

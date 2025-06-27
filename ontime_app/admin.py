@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.forms import ModelForm
-from .models import UsuarioPersonalizado, Clase
+from .models import UsuarioPersonalizado, Clase, Competencia
 
 class UsuarioForm(ModelForm):
     class Meta:
@@ -84,3 +84,4 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
 
 admin.site.register(UsuarioPersonalizado, UsuarioPersonalizadoAdmin)
 admin.site.register(Clase)
+admin.site.register(Competencia)

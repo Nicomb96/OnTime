@@ -3,22 +3,24 @@
     <tr class="hover:bg-gray-100 transition duration-300">
       <!-- Fecha -->
       <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-800">
-        {{ item.fecha }}
+        {{ item.fecha|date:"d \d\e F \d\e Y - H:i" }}
       </td>
 
       <!-- Curso o Competencia -->
       <td class="px-6 py-4 whitespace-nowrap">
-        {{ item.curso.nombre|default:"Sin curso" }}
+        {{ item.clase.nombre|default:"Sin clase" }} / {{ item.clase.competencia.nombre|default:"Sin competencia" }}
       </td>
 
       <!-- Estado (Presente, Ausente, etc.) -->
       <td class="px-6 py-4 whitespace-nowrap">
-        {% if item.estado == 'P' %}
+        {% if item.estado == 'Presente' %}
           <span class="px-3 py-1 rounded-full bg-green-200 text-green-800 text-xs font-semibold">Presente</span>
-        {% elif item.estado == 'A' %}
+        {% elif item.estado == 'Ausente' %}
           <span class="px-3 py-1 rounded-full bg-red-200 text-red-800 text-xs font-semibold">Ausente</span>
-        {% elif item.estado == 'T' %}
+        {% elif item.estado == 'Tarde' %}
           <span class="px-3 py-1 rounded-full bg-yellow-200 text-yellow-800 text-xs font-semibold">Tarde</span>
+        {% elif item.estado == 'Justificado' %}
+          <span class="px-3 py-1 rounded-full bg-blue-200 text-blue-800 text-xs font-semibold">Justificado</span>
         {% else %}
           <span class="px-3 py-1 rounded-full bg-gray-200 text-gray-700 text-xs font-semibold">Desconocido</span>
         {% endif %}
@@ -32,4 +34,3 @@
     </td>
   </tr>
 {% endif %}
-

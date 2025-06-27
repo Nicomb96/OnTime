@@ -5,7 +5,7 @@ from django.db.models.signals import post_delete, pre_save
 from django.dispatch import receiver
 from django.conf import settings
 from datetime import datetime
-from django.utils import timezone
+from django.utils import timezone 
 
 # --- Modelo de Usuario Personalizado ---
 
@@ -79,12 +79,24 @@ def eliminar_foto_anterior(sender, instance, **kwargs):
 class Asistencia(models.Model):
     aprendiz = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     codigo = models.CharField(max_length=100)
-    fecha = models.DateTimeField(default=datetime.now)
+    fecha = models.DateTimeField(default=timezone.now)
     validada = models.BooleanField(default=False)
     clase = models.ForeignKey('Clase', on_delete=models.CASCADE, default=1)
 
+    estado = models.CharField(
+        max_length=20,
+        choices=[
+            ('Presente', 'Presente'),
+            ('Ausente', 'Ausente'),
+            ('Tarde', 'Tarde'),
+            ('Justificado', 'Justificado')
+        ],
+        default='Presente'
+    )
+    observaciones = models.TextField(blank=True, null=True)
+
     def __str__(self):
-        return f"Asistencia de {self.aprendiz.username} - {self.codigo}"
+        return f"Asistencia de {self.aprendiz.username} - {self.codigo} - {self.estado}"
 
 # --- Modelo de Notificación ---
 
@@ -138,6 +150,8 @@ class Justificativo(models.Model):
     def __str__(self):
         return f"{self.usuario.username} - {self.tipo} ({self.fecha_ausencia})"
 
+# --- Modelo de Clase ---
+
 class Clase(models.Model):
     TIPOS_CLASE = (
         ('tecnica', 'Técnica'),
@@ -146,14 +160,23 @@ class Clase(models.Model):
 
     nombre = models.CharField(max_length=100)
     tipo = models.CharField(max_length=20, choices=TIPOS_CLASE)
-    grupo = models.CharField(max_length=20)  # 3069239
+    grupo = models.CharField(max_length=20)
     fecha = models.DateField()
+    competencia = models.ForeignKey('Competencia', on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
-        unique_together = ('nombre', 'grupo')  # Evita duplicados por nombre + grupo
+        unique_together = ('nombre', 'grupo')
 
     def __str__(self):
         return f"{self.nombre} - Grupo {self.grupo} ({self.get_tipo_display()})"
+
+# --- Modelo de Competencia ---
+
+class Competencia(models.Model):
+    nombre = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.nombre
 
 # --- Modelo de Código Generado (Instructor) ---
 

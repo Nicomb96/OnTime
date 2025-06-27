@@ -61,6 +61,10 @@ urlpatterns = [
     path("gestion_reportes/", views.gestion_reportes, name="gestion_reportes"),
     path('expirar-codigo/', views.expirar_codigo, name='expirar_codigo'),
     path('generar_codigo/', views.generar_codigo_asistencia, name='generar_codigo_asistencia'),
+    path('asistencia/manual/', views.asistencia_manual_view, name='asistencia_manual'),
+    path('asistencia/manual/registrar/', views.registrar_asistencia_manual, name='registrar_asistencia_manual'),
+    path('descargar_excel_asistencia/', views.descargar_excel_asistencia, name='descargar_excel_asistencia'),
+
 
     # --- Rutas Específicas del Rol: Administrador ---
 

@@ -42,6 +42,14 @@ from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.timezone import localdate
+from .models import Asistencia, Clase
+from .models import UsuarioPersonalizado
+from ontime_app.models import UsuarioPersonalizado
+from calendar import monthrange
+from collections import defaultdict
+import openpyxl
+from openpyxl.styles import Font, Alignment
+from django.http import HttpResponse
 
 # --- Vistas de Autenticación y Perfil ---
 
@@ -414,11 +422,105 @@ def generar_qr(request):
 @login_required(login_url='iniciar_sesion')
 def consultar_asistencias(request):
     """
-    Vista para que el instructor consulte asistencias.
+    Vista para que el instructor consulte y registre asistencia manual de todos los aprendices en una tabla tipo Excel.
     """
     if request.user.rol != 'instructor':
         return redirect('inicio')
-    return render(request, 'ontime_app/consultar_asistencias.html')
+
+    hoy = timezone.now().date()
+    año = hoy.year
+    mes = hoy.month
+    _, total_dias = monthrange(año, mes)
+    dias_del_mes = list(range(1, total_dias + 1))
+
+    instructor = request.user
+    clases_del_instructor = instructor.clases_dictadas.all()
+
+    aprendices = UsuarioPersonalizado.objects.filter(
+        clases__in=clases_del_instructor,
+        rol='aprendiz'
+    ).distinct()
+
+    asistencias_qs = Asistencia.objects.filter(
+        aprendiz__in=aprendices,
+        fecha__year=año,
+        fecha__month=mes
+    )
+
+    asistencias = defaultdict(dict)
+    resumen = defaultdict(lambda: {"Presente": 0, "Ausente": 0, "Tarde": 0, "Justificado": 0})
+
+    for asistencia in asistencias_qs:
+        dia = asistencia.fecha.day
+        asistencias[asistencia.aprendiz.id][dia] = asistencia
+        resumen[asistencia.aprendiz.id][asistencia.estado] += 1
+
+    porcentajes = {}
+    for aprendiz in aprendices:
+        total_dias_mes = total_dias
+        presentes = resumen[aprendiz.id]["Presente"]
+        ausentes = resumen[aprendiz.id]["Ausente"]
+        tardes = resumen[aprendiz.id]["Tarde"]
+        justificados = resumen[aprendiz.id]["Justificado"]
+
+        # Cálculo sobre todos los días del mes
+        if total_dias_mes == 0:
+            porcentajes[aprendiz.id] = {"asistencia": 0, "ausencia": 0, "tarde": 0, "justificado": 0}
+        else:
+            porcentajes[aprendiz.id] = {
+                "asistencia": round((presentes / total_dias_mes) * 100),
+                "ausencia": round((ausentes / total_dias_mes) * 100),
+                "tarde": round((tardes / total_dias_mes) * 100),
+                "justificado": round((justificados / total_dias_mes) * 100),
+            }
+
+    if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        for key, valor_estado in request.POST.items():
+            if key.startswith('estado_') and valor_estado:
+                try:
+                    _, aprendiz_id, dia = key.split('_')
+                    dia = int(dia)
+                    aprendiz = UsuarioPersonalizado.objects.get(id=aprendiz_id)
+                    fecha_registro = hoy.replace(day=dia)
+
+                    asistencia = Asistencia.objects.filter(
+                        aprendiz=aprendiz,
+                        fecha__year=año,
+                        fecha__month=mes,
+                        fecha__day=dia,
+                        clase__in=clases_del_instructor
+                    ).first()
+
+                    if asistencia:
+                        asistencia.estado = valor_estado
+                        asistencia.save()
+                    else:
+                        Asistencia.objects.create(
+                            aprendiz=aprendiz,
+                            codigo=f'{aprendiz.id}-{fecha_registro}',
+                            fecha=fecha_registro,
+                            estado=valor_estado,
+                            observaciones='',
+                            clase=clases_del_instructor.first()
+                        )
+                except Exception as e:
+                    print(f'Error procesando {key}: {e}')
+                    continue
+
+        messages.success(request, "Cambios de asistencia guardados correctamente.")
+        return JsonResponse({"success": True})
+
+    return render(request, 'ontime_app/consultar_asistencias.html', {
+        'dias_del_mes': dias_del_mes,
+        'aprendices': aprendices,
+        'asistencias': asistencias,
+        'porcentajes': porcentajes,
+        'mes_actual': hoy.strftime('%B').capitalize(),
+        'año_actual': año,
+        'hoy': hoy,
+        'clases_del_instructor': clases_del_instructor,
+        'modo_edicion': True,
+    })
 
 @never_cache
 @login_required(login_url='iniciar_sesion')
@@ -871,11 +973,19 @@ def cargar_mas_historial(request):
         if not page_obj.object_list.exists():
             return JsonResponse({'html': '', 'hay_mas': False, 'vacio': True})
 
+        # Agregar print para depurar qué hay en cada item
+        for item in page_obj:
+            print(f"Clase: {item.clase}, Estado: {item.estado}")
+
         html = render_to_string('ontime_app/partials/_asistencia_item.html', {'historial': page_obj})
         return JsonResponse({'html': html, 'hay_mas': page_obj.has_next(), 'vacio': False})
 
     except Exception as e:
+        import traceback
+        print("ERROR DETECTADO EN cargar_mas_historial")
+        traceback.print_exc()
         return JsonResponse({'error': str(e)}, status=500)
+
 
 @login_required
 def filtrar_asistencia(request):
@@ -928,12 +1038,23 @@ def subir_justificativo(request):
 @login_required
 def progreso_asistencia(request):
     user = request.user
+    hoy = timezone.now().date()
+    año = hoy.year
+    mes = hoy.month
 
-    total_clases = Clase.objects.count()
-    asistencias = Asistencia.objects.filter(aprendiz=user).count()
+    # Total de días del mes actual
+    total_dias_mes = monthrange(año, mes)[1]
 
-    if total_clases > 0:
-        porcentaje = round((asistencias / total_clases) * 100)
+    # Contar cuántos días ha estado presente este aprendiz este mes
+    asistencias_presente = Asistencia.objects.filter(
+        aprendiz=user,
+        fecha__year=año,
+        fecha__month=mes,
+        estado='Presente'
+    ).count()
+
+    if total_dias_mes > 0:
+        porcentaje = round((asistencias_presente / total_dias_mes) * 100)
     else:
         porcentaje = 0
 
@@ -959,3 +1080,118 @@ def expirar_codigo(request):
             return JsonResponse({'status': 'error', 'msg': str(e)})
 
     return JsonResponse({'status': 'error', 'msg': 'Método no permitido'})
+
+# --- Vistas para Asistencia Manual view ---
+
+@never_cache
+@login_required(login_url='iniciar_sesion')
+def asistencia_manual_view(request):
+    if request.user.rol != 'instructor':
+        return redirect('inicio')
+
+    clases_del_instructor = request.user.clases_dictadas.all()
+    fecha_actual = timezone.now().date()
+
+    aprendices = UsuarioPersonalizado.objects.filter(
+        clases__in=clases_del_instructor,
+        rol='aprendiz'
+    ).distinct()
+
+    print("Aprendices encontrados:", aprendices)  # ← DEBUG
+
+    return render(request, 'ontime_app/consultar_asistencias.html', {
+        'aprendices': aprendices,
+        'fecha_actual': fecha_actual
+    })
+
+# --- Vista para Registrar Asistencia Manual ---
+
+@csrf_exempt
+@login_required(login_url='iniciar_sesion')
+def registrar_asistencia_manual(request):
+    if request.method == 'POST' and request.user.rol == 'instructor':
+        aprendiz_id = request.POST.get('aprendiz_id')
+        estado = request.POST.get('estado')
+        observaciones = request.POST.get('observaciones', '')
+        fecha = request.POST.get('fecha')
+
+        try:
+            aprendiz = UsuarioPersonalizado.objects.get(id=aprendiz_id)
+        except UsuarioPersonalizado.DoesNotExist:
+            return redirect('asistencia_manual')  
+
+        clase = Clase.objects.filter(
+            instructores=request.user,
+            grupo__in=aprendiz.clases.values_list('grupo', flat=True)
+        ).first()
+
+        if clase:
+            Asistencia.objects.create(
+                aprendiz=aprendiz,
+                codigo='manual',
+                fecha=fecha,
+                clase=clase,
+                validada=True,
+                estado=estado,
+                observaciones=observaciones
+            )
+
+    return redirect('asistencia_manual')
+
+# --- Vista para Descargar Excel de Asistencia ---
+
+@never_cache
+@login_required(login_url='iniciar_sesion')
+def descargar_excel_asistencia(request):
+    if request.user.rol != 'instructor':
+        return redirect('inicio')
+
+    hoy = timezone.now().date()
+    año = hoy.year
+    mes = hoy.month
+    _, total_dias = monthrange(año, mes)
+    dias_del_mes = list(range(1, total_dias + 1))
+
+    clases = request.user.clases_dictadas.all()
+    aprendices = UsuarioPersonalizado.objects.filter(
+        clases__in=clases,
+        rol='aprendiz'
+    ).distinct()
+
+    asistencias_qs = Asistencia.objects.filter(
+        aprendiz__in=aprendices,
+        fecha__year=año,
+        fecha__month=mes
+    )
+
+    asistencias = defaultdict(dict)
+    for asistencia in asistencias_qs:
+        asistencias[asistencia.aprendiz.id][asistencia.fecha.day] = asistencia.estado
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Asistencias"
+
+    # Header
+    headers = ["#", "Nombre completo", "Usuario"] + [str(d) for d in dias_del_mes]
+    ws.append(headers)
+    for cell in ws[1]:
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal='center')
+
+    # Filas de aprendices
+    for idx, aprendiz in enumerate(aprendices, start=1):
+        fila = [idx, aprendiz.get_full_name(), aprendiz.username]
+        for dia in dias_del_mes:
+            estado = asistencias.get(aprendiz.id, {}).get(dia, '')
+            fila.append(estado)
+        ws.append(fila)
+
+    # Preparar respuesta
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    nombre_archivo = f"Asistencias_{hoy.strftime('%Y_%m')}.xlsx"
+    response['Content-Disposition'] = f'attachment; filename="{nombre_archivo}"'
+    wb.save(response)
+    return response
