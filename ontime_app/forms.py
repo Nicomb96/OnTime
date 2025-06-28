@@ -28,6 +28,10 @@ class RegistroForm(UserCreationForm):
         # Define los campos que se mostrarán en el formulario de registro
         fields = ['username', 'nombre', 'apellido', 'correo', 'rol', 'password1', 'password2']
 
+    def clean_correo(self):
+        correo = self.cleaned_data['correo']
+        return correo.lower()
+
     def save(self, commit=True):
         """
         Guarda el nuevo usuario, asignando los campos personalizados.
@@ -37,7 +41,8 @@ class RegistroForm(UserCreationForm):
         # Asigna los datos limpios de los campos adicionales al modelo de usuario
         user.first_name = self.cleaned_data['nombre']
         user.last_name = self.cleaned_data['apellido']
-        user.email = self.cleaned_data['correo']
+        user.email = self.cleaned_data['correo'].lower()
+        user.username = user.email
         user.rol = self.cleaned_data['rol']
         # Si commit es True, guarda el usuario en la base de datos
         if commit:

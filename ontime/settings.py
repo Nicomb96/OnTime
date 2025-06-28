@@ -100,6 +100,9 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'ontime_app/static'),
 ]
 
+# Recoger todos los archivos estáticos cuando se hace collectstatic (incluye los del admin)
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 # Archivos multimedia
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

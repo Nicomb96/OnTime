@@ -9,6 +9,9 @@ from django.utils import timezone
 
 # --- Modelo de Usuario Personalizado ---
 
+
+
+
 class UsuarioPersonalizado(AbstractUser):
     ROLES = (
         ('aprendiz', 'Aprendiz'),
@@ -20,12 +23,18 @@ class UsuarioPersonalizado(AbstractUser):
     email = models.EmailField(unique=True)
     foto_perfil = models.ImageField(upload_to='fotos_perfil/', blank=True, null=True)
 
-    # Se separa las clases según el rol
     clases = models.ManyToManyField('ontime_app.Clase', related_name="aprendices", blank=True)
     clases_dictadas = models.ManyToManyField('ontime_app.Clase', related_name="instructores", blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+
+    def save(self, *args, **kwargs):
+        if self.email:
+            self.email = self.email.lower()
+        if not self.username:
+            self.username = self.email
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.email

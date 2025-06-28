@@ -58,19 +58,17 @@ def iniciar_sesion(request):
     next_url = request.GET.get('next', request.POST.get('next', ''))
 
     if request.method == 'POST':
-        email = request.POST.get('correo', '').strip().lower()
+        correo = request.POST.get('correo', '').strip().lower()
         contrasena = request.POST.get('contrasena', '').strip()
 
-        user = authenticate(request, email=email, password=contrasena)
+        user = authenticate(request, email=correo, password=contrasena)
 
         if user is not None:
             login(request, user)
 
-            # Si viene el parámetro next, lo redirigimos ahí
             if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts=None):
                 return redirect(next_url)
 
-            # Si no, redirige normal por rol
             if user.rol == 'aprendiz':
                 return redirect('inicio_aprendiz')
             elif user.rol == 'instructor':
@@ -83,12 +81,12 @@ def iniciar_sesion(request):
                 return redirect('iniciar_sesion')
         else:
             messages.error(request, 'Correo o contraseña incorrectos.')
-            correo = email
 
     return render(request, 'ontime_app/iniciar_sesion.html', {
         'correo': correo,
         'next': next_url
     })
+
 
 def registrarse(request): 
     """

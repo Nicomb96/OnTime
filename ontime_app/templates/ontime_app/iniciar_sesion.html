@@ -38,11 +38,14 @@
     </div>
   {% endif %}
 
-  <form method="POST" onsubmit="return validarFormulario()">
+  <form method="POST" id="formLogin" onsubmit="return validarFormulario()">
     {% csrf_token %}
     {% if next %}
       <input type="hidden" name="next" value="{{ next }}">
     {% endif %}
+
+    <!-- Campo oculto para debug -->
+    <input type="hidden" id="debug_input" name="debug" value="">
 
     <div class="mb-6">
       <label for="correo" class="block text-sm font-medium text-gray-800 mb-1 mt-9">Correo</label>
@@ -140,11 +143,17 @@
   }
 
   function validarFormulario() {
-    validarCorreo();
-    validarContrasena();
-
     const correo = document.getElementById("correo").value.trim();
     const contrasena = document.getElementById("contrasena").value;
+
+    // 🔍 Mostramos por consola para verificar lo que llega
+    console.log("📤 Enviando correo:", correo);
+    console.log("🔑 Enviando contraseña:", contrasena);
+
+    document.getElementById("debug_input").value = `Correo: ${correo} - Contraseña: ${contrasena}`;
+
+    validarCorreo();
+    validarContrasena();
 
     return correo !== '' && contrasena.length >= 8;
   }

@@ -23,45 +23,21 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
         'is_active',
     )
 
-    list_filter = (
-        'rol',
-        'is_staff',
-        'is_active',
-    )
-
-    search_fields = (
-        'email',
-        'username',
-        'first_name',
-        'last_name',
-    )
-
+    list_filter = ('rol', 'is_staff', 'is_active')
+    search_fields = ('email', 'username', 'first_name', 'last_name')
     ordering = ('email',)
 
     fieldsets = (
         (None, {'fields': ('username', 'email', 'password')}),
-        ('Información personal', {
-            'fields': ('first_name', 'last_name', 'rol', 'clases', 'clases_dictadas', 'foto_perfil'),
-        }),
-        ('Permisos', {
-            'fields': (
-                'is_staff',
-                'is_active',
-                'is_superuser',
-                'groups',
-                'user_permissions',
-            ),
-        }),
+        ('Información personal', {'fields': ('first_name', 'last_name', 'rol', 'clases', 'clases_dictadas', 'foto_perfil')}),
+        ('Permisos', {'fields': ('is_staff', 'is_active', 'is_superuser', 'groups', 'user_permissions')}),
         ('Fechas importantes', {'fields': ('last_login', 'date_joined')}),
     )
 
-    filter_horizontal = ('clases', 'clases_dictadas')
-    
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
             'fields': (
-                'username',
                 'email',
                 'first_name',
                 'last_name',
@@ -69,18 +45,24 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
                 'clases',
                 'clases_dictadas',
                 'foto_perfil',
-                'password',
+                'password1',
+                'password2',
                 'is_staff',
                 'is_active',
             ),
         }),
     )
 
-    filter_horizontal = ('clases', 'clases_dictadas')  
+    filter_horizontal = ('clases', 'clases_dictadas')
 
     def mostrar_clases(self, obj):
         return ", ".join([clase.nombre for clase in obj.clases.all()])
     mostrar_clases.short_description = "Clases"
+
+    def save_model(self, request, obj, form, change):
+        if not obj.username:
+            obj.username = obj.email
+        super().save_model(request, obj, form, change)
 
 admin.site.register(UsuarioPersonalizado, UsuarioPersonalizadoAdmin)
 admin.site.register(Clase)
