@@ -21,18 +21,6 @@
     color: #e5e7eb !important;
   }
 
-  .modo-oscuro .text-green-800,
-  .modo-oscuro .text-green-700,
-  .modo-oscuro .text-gray-600,
-  .modo-oscuro .text-gray-700,
-  .modo-oscuro .text-gray-500 {
-    color: #a7f3d0 !important;
-  }
-
-  .modo-oscuro .text-green-600 {
-    color: #6ee7b7 !important;
-  }
-
   .modo-oscuro .shadow,
   .modo-oscuro .shadow-md,
   .modo-oscuro .shadow-xl {
@@ -43,122 +31,107 @@
 <div class="container mx-auto px-4 lg:px-8 mt-18 flex flex-col lg:flex-row gap-8 transition duration-500">
 
   <!-- PANEL IZQUIERDO -->
-<div class="w-full lg:w-1/3 bg-gradient-to-br from-green-600 to-emerald-800 text-white rounded-3xl p-6 pt-20 shadow-2xl flex flex-col items-center relative overflow-hidden mt-6">
-  <div class="absolute top-0 left-0 w-full h-full opacity-10 bg-cover bg-center" style="background-image: url('{% static 'images/admin_bg_pattern.png' %}');"></div>
+  <div class="w-full lg:w-1/3 bg-gradient-to-br from-emerald-700 to-green-900 text-white rounded-3xl p-6 pt-20 shadow-xl flex flex-col items-center relative overflow-hidden mt-6">
+    <div class="absolute top-0 left-0 w-full h-full opacity-5 bg-cover bg-center" style="background-image: url('{% static 'images/admin_bg_pattern.png' %}');"></div>
 
-  <!-- BOTÓN DE CERRAR SESIÓN -->
-  <div class="absolute top-6 right-6 z-20">
-    <a 
-      href="{% url 'cerrar_sesion' %}"
-      class="inline-flex items-center gap-2 bg-gray-100 text-red-600 font-semibold px-3 py-1 rounded-xl shadow-md hover:bg-gray-200 transition duration-300"
-    >
-      <i class="fas fa-sign-out-alt"></i> Salir
-    </a>
+    <div class="absolute top-6 right-6 z-20">
+      <a href="{% url 'cerrar_sesion' %}" class="inline-flex items-center gap-2 bg-white text-red-600 font-semibold px-3 py-1 rounded-lg shadow hover:shadow-lg hover:bg-gray-100 transition duration-300">
+        <i class="fas fa-sign-out-alt"></i> Salir
+      </a>
+    </div>
+
+    <img src="{% static 'images/foto_p.png' %}" alt="Foto de perfil" class="h-32 w-32 rounded-full border-4 border-white shadow-lg object-cover mb-3 z-10">
+    <h2 class="text-xl font-bold z-10">Admin General</h2>
+    <p class="text-sm text-emerald-200 z-10 mb-4">admin@ontime.com</p>
+    <div id="hora" class="text-sm font-medium text-white mb-6 z-10"></div>
+
+    <div class="flex flex-col gap-3 w-full text-center z-10">
+      <a href={% url "gestion_usuarios" %} class="bg-gradient-to-r from-emerald-500 to-green-600 text-white py-2 rounded-lg shadow hover:shadow-xl hover:scale-105 transition-all duration-300">
+        <i class="fas fa-users mr-2"></i> Gestión de Usuarios
+      </a>
+      <a href={% url "ver_asistencias" %} class="bg-gradient-to-r from-emerald-500 to-green-600 text-white py-2 rounded-lg shadow hover:shadow-xl hover:scale-105 transition-all duration-300">
+        <i class="fas fa-clipboard-list mr-2"></i> Ver Asistencias
+      </a>
+      <a href={% url "gestion_alertas" %} class="bg-gradient-to-r from-emerald-500 to-green-600 text-white py-2 rounded-lg shadow hover:shadow-xl hover:scale-105 transition-all duration-300">
+        <i class="fas fa-bell mr-2"></i> Gestión de Alertas
+      </a>
+      <a href={% url "reportes" %} class="bg-gradient-to-r from-emerald-500 to-green-600 text-white py-2 rounded-lg shadow hover:shadow-xl hover:scale-105 transition-all duration-300">
+        <i class="fas fa-chart-bar mr-2"></i> Reportes
+      </a>
+      <a href={% url "editar_perfil" %} class="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white py-2 rounded-lg shadow hover:shadow-lg hover:scale-105 transition-all duration-300">
+        <i class="fas fa-user-edit mr-2"></i> Editar Perfil
+      </a>
+      <button id="modo-oscuro" class="bg-gray-800 text-white py-2 rounded-lg shadow hover:bg-gray-700 transition duration-300 mt-4">
+        <i class="fas fa-moon mr-2"></i> Modo Oscuro
+      </button>
+    </div>
   </div>
-
-  <img src="{% static 'images/foto_p.png' %}" alt="Foto de perfil" class="h-36 w-36 rounded-full border-4 border-white shadow-lg object-cover mb-4 z-10">
-  <h2 class="text-2xl font-extrabold z-10">Admin General</h2>
-  <p class="text-sm text-emerald-200 mb-4 z-10">admin@ontime.com</p>
-
-  <div id="hora" class="text-md font-semibold text-white mb-6 z-10"></div>
-
-  <div class="flex flex-col gap-3 w-full text-center z-10">
-    <a href={% url "gestion_usuarios" %} class="bg-gradient-to-r from-green-500 to-emerald-600 text-white py-2 rounded-xl shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300">
-      <i class="fas fa-users mr-2"></i> Gestión de Usuarios
-    </a>
-    <a href={% url "ver_asistencias" %} class="bg-gradient-to-r from-green-500 to-emerald-600 text-white py-2 rounded-xl shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300">
-      <i class="fas fa-clipboard-list mr-2"></i> Ver Asistencias
-    </a>
-    <a href={% url "gestion_alertas" %} class="bg-gradient-to-r from-green-500 to-emerald-600 text-white py-2 rounded-xl shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300">
-      <i class="fas fa-bell mr-2"></i> Gestión de Alertas
-    </a>
-    <a href={% url "reportes" %} class="bg-gradient-to-r from-green-500 to-emerald-600 text-white py-2 rounded-xl shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300">
-      <i class="fas fa-chart-bar mr-2"></i> Reportes
-    </a>
-    <a href={% url "editar_perfil" %} class="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white py-2 rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300">
-      <i class="fas fa-user-edit mr-2"></i> Editar Perfil
-    </a>
-
-    <!-- Botón de modo oscuro -->
-    <button id="modo-oscuro" class="bg-gray-900 text-white py-2 rounded-xl shadow hover:bg-gray-700 transition duration-300 mt-4">
-      <i class="fas fa-moon mr-2"></i> Modo Oscuro
-    </button>
-  </div>
-</div>
 
   <!-- PANEL DERECHO -->
   <div class="w-full lg:w-2/3 space-y-8">
-    <div class="text-2xl font-semibold text-green-700 animate-fade-in animate-pulse mt-6">
-      ¡Hola Admin, que tengas un gran día! 😎
-    </div>
 
-    <div class="bg-white/70 backdrop-blur-md rounded-3xl shadow-xl p-6 animate-fade-in" data-aos="fade-up">
-      <h3 class="text-xl font-semibold text-green-800 mb-4">📋 Tareas Pendientes</h3>
-      <ul class="space-y-4 text-gray-600">
-        <li class="flex items-start gap-3">
-          <i class="fas fa-check-circle text-green-600 mt-1"></i> Revisar reportes enviados por instructores
-        </li>
-        <li class="flex items-start gap-3">
-          <i class="fas fa-user-cog text-green-600 mt-1"></i> Asignar nuevos roles a usuarios registrados
-        </li>
-        <li class="flex items-start gap-3">
-          <i class="fas fa-bell text-green-600 mt-1"></i> Actualizar alertas de asistencia
-        </li>
+    <div class="text-2xl font-bold text-emerald-800 mt-6">¡Hola Admin, que tengas un gran día! 😎</div>
+
+    <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg p-6" data-aos="fade-up">
+      <h3 class="text-lg font-semibold text-emerald-700 mb-4">📋 Tareas Pendientes</h3>
+      <ul class="space-y-3 text-gray-700">
+        <li class="flex items-center gap-2"><i class="fas fa-check-circle text-green-500"></i> Revisar reportes enviados por instructores</li>
+        <li class="flex items-center gap-2"><i class="fas fa-user-cog text-green-500"></i> Asignar nuevos roles a usuarios registrados</li>
+        <li class="flex items-center gap-2"><i class="fas fa-bell text-green-500"></i> Actualizar alertas de asistencia</li>
       </ul>
     </div>
 
-    <div class="bg-white/70 backdrop-blur-md rounded-3xl shadow-xl p-6" data-aos="fade-up">
-      <h3 class="text-xl font-semibold text-green-800 mb-4">📈 Estadísticas Rápidas</h3>
+    <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg p-6" data-aos="fade-up">
+      <h3 class="text-lg font-semibold text-emerald-700 mb-4">📈 Estadísticas Rápidas</h3>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div class="bg-green-100 p-4 rounded-xl shadow text-center">
-          <h4 class="text-lg font-bold text-green-700">Aprendices Registrados</h4>
-          <p class="text-3xl font-bold text-green-800">184</p>
+        <div class="bg-emerald-100 p-4 rounded-xl shadow text-center">
+          <h4 class="text-base font-semibold text-emerald-700">Aprendices Registrados</h4>
+          <p class="text-2xl font-bold text-emerald-800">184</p>
         </div>
-        <div class="bg-green-100 p-4 rounded-xl shadow text-center">
-          <h4 class="text-lg font-bold text-green-700">Instructores Activos</h4>
-          <p class="text-3xl font-bold text-green-800">25</p>
+        <div class="bg-emerald-100 p-4 rounded-xl shadow text-center">
+          <h4 class="text-base font-semibold text-emerald-700">Instructores Activos</h4>
+          <p class="text-2xl font-bold text-emerald-800">25</p>
         </div>
       </div>
     </div>
 
-    <div class="bg-white/70 backdrop-blur-md rounded-3xl shadow-xl p-6" data-aos="fade-up">
-      <h3 class="text-xl font-semibold text-green-800 mb-4">🛠 Herramientas Adicionales</h3>
+    <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg p-6" data-aos="fade-up">
+      <h3 class="text-lg font-semibold text-emerald-700 mb-4">🛠 Herramientas Adicionales</h3>
 
       {% if messages %}
         {% for message in messages %}
-          <div class="bg-green-100 text-green-800 p-4 rounded-lg shadow mb-4">
-            {{ message }}
-          </div>
+          <div class="bg-emerald-100 text-emerald-800 p-4 rounded-lg shadow mb-4">{{ message }}</div>
         {% endfor %}
       {% endif %}
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="bg-white rounded-xl shadow-md p-4 text-center hover:shadow-lg transition transform hover:-translate-y-1">
-          <a href="{% url 'gestion_horarios' %}" class="text-green-600 font-semibold block">
-            <i class="fas fa-clock text-2xl mb-2"></i><br> Gestión de Horarios
+          <a href="{% url 'gestion_horarios' %}" class="text-emerald-600 font-semibold block">
+            <i class="fas fa-clock text-xl mb-2"></i><br> Gestión de Horarios
           </a>
           <p class="text-xs text-gray-500 mt-1">Gestiona los horarios de clases y actividades</p>
         </div>
         <div class="bg-white rounded-xl shadow-md p-4 text-center hover:shadow-lg transition transform hover:-translate-y-1">
-          <a href="{% url 'control_asistencia' %}" class="text-green-600 font-semibold block">
-            <i class="fas fa-calendar-check text-2xl mb-2"></i><br> Control de Asistencia
+          <a href="{% url 'control_asistencia' %}" class="text-emerald-600 font-semibold block">
+            <i class="fas fa-calendar-check text-xl mb-2"></i><br> Control de Asistencia
           </a>
           <p class="text-xs text-gray-500 mt-1">Consulta la asistencia por fechas específicas</p>
         </div>
         <div class="bg-white rounded-xl shadow-md p-4 text-center hover:shadow-lg transition transform hover:-translate-y-1">
-          <a href="{% url 'carga_masiva' %}" class="text-green-600 font-semibold block">
-            <i class="fas fa-upload text-2xl mb-2"></i><br> Carga Masiva
+          <a href="{% url 'carga_masiva' %}" class="text-emerald-600 font-semibold block">
+            <i class="fas fa-upload text-xl mb-2"></i><br> Carga Masiva
           </a>
           <p class="text-xs text-gray-500 mt-1">Sube masivamente los datos de los aprendices</p>
         </div>
         <div class="bg-white rounded-xl shadow-md p-4 text-center hover:shadow-lg transition transform hover:-translate-y-1">
-          <a href="{% url 'historial' %}" class="text-green-600 font-semibold block">
-            <i class="fas fa-history text-2xl mb-2"></i><br> Historial
+          <a href="{% url 'historial' %}" class="text-emerald-600 font-semibold block">
+            <i class="fas fa-history text-xl mb-2"></i><br> Historial
           </a>
           <p class="text-xs text-gray-500 mt-1">Consulta las acciones realizadas en el sistema</p>
         </div>
       </div>
     </div>
+
   </div>
 </div>
 
@@ -175,7 +148,6 @@
   setInterval(actualizarHora, 1000);
   actualizarHora();
 
-  // Modo oscuro toggle
   document.getElementById('modo-oscuro').addEventListener('click', function () {
     document.body.classList.toggle('modo-oscuro');
   });
