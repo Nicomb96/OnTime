@@ -4,90 +4,77 @@
 {% block title %}Gestión de Alertas - OnTime{% endblock %}
 
 {% block content %}
+<div class="container mx-auto px-4 lg:px-8 mt-8">
+  <div class="bg-gray-50 rounded-3xl shadow-lg p-6 md:p-10">
+    <h2 class="text-2xl font-bold text-gray-500 mb-6 text-center">🚨 Gestión de Alertas</h2>
 
-<div class="bg-gray-100 shadow-xl rounded-3xl p-10 w-full max-w-4xl mx-auto mt-16 animate__animated animate__fadeIn">
+    <!-- Filtros -->
+    <form method="get" class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+      <input type="text" name="buscar" value="{{ buscar }}" placeholder="Buscar por nombre o estado..." class="w-full md:w-1/2 px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600">
 
-  <!-- Título -->
-  <h2 class="text-4xl font-extrabold text-center text-gray-800 mb-2 animate-pulse">Gestión de Alertas</h2>
-  <p class="text-center text-gray-600 mb-8">Configura, visualiza y maneja las alertas de asistencia de tus aprendices.</p>
-
-  <!-- Filtros -->
-  <div class="grid md:grid-cols-2 gap-10 mb-10 text-gray-600">
-    <div class="flex space-x-4">
-      <input type="text" placeholder="Buscar alerta..." class="px-4 py-2 w-full border rounded-lg shadow-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-600">
-      <select class="px-4 py-2 w-56 border rounded-lg shadow-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-600">
-        <option value="todos">Todos los tipos</option>
-        <option value="inasistencia">Inasistencia</option>
-        <option value="recordatorio">Recordatorio</option>
-        <option value="justificativo">Justificativo</option>
+      <select name="tipo" class="w-full md:w-1/4 px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-500">
+        <option value="">Filtrar por Tipo</option>
+        <option value="Retardo" {% if tipo == 'Retardo' %}selected{% endif %}>Retardo</option>
+        <option value="Inasistencia" {% if tipo == 'Inasistencia' %}selected{% endif %}>Inasistencia</option>
+        <option value="Justificativo" {% if tipo == 'Justificativo' %}selected{% endif %}>Justificativo</option>
+        <option value="Otro" {% if tipo == 'Otro' %}selected{% endif %}>Otro</option>
       </select>
-    </div>
-    <button class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition shadow-md">
-      Filtrar
-    </button>
-  </div>
 
-  <!-- Lista de alertas -->
-  <div id="alertas" class="space-y-6 max-h-96 overflow-y-auto">
+      <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded-xl shadow hover:bg-green-700 transition duration-300">
+        <i class="fas fa-filter mr-2"></i> Filtrar
+      </button>
+    </form>
 
-    <!-- Alerta 1 -->
-    <div class="alerta bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition relative">
-      <div class="flex justify-between items-start">
-        <div>
-          <h3 class="text-lg font-semibold text-gray-800">📊 Grupo sin asistencia registrada</h3>
-          <p class="text-sm text-gray-600 mt-1">No se ha registrado asistencia para el grupo de programación. Revisa y genera el QR a tiempo.</p>
-        </div>
-        <span class="text-xs text-gray-400">Hace 1 hora</span>
-      </div>
-      <div class="flex justify-end space-x-2 mt-4">
-        <button class="btn-marcar-vista text-green-600 hover:underline text-sm">Marcar como vista</button>
-        <button class="btn-eliminar text-red-500 hover:underline text-sm">Eliminar</button>
-      </div>
-    </div>
-
-    <!-- Alerta 2 -->
-    <div class="alerta bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition relative">
-      <div class="flex justify-between items-start">
-        <div>
-          <h3 class="text-lg font-semibold text-gray-800">🕒 Recordatorio de generación de código</h3>
-          <p class="text-sm text-gray-600 mt-1">Recuerda generar el código de asistencia antes del inicio de la clase de hoy.</p>
-        </div>
-        <span class="text-xs text-gray-400">Hace 3 horas</span>
-      </div>
-      <div class="flex justify-end space-x-2 mt-4">
-        <button class="btn-marcar-vista text-green-600 hover:underline text-sm">Marcar como vista</button>
-        <button class="btn-eliminar text-red-500 hover:underline text-sm">Eliminar</button>
-      </div>
-    </div>
-
-    <!-- Alerta 3 -->
-    <div class="alerta bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition relative">
-      <div class="flex justify-between items-start">
-        <div>
-          <h3 class="text-lg font-semibold text-gray-800">❌ Múltiples inasistencias sin justificar</h3>
-          <p class="text-sm text-gray-600 mt-1">Hay aprendices con 3 o más inasistencias sin justificar. Consulta los reportes.</p>
-        </div>
-        <span class="text-xs text-gray-400">Ayer</span>
-      </div>
-      <div class="flex justify-end space-x-2 mt-4">
-        <button class="btn-marcar-vista text-green-600 hover:underline text-sm">Marcar como vista</button>
-        <button class="btn-eliminar text-red-500 hover:underline text-sm">Eliminar</button>
-      </div>
+    <!-- Tabla -->
+    <div class="overflow-x-auto max-h-[400px] overflow-y-auto" id="tabla-alertas-container">
+      <table class="min-w-full bg-white border border-gray-300 rounded-xl shadow-md">
+        <thead class="bg-green-100 text-green-800 text-left text-sm sticky top-0 z-10">
+          <tr>
+            <th class="py-3 px-4">Nombre</th>
+            <th class="py-3 px-4">Tipo de Alerta</th>
+            <th class="py-3 px-4">Fecha</th>
+            <th class="py-3 px-4">Estado</th>
+            <th class="py-3 px-4">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="text-sm text-gray-700">
+          {% for alerta in alertas %}
+          <tr class="border-t hover:bg-gray-50 transition">
+            <td class="py-3 px-4 font-semibold">{{ alerta.aprendiz.get_full_name }}</td>
+            <td class="py-3 px-4">{{ alerta.tipo }}</td>
+            <td class="py-3 px-4">{{ alerta.fecha|date:"Y-m-d H:i" }}</td>
+            <td class="py-3 px-4">
+              <span class="px-2 py-1 rounded-full {% if alerta.estado == 'Pendiente' %}bg-yellow-200 text-yellow-800{% elif alerta.estado == 'Resuelta' %}bg-green-200 text-green-800{% else %}bg-blue-200 text-blue-800{% endif %}">
+                {{ alerta.estado }}
+              </span>
+            </td>
+            <td class="py-3 px-4 space-x-2">
+              {% if alerta.estado != 'Resuelta' %}
+              <a href="{% url 'marcar_alerta_vista' alerta.id %}" class="text-blue-600 hover:underline"><i class="fas fa-eye mr-1"></i> Marcar Vista</a>
+              <a href="{% url 'finalizar_alerta' alerta.id %}" class="text-green-600 hover:underline"><i class="fas fa-check-circle mr-1"></i> Finalizar</a>
+              {% endif %}
+              <a href="{% url 'eliminar_alerta' alerta.id %}" class="text-red-600 hover:underline"><i class="fas fa-trash-alt mr-1"></i> Eliminar</a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-center py-4 text-gray-500">No hay alertas disponibles.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
 
-  </div>
-
-  <!-- Sin alertas -->
-  <div id="sin-alertas" class="hidden text-center mt-10">
-    <img src="{% static 'images/campana.ico' %}" alt="Sin alertas" class="w-60 mx-auto mb-4 animate-bounce" style="width: 150px; height: auto;" />
-    <p class="text-lg text-gray-500">No tienes alertas nuevas por ahora 💤</p>
-  </div>
-
-  <!-- Botón Finalizar -->
-  <div class="text-center mt-10">
-    <a href={% url "inicio_instructor" %} class="bg-green-700 text-white px-8 py-3 rounded-xl hover:bg-green-800 transition shadow-lg">
-      <i class="fas fa-check-circle mr-2"></i>Finalizar
-    </a>
+    <!-- Paginación -->
+    <div class="mt-6 text-center">
+      {% if alertas.has_previous %}
+        <a href="?page={{ alertas.previous_page_number }}&tipo={{ tipo }}&buscar={{ buscar }}" class="text-green-600 hover:underline mr-4"><i class="fas fa-chevron-left"></i> Anterior</a>
+      {% endif %}
+      <span class="text-gray-500 font-semibold">Página {{ alertas.number }} de {{ alertas.paginator.num_pages }}</span>
+      {% if alertas.has_next %}
+        <a href="?page={{ alertas.next_page_number }}&tipo={{ tipo }}&buscar={{ buscar }}" class="text-green-600 hover:underline ml-4">Siguiente <i class="fas fa-chevron-right"></i></a>
+      {% endif %}
+    </div>
   </div>
 </div>
 
@@ -97,38 +84,5 @@
     <i class="fas fa-arrow-left mr-2"></i> Volver al panel
   </a>
 </div>
-{% endblock back_button %}
-
-<script>
-  // Función para eliminar alerta
-  const eliminarBtns = document.querySelectorAll('.btn-eliminar');
-  const vistaBtns = document.querySelectorAll('.btn-marcar-vista');
-  const alertas = document.getElementById('alertas');
-  const sinAlertas = document.getElementById('sin-alertas');
-
-  eliminarBtns.forEach(btn => {
-    btn.addEventListener('click', function () {
-      const alerta = this.closest('.alerta');
-      alerta.classList.add('opacity-0', 'transition', 'duration-500');
-      setTimeout(() => {
-        alerta.remove();
-        if (alertas.children.length === 0) {
-          sinAlertas.classList.remove('hidden');
-        }
-      }, 500);
-    });
-  });
-
-  vistaBtns.forEach(btn => {
-    btn.addEventListener('click', function () {
-      const alerta = this.closest('.alerta');
-      alerta.classList.add('bg-gray-100');
-      this.textContent = "Vista ✅";
-      this.classList.remove('hover:underline', 'text-green-600');
-      this.classList.add('text-gray-500');
-      this.disabled = true;
-    });
-  });
-</script>
-
+{% endblock %}
 {% endblock %}

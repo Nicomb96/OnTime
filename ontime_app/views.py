@@ -391,6 +391,11 @@ def justificativos_1(request):
 
 # --- Vistas por Rol: Instructor ---
 
+from django.views.decorators.cache import never_cache
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from .models import Clase
+
 @never_cache
 @login_required(login_url='iniciar_sesion')
 def inicio_instructor(request):
@@ -400,7 +405,14 @@ def inicio_instructor(request):
     """
     if request.user.rol != 'instructor':
         return redirect('inicio')
-    return render(request, 'ontime_app/inicio_instructor.html')
+
+    # Obtener clases donde el usuario es instructor
+    agenda = Clase.objects.filter(instructores=request.user).order_by('fecha')
+
+    return render(request, 'ontime_app/inicio_instructor.html', {
+        'agenda': agenda
+    })
+
 
 @never_cache
 @login_required(login_url='iniciar_sesion')
@@ -421,7 +433,7 @@ def generar_qr(request):
 
 @never_cache
 @login_required(login_url='iniciar_sesion')
-def consultar_asistencias(request):
+def asistencia_mensual(request):
     """
     Vista para que el instructor consulte y registre asistencia manual de todos los aprendices en una tabla tipo Excel.
     """
@@ -1239,3 +1251,184 @@ def ayuda(request):
         'faqs': faqs,
         'categoria_actual': categoria,
     })
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from .models import Asistencia, UsuarioPersonalizado
+
+@login_required(login_url='iniciar_sesion')
+def gestion_reportes(request):
+    aprendices = UsuarioPersonalizado.objects.filter(rol='aprendiz')
+
+    resumen = []
+    labels = []
+    asistencias_data = []
+    inasistencias_data = []
+    retardos_data = []
+
+    for aprendiz in aprendices:
+        asistencias = Asistencia.objects.filter(aprendiz=aprendiz, estado='Presente').count()
+        inasistencias = Asistencia.objects.filter(aprendiz=aprendiz, estado='Ausente').count()
+        retardos = Asistencia.objects.filter(aprendiz=aprendiz, estado='Tarde').count()
+        justificada = Asistencia.objects.filter(aprendiz=aprendiz, estado='Justificado').exists()
+
+        resumen.append({
+            'nombre': f"{aprendiz.first_name} {aprendiz.last_name}",
+            'asistencias': asistencias,
+            'inasistencias': inasistencias,
+            'retardos': retardos,
+            'justificada': 'Sí' if justificada else 'No'
+        })
+
+        labels.append(aprendiz.first_name.split()[0])
+        asistencias_data.append(asistencias)
+        inasistencias_data.append(inasistencias)
+        retardos_data.append(retardos)
+
+    context = {
+        'resumen': resumen,
+        'labels': labels,
+        'asistencias': asistencias_data,
+        'inasistencias': inasistencias_data,
+        'retardos': retardos_data
+    }
+
+    return render(request, 'ontime_app/gestion_reportes.html', context)
+
+import openpyxl
+from django.http import HttpResponse
+from .models import UsuarioPersonalizado, Asistencia
+
+@login_required(login_url='iniciar_sesion')
+def descargar_excel_asistencia(request):
+    aprendices = UsuarioPersonalizado.objects.filter(rol='aprendiz')
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Reporte de Asistencia"
+
+    # Escribir encabezados
+    ws.append(["Aprendiz", "Asistencias", "Inasistencias", "Retardos", "Justificada"])
+
+    for aprendiz in aprendices:
+        asistencias = Asistencia.objects.filter(aprendiz=aprendiz, estado='Presente').count()
+        inasistencias = Asistencia.objects.filter(aprendiz=aprendiz, estado='Ausente').count()
+        retardos = Asistencia.objects.filter(aprendiz=aprendiz, estado='Tarde').count()
+        justificada = Asistencia.objects.filter(aprendiz=aprendiz, estado='Justificado').exists()
+        justificada_texto = "Sí" if justificada else "No"
+
+        nombre_completo = f"{aprendiz.first_name} {aprendiz.last_name}"
+        ws.append([nombre_completo, asistencias, inasistencias, retardos, justificada_texto])
+
+    # Preparar respuesta HTTP con archivo .xlsx
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename=Reporte_Asistencias.xlsx'
+    wb.save(response)
+    return response
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import Q
+from django.core.paginator import Paginator
+from .models import Alerta
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def gestion_alertas(request):
+    tipo = request.GET.get('tipo', '')
+    buscar = request.GET.get('buscar', '')
+
+    alertas = Alerta.objects.select_related('usuario').order_by('-fecha_creacion')
+
+    if tipo:
+        alertas = alertas.filter(tipo__icontains=tipo)
+
+    if buscar:
+        alertas = alertas.filter(
+            Q(usuario__first_name__icontains=buscar) |
+            Q(usuario__last_name__icontains=buscar) |
+            Q(estado__icontains=buscar)
+        )
+
+    paginator = Paginator(alertas, 5)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'alertas': page_obj,
+        'tipo': tipo,
+        'buscar': buscar
+    }
+    return render(request, 'ontime_app/gestion_alertas.html', context)
+
+@login_required
+def marcar_alerta_vista(request, alerta_id):
+    alerta = get_object_or_404(Alerta, id=alerta_id)
+    alerta.estado = 'vista'
+    alerta.save()
+    return redirect('gestion_alertas')
+
+@login_required
+def eliminar_alerta(request, alerta_id):
+    alerta = get_object_or_404(Alerta, id=alerta_id)
+    alerta.delete()
+    return redirect('gestion_alertas')
+
+@login_required
+def finalizar_alerta(request, alerta_id):
+    alerta = get_object_or_404(Alerta, id=alerta_id)
+    alerta.estado = 'resuelta'
+    alerta.save()
+    return redirect('gestion_alertas')
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from .models import Asistencia, Clase, Competencia, UsuarioPersonalizado
+
+@login_required
+def consultar_asistencias(request):
+    competencias = Competencia.objects.all()
+    aprendices = UsuarioPersonalizado.objects.filter(rol='aprendiz')
+
+    # Obtener filtros desde el formulario
+    competencia_id = request.GET.get('competencia')
+    busqueda = request.GET.get('busqueda')
+
+    # Filtrar clases por competencia (si aplica)
+    if competencia_id and competencia_id != "todas":
+        clases = Clase.objects.filter(competencia__id=competencia_id)
+        asistencias = Asistencia.objects.filter(clase__in=clases)
+    else:
+        asistencias = Asistencia.objects.all()
+
+    # Filtrar aprendices si hay búsqueda por nombre o correo
+    if busqueda:
+        aprendices = aprendices.filter(
+            Q(first_name__icontains=busqueda) |
+            Q(last_name__icontains=busqueda) |
+            Q(email__icontains=busqueda)
+        )
+        asistencia_filtrada = asistencias.filter(aprendiz__in=aprendices).select_related('aprendiz', 'clase')
+    else:
+        asistencia_filtrada = asistencias.select_related('aprendiz', 'clase')
+
+    # Ordenar por fecha descendente
+    asistencia_filtrada = asistencia_filtrada.order_by('-fecha')
+
+    # Si no hay filtros, mostrar las 20 más recientes
+    if not busqueda and (not competencia_id or competencia_id == "todas"):
+        asistencia_filtrada = asistencia_filtrada[:20]
+
+    context = {
+        'competencias': competencias,
+        'asistencias': asistencia_filtrada,
+        'aprendices': aprendices,
+        'competencia_id': competencia_id or 'todas',
+        'busqueda': busqueda or '',
+    }
+
+    return render(request, 'ontime_app/consultar_asistencias.html', context)
+

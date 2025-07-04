@@ -4,19 +4,18 @@
 {% block title %}Ver Reportes - OnTime{% endblock %}
 
 {% block content %}
-
 <div class="bg-gray-100 shadow-xl rounded-3xl p-10 w-full max-w-6xl mx-auto mt-16 animate__animated animate__fadeIn">
   <h2 class="text-4xl font-extrabold text-center text-gray-800 mb-2 animate-pulse">Ver Reportes</h2>
   <p class="text-center text-gray-600 mb-8">Genera y visualiza reportes detallados de asistencia con gráficos interactivos.</p>
 
   <!-- Controles -->
   <div class="flex justify-end gap-4 mb-6">
-    <button class="bg-green-700 text-white px-6 py-2 rounded-md hover:bg-green-800 transition flex items-center gap-2 shadow-md">
+    <a href="{% url 'descargar_excel_asistencia' %}" class="bg-green-700 text-white px-6 py-2 rounded-md hover:bg-green-800 transition flex items-center gap-2 shadow-md">
       <i class="fas fa-file-export"></i> Exportar Reporte
-    </button>
-    <button class="bg-white text-green-700 border border-green-500 px-6 py-2 rounded-md hover:bg-green-50 transition flex items-center gap-2 shadow-md">
+    </a>
+    <a href="{% url 'gestion_reportes' %}" class="bg-white text-green-700 border border-green-500 px-6 py-2 rounded-md hover:bg-green-50 transition flex items-center gap-2 shadow-md">
       <i class="fas fa-sync-alt"></i> Recargar
-    </button>
+    </a>
   </div>
 
   <!-- Tabla resumen -->
@@ -32,27 +31,17 @@
         </tr>
       </thead>
       <tbody class="text-gray-700">
+        {% for item in resumen %}
         <tr class="hover:bg-gray-100 transition">
-          <td class="px-6 py-4">Carlos Pérez</td>
-          <td class="px-6 py-4">18</td>
-          <td class="px-6 py-4">2</td>
-          <td class="px-6 py-4">1</td>
-          <td class="px-6 py-4">Sí</td>
+          <td class="px-6 py-4">{{ item.nombre }}</td>
+          <td class="px-6 py-4">{{ item.asistencias }}</td>
+          <td class="px-6 py-4">{{ item.inasistencias }}</td>
+          <td class="px-6 py-4">{{ item.retardos }}</td>
+          <td class="px-6 py-4">{{ item.justificada }}</td>
         </tr>
-        <tr class="hover:bg-gray-100 transition">
-          <td class="px-6 py-4">Laura Gómez</td>
-          <td class="px-6 py-4">20</td>
-          <td class="px-6 py-4">0</td>
-          <td class="px-6 py-4">2</td>
-          <td class="px-6 py-4">No</td>
-        </tr>
-        <tr class="hover:bg-gray-100 transition">
-          <td class="px-6 py-4">Andrés Rojas</td>
-          <td class="px-6 py-4">17</td>
-          <td class="px-6 py-4">3</td>
-          <td class="px-6 py-4">0</td>
-          <td class="px-6 py-4">Sí</td>
-        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center py-4">No hay datos disponibles.</td></tr>
+        {% endfor %}
       </tbody>
     </table>
   </div>
@@ -72,34 +61,32 @@
 </div>
 {% endblock back_button %}
 
-<!-- Toast personalizado -->
-<div id="toast" class="fixed bottom-6 right-6 bg-green-600 text-white px-4 py-3 rounded-xl shadow-lg opacity-0 transition-all z-50"></div>
-
-<!-- Chart.js -->
+<!-- Chart.js y plugin para mostrar valores -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 
 <script>
   const ctx = document.getElementById('graficoAsistencia');
   new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: ['Carlos', 'Laura', 'Andrés'],
+      labels: {{ labels|safe }},
       datasets: [
         {
           label: 'Asistencias',
-          data: [18, 20, 17],
+          data: {{ asistencias|safe }},
           backgroundColor: '#22c55e',
           borderRadius: 6,
         },
         {
           label: 'Inasistencias',
-          data: [2, 0, 3],
+          data: {{ inasistencias|safe }},
           backgroundColor: '#ef4444',
           borderRadius: 6,
         },
         {
           label: 'Retardos',
-          data: [1, 2, 0],
+          data: {{ retardos|safe }},
           backgroundColor: '#facc15',
           borderRadius: 6,
         }
@@ -107,55 +94,32 @@
     },
     options: {
       responsive: true,
-      animation: {
-        duration: 1500,
+      animation: { duration: 1000 },
+      plugins: {
+        datalabels: {
+          color: '#000',
+          anchor: 'end',
+          align: 'start',
+          offset: -10,
+          font: {
+            weight: 'bold'
+          },
+          formatter: function(value) {
+            return value > 0 ? value : '';
+          }
+        }
       },
       scales: {
         y: {
-          beginAtZero: true
+          beginAtZero: true,
+          suggestedMax: 5,
+          ticks: {
+            stepSize: 1
+          }
         }
       }
-    }
-  });
-
-  // Toast Function
-  function showToast(mensaje) {
-    const toast = document.getElementById('toast');
-    toast.textContent = mensaje;
-    toast.classList.remove('opacity-0');
-    toast.classList.add('opacity-100');
-    setTimeout(() => {
-      toast.classList.remove('opacity-100');
-      toast.classList.add('opacity-0');
-    }, 3000);
-  }
-
-  // Exportar Reporte
-  document.querySelector('.fa-file-export').parentElement.addEventListener('click', function () {
-    const btn = this;
-    const original = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Exportado';
-    btn.classList.remove('bg-green-700');
-    btn.classList.add('bg-green-500');
-    showToast('📄 Reporte exportado con éxito');
-    setTimeout(() => {
-      btn.innerHTML = original;
-      btn.classList.add('bg-green-700');
-      btn.classList.remove('bg-green-500');
-    }, 3000);
-  });
-
-  // Recargar
-  document.querySelector('.fa-sync-alt').parentElement.addEventListener('click', function () {
-    const btn = this;
-    const icon = btn.querySelector('i');
-    icon.classList.add('fa-spin');
-    showToast('🔄 Actualizando reporte...');
-    setTimeout(() => {
-      icon.classList.remove('fa-spin');
-      showToast('✅ Reporte actualizado');
-    }, 2000);
+    },
+    plugins: [ChartDataLabels]
   });
 </script>
-
 {% endblock %}
