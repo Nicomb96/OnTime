@@ -1,128 +1,100 @@
+# Sistema de Gestión de Asistencias OnTime
 
-# OnTime - Sistema de Registro de Asistencia con QR
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white)
+![Django](https://img.shields.io/badge/Django-4.x-green?logo=django&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-blue?logo=postgresql)
 
-## Descripción
+Sistema desarrollado con Django que permite registrar la asistencia de aprendices por escaneo de códigos QR o ingreso manual. Pensado para instituciones educativas con roles diferenciados: administrador, instructor y aprendiz. Incluye funciones modernas como centro de ayuda, contacto, y estadísticas.
 
-Sistema desarrollado con Django que permite registrar la asistencia de aprendices a través del escaneo de códigos QR o ingreso manual de códigos generados por instructores. Está pensada para instituciones educativas y cuenta con roles diferenciados para administradores, instructores y aprendices.
+## Tecnologías utilizadas
 
----
-
-## Tecnologías usadas
-
-- Python 3.x  
-- Django  
-- PostgreSQL  
-- HTML5, CSS3 y JavaScript  
-- Tailwind CSS para estilos  
-- Librería **html5-qrcode** para lectura de QR en el navegador  
-- FontAwesome para íconos  
-
----
+- **Backend:** Django 4.x (Python 3.10+)
+- **Base de datos:** PostgreSQL
+- **Frontend:** HTML5, CSS3, Tailwind CSS, JavaScript
+- **Librerías:** `html5-qrcode` para escaneo de QR, `FontAwesome`, `AOS` para animaciones
+- **Otros:** DAPHNE (para ASGI), autenticación personalizada, ORM de Django
 
 ## Roles del sistema
 
-- **Administrador:** Gestiona cuentas, usuarios y supervisa el sistema.  
-- **Instructor:** Genera códigos QR y códigos alfanuméricos para registrar asistencia.  
-- **Aprendiz:** Escanea los códigos para registrar su asistencia o ingresa el código manualmente si no puede escanear.
-
----
+- **Administrador:** Gestiona usuarios, clases, visualiza reportes y controla el sistema.
+- **Instructor:** Registra asistencia, crea códigos QR, gestiona clases y competencias.
+- **Aprendiz:** Registra asistencia escaneando o ingresando códigos y consulta su historial.
 
 ## Funcionalidades principales
 
-- Registro de asistencia mediante escaneo de QR o ingreso manual de código.  
-- Visualización y filtrado de historial de asistencia.  
-- Generación de códigos QR y alternativos por parte del instructor.  
-- Notificaciones para el usuario sobre el estado de registro.  
-- Interfaz moderna y responsiva con animaciones y mensajes claros.  
-
----
+- Registro de asistencia por QR o código manual
+- Generación automática de códigos por clase
+- Visualización de historial con filtros avanzados por fecha, estado y aprendiz
+- Dashboard por rol con estadísticas y notificaciones
+- Panel de administración personalizado con diseño moderno
+- Contacto y Centro de ayuda (FAQs) conectados a base de datos
+- Soporte para justificación de inasistencias
+- Animaciones con AOS y diseño responsive para dispositivos móviles
 
 ## Requisitos
 
-- Python 3 o superior
-- PostgreSQL (configurado y corriendo)  
-- Pip (para instalar dependencias)  
-- Navegador web moderno con cámara para escaneo QR (opcional)
+- Python 3.10 o superior
+- PostgreSQL en ejecución
+- Navegador moderno con soporte para cámara
+- `pip` para instalar dependencias
 
----
+## Instalación
 
-## Instalación y configuración
+```bash
+# 1. Clonar el repositorio
+git clone https://github.com/Nicomb96/OnTime.git
+cd OnTime
 
-1. **Clonar el repositorio**
+# 2. Crear entorno virtual
+python -m venv .venv
+source .venv/bin/activate      # Linux/Mac
+.venv\\Scripts\\activate       # Windows
 
-   - git clone https://github.com/Nicomb96/OnTime.git
+# 3. Instalar dependencias
+pip install -r requirements.txt
 
-2. **Crear y activar entorno virtual**
+# 4. Configurar base de datos en settings.py o .env
+# DB_NAME=postgres
+# DB_USER=postgres
+# DB_PASSWORD=*********
+# DB_HOST=localhost
+# DB_PORT=5432
 
-   - python -m venv .venv
-   - .venv\Scripts\activate     # Windows
-   
-4. **Instalar dependencias**
+# 5. Aplicar migraciones
+python manage.py migrate
 
-   - pip install -r requirements.txt
-   
-5. **Configurar la base de datos PostgreSQL**
+# 6. Crear superusuario (opcional)
+python manage.py createsuperuser
 
-   - Crear base de datos y usuario PostgreSQL:
-     - Base de datos: postgres
-     - Usuario: postgres
-     - Contraseña: nicolasmb321
+# 7. Ejecutar el servidor
 
-   - Ajustar configuración en settings.py si se cambia datos:
-   
-     - DATABASES:
-        - ENGINE: django.db.backends.postgresql
-        - NAME: postgres                       
-        - USER: postgres                        
-        - PASSWORD: nicolasmb321                 
-        - HOST: localhost                        
-        - PORT: 5432
+- Opción 1: Solo en el equipo (modo local)
+python manage.py runserver
 
-6. **Aplicar migraciones**
+- Opción 2: Acceso desde otros dispositivos (modo red local)
+daphne -b 0.0.0.0 -p 8000 ontime.asgi:application
 
-   - python manage.py migrate
+Acceder desde otros dispositivos con la IP del equipo,
+ejemplo: http://192.168.1.10:8000
 
-     Nota: Inicialmente se consideró usar un archivo `.sql` para definir las tablas de la base de datos, no obstante se optó por utilizar el enfoque nativo de Django mediante `models.py` y migraciones. Ya que permite una mejor integración con el framework, facilita la gestión de cambios en el modelo de datos y reduce errores al evitar definiciones manuales de SQL.
+Recomendaciones:
+- Tener Daphne instalado: pip install daphne
+- Habilitar el puerto 8000 en tu firewall si es necesario
 
-7. **Crear superusuario administrador**
+Estructura del proyecto
+ontime/
+├── ontime_app/           # App principal
+├── templates/            # HTML con Django Templates
+├── static/               # CSS, JS, imágenes
+├── manage.py             # Script de gestión Django
+├── requirements.txt      # Dependencias del proyecto
 
-   El proyecto ya cuenta con el siguiente superusuario principal para pruebas:
-    - Email: Ontimeproyecto1290@gmail.com
-    - Contraseña: ontime654321
+Contacto
 
-8. **Ejecutar el servidor de desarrollo**
+¿Dudas o soporte? Escribe al equipo desarrollador:
 
-   - python manage.py runserver
+GitHub: Nicomb96
+Correo: Ontimeproyecto1290@gmail.com
 
-9. **Abrir en el navegador**
-
-   - Accede a http://127.0.0.1:8000 y comienza a usarlo.
-
-**Uso básico**
-
-   - Inicia sesión con el usuario administrador para gestionar el sistema.
-   - Los instructores pueden generar códigos QR desde su panel.
-   - Los aprendices registran asistencia escaneando el QR con su cámara o ingresando manualmente el código.
-   - La app mostrará mensajes de éxito o error al registrar asistencia.
-   - Puedes consultar el historial y filtrar por fechas en la sección correspondiente.
-
-**Estructura del proyecto**
-
-   - ontime_app/ → Código principal de la app Django.
-   - templates/ → Archivos HTML con Django Templates.
-   - static/ → Archivos estáticos (CSS, JS, imágenes).
-   - requirements.txt → Dependencias del proyecto.
-   - manage.py → Script principal para gestión Django.
-
-**Dependencias importantes**
-
-   - Django
-   - psycopg2-binary (para PostgreSQL)
-   - html5-qrcode (librería JS cargada desde CDN)
-   - Tailwind CSS (integrado para estilos)
-
-**Contacto**
-
-   Para dudas o soporte, contacta al grupo desarrollador:
-   - GitHub: https://github.com/Nicomb96
-   - Email: Ontimeproyecto1290@gmail.com
+© 2025 OnTime Project. Todos los derechos reservados. Distribuido bajo licencia MIT.
