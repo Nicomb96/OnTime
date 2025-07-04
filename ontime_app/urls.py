@@ -79,6 +79,8 @@ urlpatterns = [
     path("historial/", views.historial, name="historial"),
     path("crear_usuario/", views.crear_usuario, name="crear_usuario"),
 
+    path('contacto/', views.contacto, name='contacto'),
+
     # --- Pantallas Extra de Documentación y Diseño ---
 
     path("modelo_relacional/", views.modelo_relacional, name="modelo_relacional"),

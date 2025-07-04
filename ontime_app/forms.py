@@ -6,6 +6,7 @@ from .models import Justificativo
 from django.contrib.auth import get_user_model
 from django.forms import FileInput
 from django.contrib.auth import authenticate, login
+from .models import MensajeContacto
 
 # --- Formulario para el Registro de Usuarios ---
 
@@ -148,5 +149,27 @@ class JustificativoForm(forms.ModelForm):
             }),
             'archivo': forms.ClearableFileInput(attrs={
                 'class': 'w-full p-3 mt-1 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 hover:bg-gray-50 text-gray-600'
+            }),
+        }
+
+# --- Formulario Contacto ---
+
+class ContactoForm(forms.ModelForm):
+    class Meta:
+        model = MensajeContacto
+        fields = ['nombre', 'correo', 'mensaje']
+        widgets = {
+            'nombre': forms.TextInput(attrs={
+                'class': 'mt-1 w-full p-3 border-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-gray-800',
+                'placeholder': 'Tu nombre'
+            }),
+            'correo': forms.EmailInput(attrs={
+                'class': 'mt-1 w-full p-3 border-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-gray-800',
+                'placeholder': 'tuemail@correo.com'
+            }),
+            'mensaje': forms.Textarea(attrs={
+                'class': 'mt-1 w-full p-3 border-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-gray-800',
+                'placeholder': 'Escribe tu mensaje...',
+                'rows': 4
             }),
         }

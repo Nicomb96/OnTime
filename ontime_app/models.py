@@ -5,12 +5,9 @@ from django.db.models.signals import post_delete, pre_save
 from django.dispatch import receiver
 from django.conf import settings
 from datetime import datetime
-from django.utils import timezone 
+from django.utils import timezone
 
 # --- Modelo de Usuario Personalizado ---
-
-
-
 
 class UsuarioPersonalizado(AbstractUser):
     ROLES = (
@@ -198,3 +195,33 @@ class CodigoGenerado(models.Model):
 
     def __str__(self):
         return f"{self.codigo} - {self.instructor.username}"
+
+# --- Modelo Mensaje de contacto ---
+
+class MensajeContacto(models.Model):
+    nombre = models.CharField(max_length=100)
+    correo = models.EmailField()
+    mensaje = models.TextField()
+    fecha_envio = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.nombre} - {self.correo}"
+
+# --- Modelo FAQ ---
+
+class FAQ(models.Model):
+    CATEGORIAS = [
+        ('cuenta', 'Cuenta'),
+        ('asistencia', 'Asistencia'),
+        ('qr', 'QR'),
+        ('reportes', 'Reportes'),
+        ('otros', 'Otros'),
+    ]
+
+    pregunta = models.CharField(max_length=255)
+    respuesta = models.TextField()
+    categoria = models.CharField(max_length=20, choices=CATEGORIAS, default='otros')
+    activa = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.pregunta

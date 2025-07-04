@@ -50,6 +50,9 @@ from collections import defaultdict
 import openpyxl
 from openpyxl.styles import Font, Alignment
 from django.http import HttpResponse
+from .forms import ContactoForm
+from django.core.mail import send_mail
+from .models import FAQ
 
 # --- Vistas de Autenticación y Perfil ---
 
@@ -1193,3 +1196,46 @@ def descargar_excel_asistencia(request):
     response['Content-Disposition'] = f'attachment; filename="{nombre_archivo}"'
     wb.save(response)
     return response
+
+# --- Vista para contacto ---
+
+def contacto(request):
+    if request.method == 'POST':
+        form = ContactoForm(request.POST)
+        if form.is_valid():
+            mensaje = form.save()
+
+            # Enviar correo
+            send_mail(
+                'Nuevo mensaje de contacto',
+                f'Nombre: {mensaje.nombre}\nCorreo: {mensaje.correo}\nMensaje:\n{mensaje.mensaje}',
+                settings.DEFAULT_FROM_EMAIL,
+                [settings.DEFAULT_FROM_EMAIL],
+                fail_silently=False,
+            )
+
+            messages.success(request, '¡Tu mensaje ha sido enviado correctamente!')
+            return redirect('contacto')
+    else:
+        form = ContactoForm()
+
+    return render(request, 'ontime_app/contacto.html', {'form': form})
+
+# --- Vista para ayuda ---
+
+def ayuda(request):
+    query = request.GET.get('search')
+    categoria = request.GET.get('categoria')
+
+    faqs = FAQ.objects.all()
+
+    if query:
+        faqs = faqs.filter(pregunta__icontains=query)
+
+    if categoria:
+        faqs = faqs.filter(categoria=categoria)
+
+    return render(request, 'ontime_app/ayuda.html', {
+        'faqs': faqs,
+        'categoria_actual': categoria,
+    })

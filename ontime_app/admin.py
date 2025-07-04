@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.forms import ModelForm
 from .models import UsuarioPersonalizado, Clase, Competencia
+from .models import FAQ
 
 class UsuarioForm(ModelForm):
     class Meta:
@@ -67,3 +68,9 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
 admin.site.register(UsuarioPersonalizado, UsuarioPersonalizadoAdmin)
 admin.site.register(Clase)
 admin.site.register(Competencia)
+
+@admin.register(FAQ)
+class FAQAdmin(admin.ModelAdmin):
+    list_display = ('pregunta', 'activa')
+    list_filter = ('activa',)
+    search_fields = ('pregunta', 'respuesta')
